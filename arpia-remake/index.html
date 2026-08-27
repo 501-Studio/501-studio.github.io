@@ -2,17 +2,29 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#090b18" />
-    <meta name="description" content="아르피아 리메이크 프로토타입 — 감정과 원소가 연결된 캐주얼 액션 RPG" />
-    <title>아르피아 리메이크</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#07101a" />
+    <meta name="description" content="감정과 원소를 이해하며 성장하는 웹 기반 캐주얼 액션 RPG, 아르피아 리메이크 Chapter 1." />
+    <title>아르피아 리메이크 — Chapter 1</title>
   </head>
   <body>
-    <main class="app-shell">
-      <section class="game-frame" aria-label="아르피아 리메이크 게임 화면">
+    <main id="app-shell">
+      <header class="app-bar">
+        <div class="brand">
+          <strong>아르피아 리메이크</strong>
+          <span>CHAPTER 1</span>
+        </div>
+        <div class="top-help">자동 저장 · 브라우저 플레이 · 키보드/터치 지원</div>
+      </header>
+
+      <section id="game-stage" aria-label="아르피아 리메이크 게임 화면">
         <div id="game"></div>
       </section>
-      <p class="controls-hint">이동 WASD · 기본 공격 Space/J · 원소 스킬 Q · 대시 Shift · 진행 Space/클릭</p>
+
+      <footer class="app-footer">
+        <span><kbd>WASD</kbd> 이동 · <kbd>J</kbd> 공격 · <kbd>Q</kbd> 스킬 · <kbd>E</kbd> 물약 · <kbd>F</kbd> 상호작용</span>
+        <span>Vite + Phaser</span>
+      </footer>
     </main>
     <script type="module" src="/src/main.js"></script>
   </body>
