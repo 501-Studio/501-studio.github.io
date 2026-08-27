@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import './style.css';
 
 const W = 1280, H = 720;
+const MOA = { name:'모아', color:0xe8fff8 };
 const ELEMENTS = {
   fire: { name:'불', color:0xff655d, pos:'열정 · 용기', neg:'분노 · 조급함', skill:'타오르는 마음' },
   water: { name:'물', color:0x58b9ff, pos:'평온 · 공감', neg:'슬픔 · 무기력', skill:'흘려보내기' },
@@ -10,6 +11,7 @@ const ELEMENTS = {
   wind: { name:'바람', color:0x70e4bd, pos:'해방 · 호기심', neg:'허무 · 냉담', skill:'경계 너머' },
   light: { name:'빛', color:0xfff3b0, pos:'희망 · 명료함', neg:'오만 · 완벽주의', skill:'길을 밝히는 빛' },
 };
+
 const STORY = [
   { title:'평범한 아침', body:'07:20. 알람이 울린다.\n\n“하… 또 출근이네.”\n\n붐비는 지하철. 출근 전부터 회사 메신저가 울린다.' },
   { title:'출근도 안 했는데', body:'팀장: “어제 파일 수정된 거 확인했어?”\n팀장: “오늘 오전에 보고 가능?”', choices:[
@@ -93,15 +95,16 @@ class Awakening extends Phaser.Scene {
     const scores=this.registry.get('emotionScores')||blankScores(), hist=this.registry.get('emotionHistory')||[];
     this.key=dominant(scores,hist); this.el=ELEMENTS[this.key]; this.registry.set('element',this.key); this.forest();
     this.add.text(60,46,'안개숲',{fontFamily:'system-ui',fontSize:18,fontStyle:'bold',color:'#a8bcb8'});
-    const spirit=this.add.circle(875,250,18,0xe8fff8,.9).setStrokeStyle(3,this.el.color,.9); this.tweens.add({targets:spirit,y:270,duration:1000,yoyo:true,repeat:-1});
+    const spirit=this.add.circle(875,250,18,MOA.color,.9).setStrokeStyle(3,this.el.color,.9); this.tweens.add({targets:spirit,y:270,duration:1000,yoyo:true,repeat:-1});
+    this.add.text(875,302,MOA.name,{fontFamily:'system-ui',fontSize:15,fontStyle:'bold',color:'#cfe8e2'}).setOrigin(.5);
     this.title=this.add.text(70,425,'',{fontFamily:'system-ui',fontSize:36,fontStyle:'bold',color:'#f4f8f7'});
     this.body=this.add.text(70,482,'',{fontFamily:'system-ui',fontSize:21,color:'#d0ddda',lineSpacing:9,wordWrap:{width:930}});
     this.hint=this.add.text(70,652,'Space 또는 클릭',{fontFamily:'system-ui',fontSize:16,color:'#91a5a0'});
     this.pages=[
       ['차갑고 조용하다','젖은 흙 냄새. 낯선 나무. 멀리서 흐르는 물소리.\n\n회사도, 옥상도 없다.\n\n“...나 죽은 건가?”'],
-      ['작은 정령','희미한 빛 하나가 안개 사이에서 다가온다.\n\n“이상해. 너한테서 한 가지 감정이 너무 크게 들려.”'],
-      [`${this.el.name}의 흔적`,`${this.el.pos}\n그리고 ${this.el.neg}\n\n“좋고 나쁜 게 아니야. 네가 가장 오래 붙들고 있던 마음이야.”`],
-      ['숲이 먼저 반응한다','검은 안개가 나무 사이로 번진다. 감정의 잔재가 짐승 같은 형태로 뭉친다.\n\n“설명은 나중이야. 지금은 그 마음을 밖으로 꺼내!”'],
+      ['모아',`희미한 빛 하나가 안개 사이에서 다가온다.\n\n${MOA.name}: “이상해. 너한테서 한 가지 감정이 너무 크게 들려.”\n주인공: “...말하는 반딧불이?”\n${MOA.name}: “정령이거든.”`],
+      [`${this.el.name}의 흔적`,`${this.el.pos}\n그리고 ${this.el.neg}\n\n${MOA.name}: “좋고 나쁜 게 아니야. 네가 가장 오래 붙들고 있던 마음이야.”`],
+      ['숲이 먼저 반응한다',`검은 안개가 나무 사이로 번진다. 감정의 잔재가 짐승 같은 형태로 뭉친다.\n\n${MOA.name}: “설명은 나중이야. 지금은 그 마음을 밖으로 꺼내!”`],
     ];
     this.render(); this.input.keyboard.on('keydown-SPACE',()=>this.next()); this.input.on('pointerdown',()=>this.next());
   }
@@ -167,9 +170,41 @@ class Battle extends Phaser.Scene {
   damage(e,n){ if(!e?.active)return;e.hp-=n;this.emotion=Math.min(100,this.emotion+8);if(e.hp>0)return;e.setActive(false).setVisible(false);e.body.enable=false;this.score++;this.emotion=Math.min(100,this.emotion+14);if(this.score>=7)this.win(); }
   hitPlayer(_p,e){ const t=this.time.now;if(t<this.invuln||!e.active||this.clear)return;this.invuln=t+650;let d=14;if(this.shield){const a=Math.min(this.shield,d);this.shield-=a;d-=a;}this.hp=Math.max(0,this.hp-d);this.cameras.main.shake(100,.007);if(!this.hp)this.lose(); }
   lose(){ this.physics.pause();this.clear=true;this.spawner?.remove(false);this.overlay('감정에 휩쓸렸다','Enter — 다시 감정을 마주한다');this.input.keyboard.once('keydown-ENTER',()=>this.scene.restart()); }
-  win(){ this.clear=true;this.spawner?.remove(false);this.overlay(`${this.el.name}의 감정을 처음 이해했다`,`${this.el.pos}\n그리고 ${this.el.neg}\n\n첫 원소는 직업이 아니다. 지금의 네가 가장 잘 아는 감정일 뿐이다.\n다른 감정은 여행하며 새롭게 이해할 수 있다.\n\nEnter — 다시 전투  ·  Esc — 프롤로그부터 다시`);this.input.keyboard.once('keydown-ENTER',()=>this.scene.restart());this.input.keyboard.once('keydown-ESC',()=>this.scene.start('Prologue')); }
+  win(){
+    this.clear=true;this.spawner?.remove(false);
+    this.overlay(`${this.el.name}의 감정을 처음 이해했다`,`${this.el.pos}\n그리고 ${this.el.neg}\n\n첫 원소는 직업이 아니다. 지금의 네가 가장 잘 아는 감정일 뿐이다.\n다른 감정은 여행하며 새롭게 이해할 수 있다.\n\nEnter — 모아를 따라 숲 밖으로  ·  Esc — 처음부터`);
+    this.input.keyboard.once('keydown-ENTER',()=>this.scene.start('Village'));this.input.keyboard.once('keydown-ESC',()=>this.scene.start('Prologue'));
+  }
   overlay(title,body){ this.add.rectangle(0,0,W,H,0x070813,.78).setOrigin(0).setDepth(80);this.add.text(640,285,title,{fontFamily:'system-ui',fontSize:38,fontStyle:'bold',color:'#fff'}).setOrigin(.5).setDepth(81);this.add.text(640,375,body,{fontFamily:'system-ui',fontSize:19,color:'#c6cad9',align:'center',lineSpacing:8}).setOrigin(.5).setDepth(81); }
   updateHud(t=this.time.now){ if(!this.hpText)return;this.hpText.setText(`HP ${Math.ceil(this.hp)} / 100${this.shield?`   보호막 ${Math.ceil(this.shield)}`:''}`);this.hpBar.displayWidth=252*this.hp/100;this.emBar.displayWidth=252*this.emotion/100;const cd=Math.max(0,this.cooldown-(t-this.lastSkill));this.skillText.setText(`${this.el.skill} [Q] ${cd?`${(cd/1000).toFixed(1)}s`:'READY'}\n감정 게이지 ${Math.floor(this.emotion)} / 100 · 소모 30`);this.quest.setText(`안개숲 · 첫 원소 각성\n오염된 감정의 잔재 정화 ${this.score} / 7`); }
 }
 
-new Phaser.Game({type:Phaser.AUTO,width:W,height:H,parent:'game',backgroundColor:'#090b18',physics:{default:'arcade',arcade:{debug:false}},scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH,width:W,height:H},render:{antialias:true},scene:[Prologue,Awakening,Battle]});
+class Village extends Phaser.Scene {
+  constructor(){ super('Village'); this.i=0; }
+  create(){
+    this.cameras.main.setBackgroundColor('#151b25'); this.drawVillage();
+    this.add.text(60,44,'루메르 변두리',{fontFamily:'system-ui',fontSize:18,fontStyle:'bold',color:'#d7c9a7'});
+    const spirit=this.add.circle(1030,205,17,MOA.color,.92).setStrokeStyle(3,0x7dcfc1,.8); this.tweens.add({targets:spirit,y:220,duration:900,yoyo:true,repeat:-1});
+    this.add.text(1030,250,MOA.name,{fontFamily:'system-ui',fontSize:15,fontStyle:'bold',color:'#d6eee9'}).setOrigin(.5);
+    this.title=this.add.text(70,420,'',{fontFamily:'system-ui',fontSize:36,fontStyle:'bold',color:'#fff7e8'});
+    this.body=this.add.text(70,482,'',{fontFamily:'system-ui',fontSize:21,color:'#e5dcc9',lineSpacing:9,wordWrap:{width:980}});
+    this.hint=this.add.text(70,652,'Space 또는 클릭',{fontFamily:'system-ui',fontSize:16,color:'#b3a98f'});
+    this.pages=[
+      ['숲 밖의 불빛',`${MOA.name}: “살아 있네. 내 예상이 맞았어.”\n주인공: “내가 죽을 수도 있다고 생각한 거야?”\n${MOA.name}: “...반반?”`],
+      ['루메르 변두리',`${MOA.name}: “저기가 이 근처에서 제일 가까운 인간 마을이야.”\n\n나무 울타리 너머로 작은 여관과 시장의 불빛이 보인다. 현실에서 보던 야근 불빛과는 전혀 다르다.`],
+      ['중요한 질문',`주인공: “혹시 여기 와이파이는 있어?”\n${MOA.name}: “와이... 파이?”\n${MOA.name}: “그건 어떤 원소인데?”`],
+      ['다음 목표','QUEST UPDATED — 안개숲의 잔향\n\n마을에서 정보를 모으고, 숲을 오염시키는 감정의 근원을 찾는다.\n그 끝에는 여러 감정이 뒤엉켜 태어난 존재가 기다리고 있다.\n\n첫 보스: 「뒤엉킨 잔향」'],
+    ];
+    this.render(); this.input.keyboard.on('keydown-SPACE',()=>this.next()); this.input.on('pointerdown',()=>this.next());
+  }
+  drawVillage(){
+    const g=this.add.graphics(); g.fillStyle(0x171d28).fillRect(0,0,W,H); g.fillStyle(0x29313a).fillRect(0,410,W,310);
+    for(let i=0;i<6;i++){ const x=120+i*190,y=170+(i%2)*45; g.fillStyle(0x3c332d).fillRect(x,y,135,145);g.fillStyle(0x6b5140).fillTriangle(x-14,y,x+68,y-70,x+149,y);g.fillStyle(0xffd889,.72).fillRect(x+24,y+58,28,34).fillRect(x+84,y+58,28,34); }
+    g.fillStyle(0x745d48).fillRect(0,395,W,18); g.fillStyle(0x3c4a3b).fillRect(0,0,W,110);
+  }
+  render(){ const p=this.pages[this.i];this.title.setText(p[0]);this.body.setText(p[1]);this.hint.setText(this.i===this.pages.length-1?'R — 데모 처음부터':'Space 또는 클릭'); }
+  next(){ if(this.i<this.pages.length-1){this.i++;this.render();} }
+  update(){ if(this.i===this.pages.length-1&&Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey('R'))) this.scene.start('Prologue'); }
+}
+
+new Phaser.Game({type:Phaser.AUTO,width:W,height:H,parent:'game',backgroundColor:'#090b18',physics:{default:'arcade',arcade:{debug:false}},scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH,width:W,height:H},render:{antialias:true},scene:[Prologue,Awakening,Battle,Village]});
