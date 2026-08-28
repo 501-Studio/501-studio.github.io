@@ -1,81 +1,81 @@
 :root {
-  font-family: Pretendard, "Noto Sans KR", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: #f5f7fb;
-  background: #04080d;
+  color-scheme: dark;
+  font-family: Pretendard, "Noto Sans KR", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #03070b;
+  color: #eaf4fb;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  color-scheme: dark;
 }
-
 * { box-sizing: border-box; }
-html, body, #game { width: 100%; height: 100%; margin: 0; }
-html, body { min-height: 100%; }
+html, body, #app { width: 100%; min-height: 100%; margin: 0; }
 body {
+  min-height: 100vh;
   overflow: hidden;
-  overscroll-behavior: none;
   background:
-    radial-gradient(circle at 50% -10%, rgba(59, 105, 142, .28), transparent 42rem),
-    linear-gradient(180deg, #07111c 0%, #03070b 76%);
+    radial-gradient(circle at 50% 18%, rgba(47, 116, 158, .20), transparent 38%),
+    linear-gradient(180deg, #07111b 0%, #020508 100%);
 }
-button, canvas { -webkit-tap-highlight-color: transparent; }
-
-.app-shell {
-  width: 100vw;
-  min-height: 100dvh;
+button, input { font: inherit; }
+#app {
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
   place-items: center;
-  gap: 10px;
-  padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+  padding: 12px;
 }
-
-.game-frame {
+.game-shell {
   position: relative;
-  width: min(1280px, calc(100vw - 24px));
+  width: min(100%, 1600px);
   aspect-ratio: 16 / 9;
-  min-height: 0;
-  overflow: hidden;
-  isolation: isolate;
-  background: #07111c;
-  border: 1px solid rgba(158, 197, 220, .28);
-  border-radius: 10px;
+  border: 1px solid rgba(125, 174, 200, .58);
+  background: #050b12;
   box-shadow:
-    0 0 0 1px rgba(255,255,255,.03) inset,
-    0 28px 90px rgba(0,0,0,.52),
-    0 0 80px rgba(44, 116, 147, .12);
+    0 34px 100px rgba(0, 0, 0, .72),
+    0 0 0 1px rgba(255, 255, 255, .025) inset,
+    0 0 52px rgba(42, 132, 181, .12);
+  overflow: hidden;
 }
-.game-frame::after {
+#game, #game canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+.game-shell::before,
+.game-shell::after {
   content: "";
   position: absolute;
-  inset: 0;
-  z-index: 5;
   pointer-events: none;
-  border-radius: inherit;
-  box-shadow: 0 0 70px rgba(0,0,0,.5) inset;
+  z-index: 2;
 }
-
-#game, #game canvas { width: 100%; height: 100%; display: block; }
-#game canvas { touch-action: none; image-rendering: auto; }
-
-.outside-help {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px 16px;
-  color: #718494;
-  font-size: 12px;
-  letter-spacing: .02em;
+.game-shell::before {
+  inset: 0;
+  border: 1px solid rgba(236, 215, 161, .12);
+  box-shadow: 0 0 35px rgba(0, 0, 0, .58) inset;
 }
-.outside-help span::before { content: "·"; margin-right: 6px; color: #3b93b9; }
-
-@media (max-width: 900px), (pointer: coarse) {
-  body { overflow: hidden; }
-  .app-shell { padding: 4px; gap: 4px; }
-  .game-frame { width: calc(100vw - 8px); border-radius: 6px; }
-  .outside-help { display: none; }
+.game-shell::after {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(99, 198, 238, .65), rgba(220, 180, 91, .58), transparent);
+  opacity: .75;
 }
-
-@media (orientation: portrait) and (max-width: 900px) {
-  .app-shell { align-content: center; }
-  .game-frame { width: 100vw; max-width: 100vw; border-left: 0; border-right: 0; border-radius: 0; }
+.build-label {
+  position: fixed;
+  left: 14px;
+  bottom: 9px;
+  z-index: 5;
+  color: rgba(171, 196, 209, .56);
+  font-size: 11px;
+  letter-spacing: .06em;
+  user-select: none;
+}
+@media (max-aspect-ratio: 16/10) {
+  #app { align-items: start; padding-top: 8px; }
+}
+@media (max-width: 760px) {
+  #app { padding: 0; }
+  .game-shell { width: 100vw; border-inline: 0; }
+  .build-label { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; }
 }

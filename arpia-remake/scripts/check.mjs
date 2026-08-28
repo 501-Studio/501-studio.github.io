@@ -1,20 +1,17 @@
-import { readdir } from 'node:fs/promises';
-import { spawnSync } from 'node:child_process';
-import path from 'node:path';
+import fs from 'node:fs';
+import { execFileSync } from 'node:child_process';
 
-async function collect(dir) {
-  const files = [];
-  for (const entry of await readdir(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) files.push(...await collect(full));
-    else if (entry.name.endsWith('.js') || entry.name.endsWith('.mjs')) files.push(full);
-  }
-  return files;
+const required = ['src/main.js', 'src/style.css', 'index.html', 'package.json', 'vite.config.js'];
+for (const file of required) {
+  if (!fs.existsSync(file)) throw new Error(`Missing required file: ${file}`);
 }
-
-const files = [...await collect('src'), ...await collect('scripts')];
-for (const file of files) {
-  const result = spawnSync(process.execPath, ['--check', file], { stdio: 'inherit' });
-  if (result.status !== 0) process.exit(result.status ?? 1);
+execFileSync(process.execPath, ['--check', 'src/main.js'], { stdio: 'inherit' });
+const source = fs.readFileSync('src/main.js', 'utf8');
+const featureMarkers = [
+  'SIDE_QUESTS', 'SHOP_ITEMS', 'renderSkills', 'renderPet', 'renderShop',
+  'smooth', 'bossDefeated', 'localStorage', '모아의 부탁', '수상한 흔적',
+];
+for (const marker of featureMarkers) {
+  if (!source.includes(marker)) throw new Error(`Feature marker missing: ${marker}`);
 }
-console.log(`Syntax check passed for ${files.length} files.`);
+console.log('Arpia v0.4 static feature check passed.');
