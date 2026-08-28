@@ -1,0 +1,81 @@
+:root {
+  color-scheme: dark;
+  font-family: Pretendard, "Noto Sans KR", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #03070b;
+  color: #eaf4fb;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+* { box-sizing: border-box; }
+html, body, #app { width: 100%; min-height: 100%; margin: 0; }
+body {
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(47, 116, 158, .20), transparent 38%),
+    linear-gradient(180deg, #07111b 0%, #020508 100%);
+}
+button, input { font: inherit; }
+#app {
+  display: grid;
+  place-items: center;
+  padding: 12px;
+}
+.game-shell {
+  position: relative;
+  width: min(100%, 1600px);
+  aspect-ratio: 16 / 9;
+  border: 1px solid rgba(125, 174, 200, .58);
+  background: #050b12;
+  box-shadow:
+    0 34px 100px rgba(0, 0, 0, .72),
+    0 0 0 1px rgba(255, 255, 255, .025) inset,
+    0 0 52px rgba(42, 132, 181, .12);
+  overflow: hidden;
+}
+#game, #game canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+.game-shell::before,
+.game-shell::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+}
+.game-shell::before {
+  inset: 0;
+  border: 1px solid rgba(236, 215, 161, .12);
+  box-shadow: 0 0 35px rgba(0, 0, 0, .58) inset;
+}
+.game-shell::after {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(99, 198, 238, .65), rgba(220, 180, 91, .58), transparent);
+  opacity: .75;
+}
+.build-label {
+  position: fixed;
+  left: 14px;
+  bottom: 9px;
+  z-index: 5;
+  color: rgba(171, 196, 209, .56);
+  font-size: 11px;
+  letter-spacing: .06em;
+  user-select: none;
+}
+@media (max-aspect-ratio: 16/10) {
+  #app { align-items: start; padding-top: 8px; }
+}
+@media (max-width: 760px) {
+  #app { padding: 0; }
+  .game-shell { width: 100vw; border-inline: 0; }
+  .build-label { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; }
+}
