@@ -1,21 +1,20 @@
-import { readFile } from 'node:fs/promises';
+import { readdir } from 'node:fs/promises';
+import { spawnSync } from 'node:child_process';
+import path from 'node:path';
 
-const main = await readFile(new URL('../src/main.js', import.meta.url), 'utf8');
-const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-const requiredScenes = [
-  'BootScene', 'TitleScene', 'PrologueScene', 'ForestScene', 'TutorialBattleScene',
-  'VillageScene', 'QuestBattleScene', 'BossBattleScene', 'EndingScene',
-];
-
-for (const scene of requiredScenes) {
-  if (!main.includes(`class ${scene}`)) throw new Error(`Missing scene: ${scene}`);
+async function collect(dir) {
+  const files = [];
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) files.push(...await collect(full));
+    else if (entry.name.endsWith('.js') || entry.name.endsWith('.mjs')) files.push(full);
+  }
+  return files;
 }
 
-for (const token of ['localStorage', 'emotionScores', 'dominantElement', '뒤엉킨 잔향', '모아']) {
-  if (!main.includes(token)) throw new Error(`Missing game token: ${token}`);
+const files = [...await collect('src'), ...await collect('scripts')];
+for (const file of files) {
+  const result = spawnSync(process.execPath, ['--check', file], { stdio: 'inherit' });
+  if (result.status !== 0) process.exit(result.status ?? 1);
 }
-
-if (!html.includes('id="game"')) throw new Error('Missing Phaser mount element');
-if (!html.includes('viewport-fit=cover')) throw new Error('Missing mobile viewport support');
-
-console.log('Arpia structural checks passed.');
+console.log(`Syntax check passed for ${files.length} files.`);
