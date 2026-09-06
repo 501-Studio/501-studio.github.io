@@ -1,0 +1,31 @@
+#connection-setup{width:min(720px,calc(100vw - 32px));max-height:90dvh;border:0;border-radius:20px;padding:0;color:#202733;background:#fff;box-shadow:0 24px 80px #0f172a30;overflow:auto}
+#connection-setup::backdrop{background:#17223555}
+#connection-setup .setup-head{display:flex;align-items:center;justify-content:space-between;padding:24px 28px 16px;gap:16px}
+#connection-setup h2{margin:0;font-size:22px;line-height:1.4;letter-spacing:-.6px}
+#connection-setup h3{font-size:18px;margin:0 0 10px;line-height:1.45}
+#connection-setup p{line-height:1.75;margin:10px 0;font-size:14px}
+#connection-setup button,#connection-setup input,#connection-setup select,#connection-setup textarea{font-family:inherit}
+#connection-setup .setup-tabs{display:flex;gap:5px;border-bottom:1px solid #e8ebef;padding:0 24px 14px}
+#connection-setup .setup-tab{flex:1;min-height:42px;padding:8px;border-radius:9px;font-size:13px;line-height:1.4;color:#586577;background:#f5f7fa}
+#connection-setup .setup-tab[aria-pressed=true]{color:#2464d8;background:#edf3ff;font-weight:650}
+#connection-setup .setup-body{padding:24px 28px 28px}
+#connection-setup .setup-callout{padding:14px 17px;background:#f5f7fa;border-radius:12px;font-size:14px;line-height:1.75;margin:16px 0}
+#connection-setup .setup-success{background:#f0f8f4;color:#256847}
+#connection-setup .setup-actions{display:flex;flex-wrap:wrap;gap:9px;margin:16px 0}
+#connection-setup .setup-actions .button{min-height:44px}
+#connection-setup .setup-step{padding:18px 0;border-top:1px solid #e8ebef}
+#connection-setup .setup-step h4{font-size:14px;margin:0 0 10px;font-weight:650}
+#connection-setup input:not([type=checkbox]),#connection-setup select,#connection-setup textarea{width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid #dbe1e9;border-radius:10px;font-size:14px;color:#202733;background:#fff;line-height:1.6}
+#connection-setup textarea{min-height:160px;resize:vertical;overflow-wrap:anywhere;white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px}
+#connection-setup label{display:block;font-size:13px;font-weight:550;margin:12px 0 7px}
+#connection-setup .setup-origin{display:block;padding:12px 14px;background:#f5f7fa;border-radius:9px;font-family:ui-monospace,Consolas,monospace;font-size:13px;overflow-wrap:anywhere;margin:8px 0}
+#connection-setup details{margin:14px 0}
+#connection-setup summary{cursor:pointer;color:#3669c2;font-size:14px;line-height:1.7}
+#connection-setup .setup-status{font-size:14px;line-height:1.65;overflow-wrap:anywhere;margin-top:12px}
+#connection-setup .setup-status[data-error=true]{color:#ad3434}
+#connection-setup .setup-note{color:#647285;font-size:12px}
+.setup-shortcut{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:14px;line-height:1.6;margin:0 0 18px}
+.connect-page .setup-shortcut{display:block;margin:24px 0 8px}
+.connect-page .setup-shortcut .button{min-height:44px}
+#connection-setup button:focus-visible,#connection-setup a:focus-visible,#connection-setup summary:focus-visible{outline:3px solid #82acf5;outline-offset:3px}
+@media(max-width:600px){#connection-setup{width:calc(100vw - 20px);max-height:94dvh;border-radius:16px}#connection-setup .setup-head{padding:20px 18px 14px}#connection-setup .setup-body{padding:20px 18px}#connection-setup .setup-tabs{padding:0 12px 12px;gap:4px}#connection-setup .setup-tab{font-size:12px;padding:7px 3px}#connection-setup h2{font-size:20px}#connection-setup .setup-actions>.button{flex:1 1 140px}.setup-shortcut{align-items:flex-start}.setup-shortcut>span{max-width:55%}}

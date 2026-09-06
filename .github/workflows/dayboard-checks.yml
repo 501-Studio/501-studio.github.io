@@ -2,7 +2,7 @@ name: Dayboard checks
 on:
   push:
     branches: [main]
-    paths: ['dayboard/**', '.github/workflows/dayboard-checks.yml', '.github/dayboard-smoke.cjs']
+    paths: ['dayboard/**', '.github/workflows/dayboard-checks.yml', '.github/dayboard-smoke.cjs', '.github/dayboard-setup-check.py']
   workflow_dispatch:
 permissions:
   contents: read
@@ -18,15 +18,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install pinned browser test dependency
+      - name: Install pinned browser test dependencies
         run: |
           npm install --prefix /tmp/dayboard-ci --no-save --no-audit --no-fund playwright@1.57.0
           node /tmp/dayboard-ci/node_modules/playwright/cli.js install --with-deps chromium
+          python3 -m pip install --disable-pip-version-check playwright==1.57.0
       - name: Domain, UI, mobile and deployed-site checks
         env:
           DAYBOARD_PLAYWRIGHT: /tmp/dayboard-ci/node_modules/playwright
           DAYBOARD_LIVE_URL: https://dayboard-501.onrender.com
         run: node .github/dayboard-smoke.cjs
+      - name: Connection and OAuth consent-state regression checks (mock external services)
+        run: python3 .github/dayboard-setup-check.py
       - name: Source and verification evidence
         if: always()
         uses: actions/upload-artifact@v4
