@@ -1,0 +1,39 @@
+name: Dayboard checks
+on:
+  push:
+    branches: [main]
+    paths: ['dayboard/**', '.github/workflows/dayboard-checks.yml', '.github/dayboard-smoke.cjs']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: dayboard-checks
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned browser test dependency
+        run: |
+          npm install --prefix /tmp/dayboard-ci --no-save --no-audit --no-fund playwright@1.57.0
+          node /tmp/dayboard-ci/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Domain, UI, mobile and deployed-site checks
+        env:
+          DAYBOARD_PLAYWRIGHT: /tmp/dayboard-ci/node_modules/playwright
+          DAYBOARD_LIVE_URL: https://dayboard-501.onrender.com
+        run: node .github/dayboard-smoke.cjs
+      - name: Source and verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dayboard-verification
+          path: |
+            dayboard/
+            dayboard-test-output/
+          retention-days: 1
+          compression-level: 9
