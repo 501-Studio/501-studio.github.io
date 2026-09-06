@@ -2,14 +2,16 @@
 @media(min-width:781px){
  .shell:has(.dashboard-grid) .content{padding-top:24px}
  .shell:has(.dashboard-grid) .page-heading{margin-bottom:18px}
+ .shell:has(.dashboard-grid) .page-heading .eyeline{display:none}
  .dash-quick{margin-bottom:16px}
  .dash-panel .panel-head{padding:16px 18px 13px}
  .dash-event{min-height:64px;padding:11px 18px}
- .dash-project{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;padding:12px 0}
+ .dash-project{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;padding:9px 0}
  .dash-project-top,.dash-progress-line{grid-column:1/-1}
- .dash-progress-line{margin:3px 0}
+ .dash-progress-line{margin:2px 0}
+ .dash-progress-line>span{line-height:1}
  .dash-next{grid-column:1;min-width:0}
- .dash-project-foot{grid-column:2;align-self:center;margin:0;font-size:10px;white-space:nowrap}
+ .dash-project-foot{grid-column:2;align-self:center;margin:0;font-size:11px;white-space:nowrap}
  .dash-next>button{line-height:1.65}
  .dash-task{min-height:66px;padding-top:10px;padding-bottom:10px}
  .dash-deadline{padding:14px 0}
