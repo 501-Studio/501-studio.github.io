@@ -1,13 +1,13 @@
 name: Dayboard checks
 on:
   push:
-    branches: [main]
-    paths: ['dayboard/**', '.github/workflows/dayboard-checks.yml', '.github/dayboard-smoke.cjs', '.github/dayboard-setup-check.py']
+    branches: [main, feat/dayboard-dashboard-v2]
+    paths: ['dayboard/**', 'infrastructure/dayboard-dashboard-v2.sql', '.github/**']
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: dayboard-checks
+  group: dayboard-checks-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   verify:
@@ -23,13 +23,17 @@ jobs:
           npm install --prefix /tmp/dayboard-ci --no-save --no-audit --no-fund playwright@1.57.0
           node /tmp/dayboard-ci/node_modules/playwright/cli.js install --with-deps chromium
           python3 -m pip install --disable-pip-version-check playwright==1.57.0
-      - name: Domain, UI, mobile and deployed-site checks
+      - name: Domain, original workflows and deployed-site checks
         env:
           DAYBOARD_PLAYWRIGHT: /tmp/dayboard-ci/node_modules/playwright
           DAYBOARD_LIVE_URL: https://dayboard-501.onrender.com
-        run: node .github/dayboard-smoke.cjs
-      - name: Connection and OAuth consent-state regression checks (mock external services)
+        run: |
+          node .github/dayboard-v2-domain.mjs
+          node .github/dayboard-v2-legacy.cjs
+      - name: Connection and consent regression (mock external services)
         run: python3 .github/dayboard-setup-check.py
+      - name: Dashboard desktop, mobile and cloud-state UI regression (mock backend)
+        run: python3 .github/dayboard-v2-ui.py
       - name: Source and verification evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -37,6 +41,7 @@ jobs:
           name: dayboard-verification
           path: |
             dayboard/
+            infrastructure/
             dayboard-test-output/
           retention-days: 1
           compression-level: 9
