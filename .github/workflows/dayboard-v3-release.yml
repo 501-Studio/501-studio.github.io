@@ -1,56 +1,51 @@
-name: Dayboard v3 release
+name: Dayboard release verification
 on:
   push:
-    branches: [main, feat/dayboard-v3-adventure, fix/dayboard-parent-validation]
+    branches: [main, feat/dayboard-chronicle-v4, feat/dayboard-v3-adventure, fix/dayboard-parent-validation]
     paths: ['dayboard/**', 'infrastructure/**', 'tests/**', '.github/workflows/dayboard-v3-release.yml']
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: dayboard-v3-${{ github.ref }}
+  group: dayboard-release-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   release-check:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify modules, hierarchy recovery and preserved priority rules
+      - name: Verify committed modules, hierarchy, scheduling and Chronicle rules
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import subprocess
-          for source in Path('dayboard').glob('*.js'):
-              subprocess.run(['node','--input-type=module','--check'],input=source.read_text(),text=True,check=True)
-          PY
+          for source in dayboard/*.js; do node --input-type=module --check < "$source"; done
           node tests/parent-integrity.mjs
           node .github/dayboard-v2-domain.mjs
-      - name: Install pinned browser verifier
+          node tests/chronicle-domain.mjs
+          node tests/chronicle-flavor.mjs
+      - name: Install existing pinned browser verifier
         run: |
           npm install --prefix /tmp/dayboard-ci --no-save --no-audit --no-fund playwright@1.57.0
           node /tmp/dayboard-ci/node_modules/playwright/cli.js install --with-deps chromium
-      - name: Verify corrupted-state recovery and save error messages
-        env:
-          DAYBOARD_PLAYWRIGHT: /tmp/dayboard-ci/node_modules/playwright
-        run: node tests/parent-ui.cjs
-      - name: Verify routine, statistics, adventure and responsive workflows
+      - name: Verify save recovery, routines, completion styling and original adventure
         env:
           DAYBOARD_PLAYWRIGHT: /tmp/dayboard-ci/node_modules/playwright
           DAYBOARD_LIVE_URL: https://dayboard-501.onrender.com
           VERIFY_LIVE: ${{ github.ref == 'refs/heads/main' && '1' || '0' }}
-        run: node tests/journey-release.cjs
-      - name: Verify unmistakable completed-state visuals
+        run: |
+          node tests/parent-ui.cjs
+          node tests/journey-release.cjs
+          node tests/completion-visual.cjs
+          node tests/adventure-v4.cjs
+      - name: Verify Chronicle interactions, responsive layouts and deployed route
         env:
           DAYBOARD_PLAYWRIGHT: /tmp/dayboard-ci/node_modules/playwright
-        run: node tests/completion-visual.cjs
-      - name: Verify expanded adventure RPG hub
-        env:
-          DAYBOARD_PLAYWRIGHT: /tmp/dayboard-ci/node_modules/playwright
-        run: node tests/adventure-v4.cjs
-      - name: Package source and evidence
+          DAYBOARD_LIVE_URL: https://dayboard-501.onrender.com
+          VERIFY_LIVE: ${{ github.ref == 'refs/heads/main' && '1' || '0' }}
+        run: node tests/chronicle-browser.cjs
+      - name: Package committed source and evidence
         if: always()
         run: |
           mkdir -p dayboard-test-output
@@ -59,7 +54,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: dayboard-v3-release
+          name: dayboard-release
           path: |
             dayboard-release-source.zip
             dayboard-test-output/
