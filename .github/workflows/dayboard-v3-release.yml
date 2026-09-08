@@ -42,6 +42,10 @@ jobs:
           DAYBOARD_LIVE_URL: https://dayboard-501.onrender.com
           VERIFY_LIVE: ${{ github.ref == 'refs/heads/main' && '1' || '0' }}
         run: node tests/journey-release.cjs
+      - name: Verify unmistakable completed-state visuals
+        env:
+          DAYBOARD_PLAYWRIGHT: /tmp/dayboard-ci/node_modules/playwright
+        run: node tests/completion-visual.cjs
       - name: Package source and evidence
         if: always()
         run: |
