@@ -1,0 +1,137 @@
+/* Dayboard 3.0.2 — unmistakable completed-state visuals.
+   Completion remains reversible; these styles only mirror the stored state. */
+
+/* Keep the completion control prominent while muting the finished content. */
+.task-row.done,
+.kanban-column[data-drop-status="done"] .kanban-card,
+.kanban-card:has(.check.done),
+.dash-task:has(.check.done),
+.j-cal-entry.j-finished,
+.j-completion-sibling:has(.check.done) > .dash-event,
+.j-time-wrap.finished,
+.j-time-wrap:has(.check.done) {
+  --complete-text: #7f8b99;
+  --complete-line: #8c98a6;
+  --complete-surface: #f3f5f7;
+  --complete-border: #b7c0ca;
+}
+
+/* Titles: the fastest visual cue that a task is finished. */
+.task-row.done .title-button,
+.kanban-column[data-drop-status="done"] .kanban-card .title-button,
+.kanban-card:has(.check.done) .title-button,
+.dash-task:has(.check.done) .title-button,
+.j-cal-entry.j-finished .j-cal-title span,
+.j-completion-sibling:has(.check.done) .dash-event-title,
+.dash-event.is-finished .dash-event-title,
+.j-time-wrap.finished .block-title,
+.j-time-wrap:has(.check.done) .block-title {
+  color: var(--complete-text, #7f8b99) !important;
+  text-decoration-line: line-through;
+  text-decoration-thickness: 1.6px;
+  text-decoration-color: var(--complete-line, #8c98a6);
+  text-decoration-skip-ink: none;
+}
+
+/* Supporting text becomes quieter, but remains readable for review/undo. */
+.task-row.done .meta,
+.kanban-column[data-drop-status="done"] .kanban-card .meta,
+.kanban-card:has(.check.done) .meta,
+.dash-task:has(.check.done) .meta,
+.j-cal-entry.j-finished .j-cal-title small,
+.j-completion-sibling:has(.check.done) .dash-event .meta,
+.dash-event.is-finished .meta,
+.j-time-wrap.finished .block-time,
+.j-time-wrap:has(.check.done) .block-time {
+  color: #9aa4af !important;
+}
+
+/* Cards/rows: completed items should look settled, not merely checked. */
+.task-row.done,
+.kanban-column[data-drop-status="done"] .kanban-card,
+.kanban-card:has(.check.done),
+.dash-task:has(.check.done),
+.j-cal-entry.j-finished {
+  background: var(--complete-surface, #f3f5f7) !important;
+  border-color: #e1e5e9 !important;
+}
+
+.task-row.done,
+.kanban-column[data-drop-status="done"] .kanban-card,
+.kanban-card:has(.check.done),
+.dash-task:has(.check.done) {
+  opacity: .78;
+}
+
+/* Keep the check itself crisp even when its parent row is visually subdued. */
+.task-row.done .check,
+.kanban-column[data-drop-status="done"] .check,
+.kanban-card:has(.check.done) .check,
+.dash-task:has(.check.done) .check,
+.j-cal-entry.j-finished .check,
+.j-time-wrap:has(.check.done) .check,
+.j-time-wrap.finished .check {
+  opacity: 1 !important;
+}
+
+/* Today dashboard — compact agenda. */
+.j-completion-sibling:has(.check.done) > .dash-event,
+.dash-event.is-finished {
+  background: var(--complete-surface, #f3f5f7) !important;
+  border-left-color: var(--complete-border, #b7c0ca) !important;
+  color: var(--complete-text, #7f8b99) !important;
+}
+
+.j-completion-sibling:has(.check.done) > .dash-event .dash-event-mark,
+.dash-event.is-finished .dash-event-mark {
+  background: var(--complete-border, #b7c0ca) !important;
+}
+
+/* Today dashboard — detailed timeline. Handles normal tasks, counted routines,
+   and Dayboard-local completion on standalone/Google blocks. */
+.j-time-wrap.finished,
+.j-time-wrap:has(.check.done) {
+  background: var(--complete-surface, #f3f5f7) !important;
+  border-left-color: var(--complete-border, #b7c0ca) !important;
+  color: var(--complete-text, #7f8b99) !important;
+  box-shadow: inset 0 0 0 1px #e2e6ea !important;
+}
+
+.j-time-wrap.finished .j-time-title,
+.j-time-wrap:has(.check.done) .j-time-title {
+  background: linear-gradient(135deg, rgba(246,248,250,.94), rgba(239,242,245,.94));
+}
+
+/* Week/month v3 cards already carry j-finished; make the state unmistakable. */
+.j-cal-entry.j-finished {
+  border-left-color: var(--complete-border, #b7c0ca) !important;
+  box-shadow: none !important;
+}
+
+.j-cal-entry.j-finished .j-cal-title span {
+  opacity: .72;
+}
+
+/* The completed kanban column should read as an archive of finished work. */
+.kanban-column[data-drop-status="done"] .kanban-card {
+  border-top-color: #b7c0ca !important;
+}
+
+/* Accessible focus must remain visible on muted completed items. */
+.task-row.done :focus-visible,
+.kanban-card:has(.check.done) :focus-visible,
+.dash-task:has(.check.done) :focus-visible,
+.j-cal-entry.j-finished :focus-visible,
+.j-time-wrap:has(.check.done) :focus-visible {
+  outline-color: #6674d8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .task-row.done,
+  .kanban-card:has(.check.done),
+  .dash-task:has(.check.done),
+  .j-cal-entry.j-finished,
+  .j-time-wrap:has(.check.done) {
+    transition: none !important;
+  }
+}
