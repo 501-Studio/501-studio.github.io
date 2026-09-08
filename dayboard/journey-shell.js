@@ -1,3 +1,5 @@
+import {VERSION} from './core.js';
+import {readableError} from './errors.js';
 import {shell as baseShell,icon,NAV} from './views.js';
 import {effectiveItems,day,spec,repeatStatus} from './journey-domain.js';
 import {calendarV3,statsView,adventureView,ji,completion} from './journey-view.js';
@@ -19,7 +21,15 @@ export function shell(ctx){
  root.querySelector('.nav').innerHTML=navItems.map(navItem).join('');
  root.querySelector('.mobile-nav').innerHTML=[...NAV.slice(0,4),additions[0],['more','더보기','more']].map(navItem).join('');
  root.querySelector('.topbar-right').insertAdjacentHTML('afterbegin',`<button type="button" class="iconbutton j-top-more" data-action="v3-more" aria-label="통계 · 모험 · 설정">${icon('more')}</button>`);
- root.querySelector('.shell').dataset.version='3.0.0';
+ root.querySelector('.shell').dataset.version=VERSION;
+ if(ctx.store.saveError&&!ctx.store.error){
+  const notice=document.createElement('div');notice.className='notice warning save-error';notice.setAttribute('role','status');
+  const text=document.createElement('span');text.textContent='변경이 저장되지 않았습니다. '+readableError(ctx.store.saveError);
+  const dismiss=document.createElement('button');dismiss.type='button';dismiss.className='button';dismiss.dataset.action='dismiss-save-error';dismiss.textContent='확인';
+  notice.append(text,dismiss);content.prepend(notice);
+  const status=root.querySelector('.sync');if(status)status.lastChild.textContent='변경 미저장';
+ }
+
  if(ctx.view==='today'){
   const completed=rawState.items.filter(i=>i.kind!=='project'&&!rawState.items.some(c=>c.parentId===i.id)&&(spec(i)?repeatStatus(i,ctx.date).eligible&&repeatStatus(i,ctx.date).done:i.status==='done'&&i.completedAt&&day(i.completedAt)===ctx.date));
   if(completed.length){const a=document.createElement('details');a.className='j-completed-strip';a.innerHTML=`<summary>오늘 완료한 업무 ${completed.length}개 · 완료 취소</summary>`;for(const i of completed){const line=document.createElement('div');line.className='j-completed-line';line.innerHTML=completion(i,ctx.date);const name=document.createElement('span');name.textContent=i.title;line.append(name);a.append(line);}content.append(a);}

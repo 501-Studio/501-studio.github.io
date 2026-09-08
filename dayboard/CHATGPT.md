@@ -71,3 +71,6 @@ Never alter an existing pin's metadata or unlock/move a fixed/Google block as pa
 ChatGPT's Calendar connection is separate from browser OAuth and never supplies the app's credentials. For requested Google reads use its connector. Before external writes read the current event and availability, show changes and obtain approval; preserve IDs/timezone/all-day semantics and report partial failures. A Google write does not automatically update Dayboard, and Dayboard proposals do not automatically write Google. Verify both sides or use the app's import/approval flow before claiming synchronization.
 
 No global conversation watcher or paid model API is installed. New chats may require selecting @Supabase. Free-provider quota/inactivity limits still apply. The app does not authorize billing upgrades or credential resets.
+
+## Hierarchy integrity (3.0.1)
+Never write workspace state directly. Use the existing propose/decide approval APIs. When adding under a task, explicitly use kind=subtask; kind=task may only have a project parent (or no parent). Validate the full batch, including surviving children and block references. INVALID_PARENT is a rejected data change, not a lost connection. Never silence it by weakening the validator, deleting records or resetting keys.
