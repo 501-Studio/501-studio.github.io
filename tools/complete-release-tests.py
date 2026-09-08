@@ -3,6 +3,7 @@ from pathlib import Path
 import subprocess
 root=Path(__file__).resolve().parents[1]
 p=root/'dayboard/journey-stats.js';p.write_text(p.read_text().replace('label:d:String','label:d=>String'))
+p=root/'dayboard/app.js';p.write_text(p.read_text().replace('if(f)setTimeout(()=>f.focus(),30);','if(f)f.focus({preventScroll:true});'))
 p=root/'tests/journey-release.cjs'
 s=p.read_text().replace('.dash-grid','.dashboard-grid').replace("errors.push(e.message)","errors.push(e.stack||e.message)")
 s=s.replace("modal.locator(`.j-day-choice`).filter({has:modal.locator(`input[value=\"${n}\"]`)})", "modal.locator(`.j-day-choice:has(input[value=\"${n}\"])`)")
