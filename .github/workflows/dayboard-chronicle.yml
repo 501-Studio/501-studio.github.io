@@ -1,0 +1,66 @@
+name: Dayboard Chronicle verification
+on:
+  push:
+    branches: [feat/dayboard-chronicle-v4]
+    paths: ['dayboard/**', 'tests/**', 'scripts/integrate-chronicle.mjs', '.github/workflows/dayboard-chronicle.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: dayboard-chronicle-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Integrate additive source modules on feature branch
+        run: node scripts/integrate-chronicle.mjs
+      - name: Validate modules and data semantics
+        run: |
+          for f in dayboard/*.js; do node --input-type=module --check < "$f"; done
+          node tests/parent-integrity.mjs
+          node .github/dayboard-v2-domain.mjs
+          node tests/chronicle-domain.mjs
+      - name: Install existing pinned browser verifier
+        run: |
+          npm install --prefix /tmp/dayboard-ci --no-save --no-audit --no-fund playwright@1.57.0
+          node /tmp/dayboard-ci/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Existing completion, integrity and adventure workflows
+        env:
+          DAYBOARD_PLAYWRIGHT: /tmp/dayboard-ci/node_modules/playwright
+          VERIFY_LIVE: '0'
+        run: |
+          node tests/parent-ui.cjs
+          node tests/journey-release.cjs
+          node tests/completion-visual.cjs
+          node tests/adventure-v4.cjs
+      - name: Chronicle chapter, shop, title and mobile workflows
+        env:
+          DAYBOARD_PLAYWRIGHT: /tmp/dayboard-ci/node_modules/playwright
+        run: node tests/chronicle-browser.cjs
+      - name: Commit verified integration on feature branch only
+        if: success() && github.ref == 'refs/heads/feat/dayboard-chronicle-v4'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add dayboard tests
+          git diff --cached --quiet || (git commit -m 'Integrate verified Chronicle modules without changing user data' && git push origin HEAD:feat/dayboard-chronicle-v4)
+      - name: Package source and browser evidence
+        if: always()
+        run: |
+          mkdir -p dayboard-test-output
+          git rev-parse HEAD > dayboard-test-output/source-commit.txt
+          zip -qr dayboard-chronicle-source.zip dayboard infrastructure scripts tests .github
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dayboard-chronicle
+          path: |
+            dayboard-chronicle-source.zip
+            dayboard-test-output/
+          retention-days: 1
