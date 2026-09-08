@@ -2,7 +2,8 @@ import {VERSION} from './core.js';
 import {readableError} from './errors.js';
 import {shell as baseShell,icon,NAV} from './views.js';
 import {effectiveItems,day,spec,repeatStatus} from './journey-domain.js';
-import {calendarV3,statsView,adventureView,ji,completion} from './journey-view.js';
+import {calendarV3,statsView,ji,completion} from './journey-view.js';
+import {adventureView} from './journey-adventure-v4.js';
 const additions=[['stats','통계와 회고','stats'],['adventure','모험','compass']];
 export function shell(ctx){
  const rawState=ctx.state,display={...rawState,items:effectiveItems(rawState.items,ctx.date)};
@@ -29,7 +30,6 @@ export function shell(ctx){
   notice.append(text,dismiss);content.prepend(notice);
   const status=root.querySelector('.sync');if(status)status.lastChild.textContent='변경 미저장';
  }
-
  if(ctx.view==='today'){
   const completed=rawState.items.filter(i=>i.kind!=='project'&&!rawState.items.some(c=>c.parentId===i.id)&&(spec(i)?repeatStatus(i,ctx.date).eligible&&repeatStatus(i,ctx.date).done:i.status==='done'&&i.completedAt&&day(i.completedAt)===ctx.date));
   if(completed.length){const a=document.createElement('details');a.className='j-completed-strip';a.innerHTML=`<summary>오늘 완료한 업무 ${completed.length}개 · 완료 취소</summary>`;for(const i of completed){const line=document.createElement('div');line.className='j-completed-line';line.innerHTML=completion(i,ctx.date);const name=document.createElement('span');name.textContent=i.title;line.append(name);a.append(line);}content.append(a);}
