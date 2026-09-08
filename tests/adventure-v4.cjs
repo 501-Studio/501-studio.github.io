@@ -9,8 +9,8 @@ async function openDemo(viewport){const {chromium}=require(process.env.DAYBOARD_
   await page.locator('.sidebar [data-action=nav][data-id=adventure]').click();await page.locator('.j-adventure').waitFor();
   assert.equal(await page.locator('.j-v4-stat').count(),4,'four adventure stats');
   assert.equal(await page.locator('.j-v4-event-grid article').count(),2,'two deterministic weekly events');
-  assert.equal(await page.locator('.j-v4-milestone-grid article').count(),2,'next zone and achievement milestones');
-  assert(await page.locator('.j-v4-quest-preview').isVisible(),'quest preview visible');
+  assert(await page.locator('.cr-region-preview').isVisible(),'new continental milestones visible');
+  assert(await page.locator('.cr-next-story').isVisible(),'quest preview visible');
   assert(await page.locator('.j-v4-log').isVisible(),'adventure log visible');
   assert(await page.locator('.j-v4-rank').isVisible(),'rank visible');
   await page.locator('.j-traveler').waitFor();assert(await page.locator('.j-traveler').evaluate(el=>el.complete&&el.naturalWidth>0),'hero art loaded');
@@ -21,7 +21,7 @@ async function openDemo(viewport){const {chromium}=require(process.env.DAYBOARD_
 
   const m=await openDemo({width:390,height:844});const mp=m.page;
   await mp.locator('[data-action=v3-more]').first().click();await mp.locator('[data-action=v3-open-view][data-id=adventure]').click();await mp.locator('.j-adventure').waitFor();
-  assert(await mp.locator('.j-v4-quest-preview').isVisible(),'mobile quest preview visible');
+  assert(await mp.locator('.cr-next-story').isVisible(),'mobile quest preview visible');
   assert.equal(await mp.locator('.j-v4-stat').count(),4);
   assert(await mp.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'no horizontal overflow');
   await mp.screenshot({path:path.join(out,'adventure-v4-mobile.png'),fullPage:true});

@@ -3,7 +3,7 @@ import {readableError} from './errors.js';
 import {shell as baseShell,icon,NAV} from './views.js';
 import {effectiveItems,day,spec,repeatStatus} from './journey-domain.js';
 import {calendarV3,statsView,ji,completion} from './journey-view.js';
-import {adventureView} from './journey-adventure-v4.js';
+import {chronicleView as adventureView} from './chronicle-view.js';
 const additions=[['stats','통계와 회고','stats'],['adventure','모험','compass']];
 export function shell(ctx){
  const rawState=ctx.state,display={...rawState,items:effectiveItems(rawState.items,ctx.date)};
