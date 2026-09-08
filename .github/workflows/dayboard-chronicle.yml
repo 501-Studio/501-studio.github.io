@@ -2,7 +2,7 @@ name: Dayboard Chronicle verification
 on:
   push:
     branches: [feat/dayboard-chronicle-v4]
-    paths: ['dayboard/**', 'tests/**', 'scripts/integrate-chronicle.mjs', '.github/workflows/dayboard-chronicle.yml']
+    paths: ['dayboard/**', 'tests/**', 'scripts/**', '.github/workflows/dayboard-chronicle.yml']
   workflow_dispatch:
 permissions:
   contents: write
@@ -19,7 +19,9 @@ jobs:
         with:
           node-version: '22'
       - name: Integrate additive source modules on feature branch
-        run: node scripts/integrate-chronicle.mjs
+        run: |
+          node scripts/integrate-chronicle.mjs
+          node scripts/polish-chronicle.mjs
       - name: Validate modules and data semantics
         run: |
           for f in dayboard/*.js; do node --input-type=module --check < "$f"; done
@@ -49,7 +51,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add dayboard tests
-          git diff --cached --quiet || (git commit -m 'Integrate verified Chronicle modules without changing user data' && git push origin HEAD:feat/dayboard-chronicle-v4)
+          git diff --cached --quiet || (git commit -m 'Integrate verified Chronicle polish' && git push origin HEAD:feat/dayboard-chronicle-v4)
       - name: Package source and browser evidence
         if: always()
         run: |
