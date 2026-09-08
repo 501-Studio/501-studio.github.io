@@ -16,7 +16,7 @@ export function shell(ctx){
   const section=document.createElement('main');section.className='j-view-main';
   section.innerHTML=ctx.view==='stats'?statsView({...ctx,rawState}):ctx.view==='adventure'?adventureView({...ctx,rawState}):calendarV3({...ctx,rawState});content.append(section);
  }
- if(special){const h=root.querySelector('.page-heading');h.querySelector('.eyeline').remove();h.querySelector('h1').textContent=ctx.view==='stats'?'통계와 회고':'하루의 숲';h.querySelector('p').textContent=ctx.view==='stats'?'기록을 읽고, 나에게 맞는 내일을 설계하세요.':'나의 작은 실행이 모험의 다음 장을 엽니다.';h.querySelector('.date-controls')?.remove();}
+ if(special){const h=root.querySelector('.page-heading');h.querySelector('.eyeline').remove();h.querySelector('h1').textContent=ctx.view==='stats'?'통계와 회고':'열두 대륙의 서사';h.querySelector('p').textContent=ctx.view==='stats'?'기록을 읽고, 나에게 맞는 내일을 설계하세요.':'나의 일상이 이야기를 열고, 선택이 여정의 의미를 만듭니다.';h.querySelector('.date-controls')?.remove();}
  const navItems=[...NAV.filter(x=>x[0]!=='settings'),...additions,NAV.find(x=>x[0]==='settings')];
  function navItem([id,title,ic]){return `<button type="button" data-action="${id==='more'?'v3-more':'nav'}" data-id="${id}" class="${ctx.view===id?'active':''}" aria-current="${ctx.view===id?'page':'false'}">${['stats','compass'].includes(ic)?ji(ic):icon(ic)}<span>${title}</span></button>`;}
  root.querySelector('.nav').innerHTML=navItems.map(navItem).join('');

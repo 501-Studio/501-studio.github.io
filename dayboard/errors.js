@@ -1,5 +1,21 @@
 // Keep validation failures separate from network/session failures.
 const COPY = {
+  CHRONICLE_VERSION: "모험 데이터 버전을 확인해 주세요. 새로고침 후 다시 시도하세요.",
+  CHRONICLE_ORDER: "이야기는 앞 장부터 진행합니다. 최신 기록을 불러와 주세요.",
+  CHRONICLE_LOCKED: "이야기 해금에 필요한 누적 예상시간이 아직 부족합니다.",
+  CHRONICLE_HISTORY_IMMUTABLE: "이미 저장한 이야기와 획득 기록은 덮어쓰거나 삭제할 수 없습니다.",
+  CHRONICLE_TIME: "모험 기록 시각이 올바르지 않습니다.",
+  CHRONICLE_RECORDS: "모험 기록 형식이나 보관 개수를 확인해 주세요.",
+  CHRONICLE_DUPLICATE: "이미 보관한 모험 기록입니다.",
+  CHRONICLE_MISSION_LOCKED: "이 의뢰에 필요한 이야기와 실행 기록을 먼저 채워 주세요.",
+  CHRONICLE_TITLE_LOCKED: "칭호를 얻기 위한 조건이 아직 부족합니다.",
+  CHRONICLE_TITLE_OWNERSHIP: "먼저 획득한 칭호만 장착할 수 있습니다.",
+  CHRONICLE_TALENT_POINTS: "이야기 4장마다 얻는 숙련 포인트가 필요합니다.",
+  CHRONICLE_TALENT_ORDER: "이 길의 앞 단계부터 습득해 주세요.",
+  CHRONICLE_TALENT_HISTORY: "이미 습득한 성장 기록은 보존됩니다.",
+  CHRONICLE_CAMP_LOCKED: "아직 열리지 않은 대륙입니다. 앞 이야기와 시간 조건을 확인해 주세요.",
+  CHRONICLE_SHOP_LOCKED: "이 지역 상품은 앞 이야기와 누적 예상시간 조건을 채우면 열립니다.",
+
   INVALID_PARENT: '업무의 상위 연결이 맞지 않습니다. 업무는 프로젝트에, 세부 업무는 상위 업무에 연결해 주세요. 최신 일정을 불러온 뒤 확인하세요.',
   SUBTASK_REQUIRES_PARENT: '세부 업무에는 상위 업무를 선택해야 합니다.',
   PROJECT_CANNOT_HAVE_PARENT: '프로젝트에는 상위 업무를 지정할 수 없습니다.',

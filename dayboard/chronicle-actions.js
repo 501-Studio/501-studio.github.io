@@ -1,9 +1,11 @@
+import {CATALOG,gameOperation} from './journey-domain.js';
 import {chronicleUI} from './chronicle-view.js';
 import {CHAPTERS,REALMS} from './chronicle-content.js';
 import {chronicleOperation,journeyProgress} from './chronicle-domain.js';
 export function createChronicleController({store,getState,render,notify}){
  function locate(id){requestAnimationFrame(()=>document.getElementById(id)?.scrollIntoView({behavior:'auto',block:'start'}));}
  async function handle(action,id=''){
+  if((action==='v3-buy'||action==='v3-equip')&&(id==='default'||CATALOG.find(i=>i.id===id)?.slot==='title')){const ops=gameOperation(getState(),action.slice(3),id);if(getState().settings.chronicle?.equippedTitle&&getState().settings.chronicle.equippedTitle!=='none')ops.push(...chronicleOperation(getState(),'title','none'));await store.commit(ops,{remember:false});chronicleUI.preview=null;notify(action==='v3-buy'?'교환하고 칭호를 장착했습니다.':'꾸미기와 칭호를 적용했습니다.');return true;}
   if(action==='v3-adventure-tab'){chronicleUI.tab=id==='journey'?'overview':id;chronicleUI.preview=null;return false;}
   if(!action.startsWith('cr-'))return false;
   if(action==='cr-tab'){if(!['overview','story','atlas','quests','shop','wardrobe','titles','codex','mastery','rewards'].includes(id))return true;chronicleUI.tab=id;chronicleUI.preview=null;render();locate('cr-main');return true;}
