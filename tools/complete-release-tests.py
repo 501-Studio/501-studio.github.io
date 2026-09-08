@@ -10,6 +10,8 @@ s=s.replace("modal.locator(`.j-day-choice`).filter({has:modal.locator(`input[val
 s=s.replace("getComputedStyle(el).animationPlayState),'paused'", "getComputedStyle(el).animationName),'none'")
 s=s.replace("snapshot.state=j.enrichDemo(snapshot.state);snapshot.workspaceId", "snapshot.state=j.enrichDemo(snapshot.state);snapshot.state.settings.adventure={...j.DEFAULT_GAME,name:'검증용 여행자'};snapshot.workspaceId")
 s=s.replace('assert(await page.locator(`[data-action=v3-claim][data-id="${id}"]`).isDisabled())','await wait(()=>page.locator(`[data-action=v3-claim][data-id="${id}"]`).isDisabled())')
+s=s.replace("if(width>800)await nav(view)","if(await page.locator('.sidebar').isVisible())await nav(view)")
+s=s.replace("async function shot(name){await page.screenshot", "async function shot(name){await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot")
 if 'module-probes.json' not in s:
  s=s.replace("fs.writeFileSync(path.join(out,'failure-dom.txt'),await page.locator('body').innerText());", "fs.writeFileSync(path.join(out,'failure-dom.txt'),await page.locator('body').innerText());fs.writeFileSync(path.join(out,'module-probes.json'),JSON.stringify(await page.evaluate(async()=>{const result={};for(const f of ['core','journey-shell','journey-actions','app'])try{await import('/'+f+'.js');result[f]='loaded';}catch(e){result[f]=e.stack||e.message;}return result;}),null,2));")
 p.write_text(s)
