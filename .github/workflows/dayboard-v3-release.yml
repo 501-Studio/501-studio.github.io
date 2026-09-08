@@ -1,0 +1,47 @@
+name: Dayboard v3 release
+on:
+  push:
+    branches: [main, feat/dayboard-v3-adventure]
+    paths: ['dayboard/**', 'infrastructure/**', 'tests/**', '.github/workflows/dayboard-v3-release.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: dayboard-v3-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  release-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript syntax preflight
+        run: for f in dayboard/*.js; do node --check "$f"; done
+      - name: Install browser verifier
+        if: ${{ hashFiles('tests/journey-release.cjs') != '' }}
+        run: |
+          npm install --prefix /tmp/dayboard-ci --no-save --no-audit --no-fund playwright@1.57.0
+          node /tmp/dayboard-ci/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Verify integrated v3 workflows
+        if: ${{ hashFiles('tests/journey-release.cjs') != '' }}
+        env:
+          DAYBOARD_PLAYWRIGHT: /tmp/dayboard-ci/node_modules/playwright
+          DAYBOARD_LIVE_URL: https://dayboard-501.onrender.com
+          VERIFY_LIVE: ${{ github.ref == 'refs/heads/main' && '1' || '0' }}
+        run: node tests/journey-release.cjs
+      - name: Package source and verification evidence
+        if: always()
+        run: |
+          zip -qr dayboard-release-source.zip dayboard infrastructure .github
+          if [ -d tests ]; then zip -qr dayboard-release-source.zip tests; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dayboard-v3-release
+          path: |
+            dayboard-release-source.zip
+            dayboard-test-output/
+          retention-days: 1
