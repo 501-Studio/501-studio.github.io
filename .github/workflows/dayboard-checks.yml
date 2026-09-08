@@ -1,52 +1,13 @@
-name: Dayboard checks
-on:
-  push:
-    branches: [main, feat/dayboard-dashboard-v2]
-    paths: ['dayboard/**', 'infrastructure/dayboard-dashboard-v2.sql', '.github/**']
-  workflow_dispatch:
+# Historical v2 checks remain available manually. V3 release CI now gates main.
+name: Dayboard v2 historical checks
+on: workflow_dispatch
 permissions:
   contents: read
-concurrency:
-  group: dayboard-checks-${{ github.ref }}
-  cancel-in-progress: true
 jobs:
-  verify:
+  domain:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - name: Install pinned browser test dependencies
-        run: |
-          npm install --prefix /tmp/dayboard-ci --no-save --no-audit --no-fund playwright@1.57.0
-          node /tmp/dayboard-ci/node_modules/playwright/cli.js install --with-deps chromium
-          python3 -m pip install --disable-pip-version-check playwright==1.57.0
-      - name: Domain, original workflows and deployed-site checks
-        env:
-          DAYBOARD_PLAYWRIGHT: /tmp/dayboard-ci/node_modules/playwright
-          DAYBOARD_LIVE_URL: https://dayboard-501.onrender.com
-        run: |
-          node .github/dayboard-v2-domain.mjs
-          node .github/dayboard-v2-legacy.cjs
-      - name: Connection and consent regression (mock external services)
-        run: python3 .github/dayboard-setup-check.py
-      - name: Dashboard desktop, mobile and cloud-state UI regression (mock backend)
-        run: python3 .github/dayboard-v2-ui.py
-      - name: Verify actual production v2 after main deployment
-        if: github.ref == 'refs/heads/main'
-        env:
-          DAYBOARD_PLAYWRIGHT: /tmp/dayboard-ci/node_modules/playwright
-        run: node .github/dayboard-live.cjs
-      - name: Source and verification evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: dayboard-verification
-          path: |
-            dayboard/
-            infrastructure/
-            dayboard-test-output/
-          retention-days: 1
-          compression-level: 9
+        with: {node-version: '22'}
+      - run: node .github/dayboard-v2-domain.mjs
