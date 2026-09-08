@@ -1,23 +1,23 @@
-# Dayboard 3.0 release verification
+# Dayboard 3.0.1
 
-## Implemented and integrated
+## Parent integrity hotfix
 
-Task completion/undo is integrated across today, week, month/date-detail and kanban. Daily/weekly count targets support chosen weekdays, start dates and pause. Task/project/block colors inherit appropriately. Statistics and self-reflection are a separate page. Adventure contains an animated character, motion controls, XP/stars, six regions, quests, badges, 12 shop entries, outfits/companions/scenery/effects/titles and personal reward tracking.
+The reported whole-board INVALID_PARENT issue was traced to leaf records typed as task under a task parent. The owner-authorized data repair changed only those type labels to subtask. All other item fields, time blocks, settings, activity/rewards and credentials were asserted unchanged. The previous state remains in the private audit history. No private schedule or connection key was committed.
 
-Existing private workspace keys, owner schedules, calendar settings and v2 priority/pin behavior were preserved. No paid service or model API was activated. Google browser authentication still requires the owner's Google API enablement and consent; this release does not bypass them.
+The database now enforces the existing core hierarchy/reference validator on every state insert/update, including direct SQL. The frontend shares a hierarchy preflight for local/cloud writes and proposals. Invalid data no longer marks the account as disconnected; the user sees an unsaved-change notice and Korean guidance. Successful identical-data refreshes clear stale network banners. Late reads cannot replace newer revisions. Conflicts fetch current state without auto-replaying stale changes.
 
 ## Verification
 
-Feature run 34176606854 passed all 27 integrated domain/browser tests; the same run also passed 16 preserved v2 priority/domain tests. Resulting tested source commit: 07a3e1f780c5f39182528b1b65d6009b87dc192f. The final read-only workflow reruns these tests on committed source. Main additionally checks the actual Render address for version 3.0.0 and interactive statistics/adventure on desktop and mobile.
+Fix-branch run 34178993920 passed 66 checks: 14 new hierarchy/store checks, 9 browser reproduction/recovery checks, 16 retained planning/priority checks and 27 retained v3 domain/browser checks. Main adds one real deployed-site sample check with the expected current version.
 
-Seventeen real PostgreSQL checks passed on 2026-09-08T01:10:08Z: valid/invalid authentication, authoritative completion ledger, per-occurrence rewards, paused routine rejection, duplicate denial, undo, ledger-spoof rejection, revision conflicts, deleted completion history, buying/equipping, immutable purchase history, overspending, unowned equipment, quest eligibility, region gates, reflection storage and temporary-data cleanup. No owner workspace or credentials were altered.
+Fourteen independent PostgreSQL checks passed against a disposable private copy of the affected data, including completion/undo, adventure settings, reflections, invalid direct-write rejection, reference integrity, revision guards and unchanged access restrictions. The test copy and dependent records were removed. Owner data was not modified by QA beyond the separately authorized two-field repair.
 
-The browser suite uses synthetic data and a mocked Supabase endpoint, not the owner's schedule. A separate second client verifies state restoration under that mock. Real Google OAuth and Google event changes were not part of release tests. Browser validation runs in authorized GitHub Actions with Playwright/Chromium because the session has no Browser plugin and local browser navigation is administratively blocked. Chrome viewports: 1440, 1024, 768, 390 and 320px. Physical iOS/Safari devices were not tested.
+Browser tests use Playwright/Chromium in GitHub Actions because the session has no Browser plugin and no local Chromium binary. Mocked browser RPC checks are distinct from the real PostgreSQL checks. Production verification uses sample mode; actual Google consent/calendar writes and a physical iPhone are not part of this hotfix validation.
 
-## Material fixes made during integration
+## Preserved behavior
 
-The prior standalone v3 modules were not connected to the app. They are now wired to routing, editors, completion actions and persistent storage. Fixed a statistics callback syntax error, delayed modal-focus race, routine status handling, paused check-in validation, quest eligibility and purchase-history protection. Corrected companion/footer overlap, color-rail duplication and narrow category-label wrapping.
+Today/week/month/board completion, counted daily/weekly routines, schedule colors, statistics/reflections, adventure/shop/customization, XP and backups remain. The same site and workspace key are used; no new workspace or Google reconnection is required by this patch. Reload cached application files after deployment.
 
-Design review preserved the existing clean schedule dashboard and moved richer elements into separate statistics/adventure pages. Inspected headings, navigation, panel spacing, mobile fit, chart labels/metric definitions, color markers, avatar/pet framing and motion controls. Artwork is derived from the supplied generated concept; outfits are color variants, and maps are progression controls rather than a real-time combat game. Fonts are system fonts, with no font files included in source exports.
+Release CI is read-only, production serves committed source, and the temporary integration script was removed. No paid model API, subscription, hosting upgrade or billing change was introduced.
 
-Statistics use completed estimated minutes, not measured focus duration; hour charts show when completion was logged, not when work actually happened. Partial weekly routine periods use the whole weekly target, as labelled. Old records are reconstructed from completedAt where possible; missing history is not fabricated.
+See HOTFIX-3.0.1.md for the diagnosis and CHATGPT.md for the approved connector workflow.

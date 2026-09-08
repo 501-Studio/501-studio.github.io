@@ -1,7 +1,7 @@
 name: Dayboard v3 release
 on:
   push:
-    branches: [main, feat/dayboard-v3-adventure]
+    branches: [main, feat/dayboard-v3-adventure, fix/dayboard-parent-validation]
     paths: ['dayboard/**', 'infrastructure/**', 'tests/**', '.github/workflows/dayboard-v3-release.yml']
   workflow_dispatch:
 permissions:
@@ -18,7 +18,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify modules and preserved priority rules
+      - name: Verify modules, hierarchy recovery and preserved priority rules
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -26,11 +26,16 @@ jobs:
           for source in Path('dayboard').glob('*.js'):
               subprocess.run(['node','--input-type=module','--check'],input=source.read_text(),text=True,check=True)
           PY
+          node tests/parent-integrity.mjs
           node .github/dayboard-v2-domain.mjs
       - name: Install pinned browser verifier
         run: |
           npm install --prefix /tmp/dayboard-ci --no-save --no-audit --no-fund playwright@1.57.0
           node /tmp/dayboard-ci/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Verify corrupted-state recovery and save error messages
+        env:
+          DAYBOARD_PLAYWRIGHT: /tmp/dayboard-ci/node_modules/playwright
+        run: node tests/parent-ui.cjs
       - name: Verify routine, statistics, adventure and responsive workflows
         env:
           DAYBOARD_PLAYWRIGHT: /tmp/dayboard-ci/node_modules/playwright
