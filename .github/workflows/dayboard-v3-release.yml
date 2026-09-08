@@ -46,6 +46,10 @@ jobs:
         env:
           DAYBOARD_PLAYWRIGHT: /tmp/dayboard-ci/node_modules/playwright
         run: node tests/completion-visual.cjs
+      - name: Verify expanded adventure RPG hub
+        env:
+          DAYBOARD_PLAYWRIGHT: /tmp/dayboard-ci/node_modules/playwright
+        run: node tests/adventure-v4.cjs
       - name: Package source and evidence
         if: always()
         run: |
