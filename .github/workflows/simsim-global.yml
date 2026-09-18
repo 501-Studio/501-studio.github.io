@@ -1,0 +1,116 @@
+name: SimsimLAB global build and browser verification
+on:
+  push:
+    branches: [apps/simsim-lab-global-20260919]
+    paths:
+      - '.github/workflows/simsim-global.yml'
+      - 'simsim-lab/release.json'
+permissions:
+  contents: write
+concurrency:
+  group: simsim-global-release
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Read explicit release snapshot
+        id: release
+        run: |
+          node --input-type=module <<'JS' >> "$GITHUB_OUTPUT"
+          import fs from 'node:fs';
+          const r=JSON.parse(fs.readFileSync('simsim-lab/release.json','utf8'));
+          if(r.publish && r.locales.length!==14)throw new Error('A public release must contain all 14 locales');
+          console.log('locales='+r.locales.join(','));
+          console.log('publish='+String(r.publish===true));
+          JS
+      - name: Install build and browser dependencies
+        working-directory: simsim-lab
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          sudo apt-get install -y fonts-noto-core fonts-noto-cjk fonts-noto-color-emoji
+          fc-cache -f
+      - name: Check all content and deterministic scoring
+        working-directory: simsim-lab
+        env:
+          BUILD_LOCALES: ${{ steps.release.outputs.locales }}
+        run: |
+          npm run check
+          npm test
+      - name: Build real static pages and localized social images
+        working-directory: simsim-lab
+        env:
+          BUILD_LOCALES: ${{ steps.release.outputs.locales }}
+          SITE_URL: https://weird-lab-501.onrender.com
+          BASE_PATH: /
+        run: npm run build
+      - name: Browser validation of rendered application
+        working-directory: simsim-lab
+        env:
+          BASE_URL: http://127.0.0.1:4173
+          EVIDENCE_DIR: ${{ runner.temp }}/simsim-evidence/screenshots
+        run: |
+          npm run serve > "$RUNNER_TEMP/simsim-server.log" 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          for n in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/build-info.json >/dev/null; then break; fi
+            sleep 1
+          done
+          npm run test:browser
+      - name: Collect source and verification evidence
+        if: always()
+        run: |
+          mkdir -p "$RUNNER_TEMP/simsim-evidence/source"
+          rsync -a --exclude node_modules --exclude dist --exclude qa-evidence --exclude '*.log' simsim-lab/ "$RUNNER_TEMP/simsim-evidence/source/"
+          if [ -f simsim-lab/dist/build-info.json ]; then cp simsim-lab/dist/build-info.json "$RUNNER_TEMP/simsim-evidence/"; fi
+          if [ -f "$RUNNER_TEMP/simsim-server.log" ]; then cp "$RUNNER_TEMP/simsim-server.log" "$RUNNER_TEMP/simsim-evidence/"; fi
+          if [ -d simsim-lab/dist ]; then tar -czf "$RUNNER_TEMP/simsim-evidence/static-site.tar.gz" -C simsim-lab/dist .; fi
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: simsim-lab-evidence-${{ github.run_number }}
+          path: ${{ runner.temp }}/simsim-evidence/
+          retention-days: 7
+          if-no-files-found: warn
+      - name: Publish verified static files to the existing isolated site branch
+        if: success() && steps.release.outputs.publish == 'true'
+        env:
+          DEPLOY_BRANCH: apps/weird-lab-20260918
+        run: |
+          git fetch origin "$DEPLOY_BRANCH"
+          TARGET="$RUNNER_TEMP/simsim-publish"
+          git worktree add --detach "$TARGET" FETCH_HEAD
+          mkdir -p "$TARGET/weird-lab"
+          rsync -a --delete simsim-lab/dist/ "$TARGET/weird-lab/"
+          # The legacy ten-quiz checker is superseded by this 50-quiz, 14-locale suite.
+          if [ -f "$TARGET/.github/workflows/weird-lab-qa.yml" ]; then rm "$TARGET/.github/workflows/weird-lab-qa.yml"; fi
+          mkdir -p "$TARGET/infrastructure"
+          cat > "$TARGET/infrastructure/simsim-lab-operations.md" <<'DOC'
+          # SimsimLAB 2.0
+          Source: apps/simsim-lab-global-20260919 / simsim-lab
+          Production: apps/weird-lab-20260918 / weird-lab
+          Public URL: https://weird-lab-501.onrender.com
+          Render service: srv-damjlcrm8hqs73ddajtg
+          Render workspace: tea-da7anogae00c73b8p530
+          Production files are generated. Edit the source branch, then update simsim-lab/release.json with all 14 locales and publish=true.
+          The global workflow runs content, scoring and browser checks before publishing. Render deploys the resulting commit automatically.
+          Original v1 links remain available under /legacy/; old root hash links route there.
+          No runtime AI API, backend, live advertisements or external analytics adapter is enabled.
+          DOC
+          cd "$TARGET"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add weird-lab infrastructure/simsim-lab-operations.md .github/workflows
+          if ! git diff --cached --quiet; then
+            git commit -m "release(simsim): publish verified 50-test 14-locale site from $GITHUB_SHA"
+            git push origin "HEAD:refs/heads/$DEPLOY_BRANCH"
+          fi
