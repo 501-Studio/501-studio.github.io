@@ -95,7 +95,7 @@ jobs:
             m.screenshot(path=str(OUT/'mobile-entry.png'),full_page=True);m.locator('#sampleBtn').click();m.locator('#analyzeBtn').click();m.locator('#results').wait_for(state='visible')
             ok('mobile result no horizontal overflow',m.evaluate('document.documentElement.scrollWidth<=innerWidth'))
             m.screenshot(path=str(OUT/'mobile-result.png'),full_page=True)
-            m.locator('#extraBtn').click();ok('mobile bonus works',m.locator('#extraContent').is_visible())
+            m.locator('#extraBtn').click();m.locator('#deepReport').wait_for(state='visible');ok('mobile detailed report works',m.locator('#deepReport').is_visible() and m.locator('[data-deep-tab]').count()==6)
             m.set_viewport_size({'width':320,'height':700});ok('320px result no horizontal overflow',m.evaluate('document.documentElement.scrollWidth<=innerWidth'));m.locator('#resetBtn').click();ok('320px input no horizontal overflow',m.evaluate('document.documentElement.scrollWidth<=innerWidth'))
             ok('no uncaught JavaScript errors',not errors)
             ok('no console errors',not console_errors)
