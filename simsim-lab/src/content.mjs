@@ -4,7 +4,8 @@ const REQUIRED_SPECIAL = [...new Set([...FLAGSHIPS,...TESTS.filter(t=>t.mode==='
 const SPLIT_LINES = text => String(text).trim().split(/\r?\n/).map(line=>line.trim()).filter(Boolean);
 const nonempty = value => typeof value==='string' && value.trim().length>0;
 const fail = (code,message) => { throw new Error(`[${code}] ${message}`); };
-const noPlaceholder = /(?:\bTODO\b|Lorem ipsum|Coming soon|Example question|Sample result)/i;
+// TODO is case-sensitive: Spanish "todo" is an ordinary word, not a marker.
+const noPlaceholder = /(?:\bTODO\b|Lorem ipsum|Coming soon|Example question|Sample result)/;
 
 export function parseLocale(raw,referenceKeys){
  if(!raw || !LOCALES.some(l=>l.code===raw.code))throw new Error('Unknown locale content');
