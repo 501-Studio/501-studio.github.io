@@ -1,0 +1,48 @@
+name: Arpia Remake CI
+
+on:
+  push:
+    branches:
+      - main
+      - feat/arpia-remake-mvp
+    paths:
+      - 'arpia-remake/**'
+      - '.github/workflows/arpia-remake-pages.yml'
+  pull_request:
+    paths:
+      - 'arpia-remake/**'
+      - '.github/workflows/arpia-remake-pages.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: arpia-remake
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Static checks
+        run: npm run check
+
+      - name: Production build
+        run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: arpia-remake-dist
+          path: arpia-remake/dist
+          if-no-files-found: error
