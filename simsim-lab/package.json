@@ -1,0 +1,6 @@
+{
+  "name": "simsim-lab", "version": "2.0.0", "private": true, "type": "module",
+  "description": "50 playful quizzes, 14 locales, a shared deterministic browser-only quiz engine",
+  "scripts": {"build":"node build.mjs", "test":"node --test tests/*.test.mjs", "check":"node --check src/app.js && node --check src/engine.js && node --check src/share.js && node --check build.mjs", "dev":"node dev.mjs", "preview":"node dev.mjs"},
+  "engines": {"node": ">=22"}, "license": "UNLICENSED"
+}
