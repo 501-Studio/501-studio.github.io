@@ -1,0 +1,110 @@
+name: TokTension live browser checks
+on:
+  push:
+    branches: [apps/tok-tension]
+    paths: [tok-tension/**, .github/workflows/tok-tension-browser.yml]
+permissions:
+  contents: read
+concurrency:
+  group: toktension-browser
+  cancel-in-progress: true
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install browser test tools (not app dependencies)
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+          sudo apt-get install -y fonts-noto-cjk
+      - name: Test the public deployed app
+        run: |
+          mkdir -p /tmp/toktension-qa
+          python <<'PY'
+          import json,pathlib,base64,urllib.parse,urllib.request,struct,traceback
+          from playwright.sync_api import sync_playwright
+          OUT=pathlib.Path('/tmp/toktension-qa')
+          base='https://toktension-501.onrender.com/'
+          checks=[];errors=[];requests=[];console_errors=[]
+          def ok(name,condition):
+           if not condition: raise AssertionError(name)
+           checks.append(name);print('PASS',name,flush=True)
+          def init(context):
+           context.add_init_script("""Object.defineProperty(navigator,'clipboard',{value:{writeText:async function(v){window.__lastCopy=v;}}});Object.defineProperty(navigator,'canShare',{value:function(){return true;}});Object.defineProperty(navigator,'share',{value:async function(v){window.__shared={title:v.title,text:v.text,url:v.url,files:v.files?.map(f=>({name:f.name,type:f.type,size:f.size}))};}});""")
+          success=False
+          try:
+           with urllib.request.urlopen(base,timeout=45) as response:
+            html=response.read().decode('utf-8')
+            ok('public HTTPS returns 200 and correct app',response.status==200 and '<title>톡텐션' in html)
+           with sync_playwright() as p:
+            browser=p.chromium.launch(headless=True)
+            ctx=browser.new_context(viewport={'width':1360,'height':1000},locale='ko-KR',reduced_motion='reduce',accept_downloads=True)
+            init(ctx);page=ctx.new_page();page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:requests.append(r.url) if r.url.startswith('http') else None)
+            page.on('console',lambda m:console_errors.append(m.text) if m.type=='error' else None)
+            response=page.goto(base,wait_until='networkidle',timeout=60000)
+            ok('browser page identity',response.status==200 and page.title().startswith('톡텐션'))
+            ok('nonblank input screen',page.locator('#chat').is_visible())
+            page.screenshot(path=str(OUT/'desktop-entry.png'),full_page=True)
+            page.locator('#analyzeBtn').click();ok('empty input validation',page.locator('#error').is_visible())
+            page.locator('#sampleBtn').click();ok('sample detects 20 messages','20개 메시지' in page.locator('#detected').inner_text())
+            ok('two participant selectors',page.locator('#me option').count()==2)
+            before=len(requests);page.locator('#analyzeBtn').click();page.locator('#results').wait_for(state='visible')
+            ok('analysis renders real scores',page.locator('#entry').is_hidden() and int(page.locator('#tensionScore').inner_text())>0)
+            ok('valid time produces reply median',page.locator('#gapValue').inner_text()!='시간 정보 부족')
+            ok('three reply suggestions',page.locator('#replies .reply').count()==3)
+            first=page.locator('#replies .reply p').first.inner_text();page.locator('[data-tone="warm"]').click()
+            ok('reply tone changes suggestions',page.locator('#replies .reply p').first.inner_text()!=first)
+            page.locator('#replies .reply button').first.click();ok('reply copy payload',bool(page.evaluate('window.__lastCopy')))
+            page.locator('#extraBtn').click();ok('free bonus opens five insights',page.locator('#extraContent').is_visible() and page.locator('#extraContent p').count()==5)
+            page.locator('#extraBtn').click();ok('bonus closes',page.locator('#extraContent').is_hidden())
+            page.screenshot(path=str(OUT/'desktop-result.png'),full_page=True)
+            with page.expect_download() as dl:page.locator('#saveBtn').click()
+            dl.value.save_as(str(OUT/'result-card.png'))
+            png=(OUT/'result-card.png').read_bytes();ok('PNG export 1080 x 1350',png[:8]==b'\x89PNG\r\n\x1a\n' and struct.unpack('>II',png[16:24])==(1080,1350))
+            page.locator('#shareBtn').click();ok('native share passes PNG to mocked OS API',page.evaluate("window.__shared.files?.[0].type === 'image/png'"))
+            page.locator('#linkBtn').click();link=page.evaluate('window.__lastCopy');payload=json.loads(base64.b64decode(urllib.parse.unquote(link.split('#r=')[1])))
+            ok('shared URL aggregate fields only',set(payload)=={'v','t','s','a','q','p','k'})
+            ok('no HTTP requests during analysis or export',len(requests)==before)
+            ok('no persistent app storage',page.evaluate("localStorage.length===0 && sessionStorage.length===0 && document.cookie===''") )
+            page.goto(link,wait_until='networkidle');ok('shared card restores without private report',page.locator('#sharedNotice').is_visible() and page.locator('#privateReport').is_hidden())
+            page.locator('#tryOwnBtn').click();ok('recipient can start own analysis',page.locator('#chat').is_visible() and page.locator('#chat').input_value()=='')
+            plain='비밀민수: 안녕?\n비밀지영: <img src=x onerror=window.__pwned=1>\n비밀민수: 오늘 뭐해?\n비밀지영: 공부\n비밀민수: 화이팅\n비밀지영: 고마워'
+            page.locator('#chat').fill(plain);page.locator('#analyzeBtn').click();page.locator('#results').wait_for(state='visible')
+            ok('no fabricated speed without timestamps',page.locator('#paceScore').inner_text()=='정보 없음' and page.locator('#gapValue').inner_text()=='시간 정보 부족')
+            ok('hostile message remains inert',page.evaluate('window.__pwned === undefined'))
+            page.locator('#linkBtn').click();safe=page.evaluate('window.__lastCopy');decoded=base64.b64decode(urllib.parse.unquote(safe.split('#r=')[1])).decode()
+            ok('share excludes names and original text','비밀민수' not in decoded and '<img' not in decoded and '공부' not in decoded)
+            page.locator('#resetBtn').click();ok('reset erases input and selectors',page.locator('#chat').input_value()=='' and page.locator('#me option').count()==0)
+            fixture=OUT/'cp949-sample.txt';fixture.write_bytes('나: 안녕?\n상대: 응\n나: 밥 먹었어?\n상대: 먹었지\n나: 좋아\n상대: 고마워'.encode('cp949'))
+            page.locator('#fileInput').set_input_files(str(fixture));page.locator('#selectors').wait_for(state='visible')
+            ok('CP949 txt import','안녕?' in page.locator('#chat').input_value() and page.locator('#me option').count()==2)
+            page.locator('#clearBtn').click();page.locator('#privacyBtn').click();ok('privacy modal',page.locator('#infoDialog').is_visible());page.locator('#closeDialog').click()
+            bad=base+'#r='+urllib.parse.quote(base64.b64encode(json.dumps({'v':1,'t':80,'s':80,'a':80,'q':80,'p':80,'k':'<script>'}).encode()).decode())
+            page.goto(bad,wait_until='networkidle');ok('malformed shared payload rejected',page.locator('#results').is_hidden() and page.locator('#chat').is_visible())
+            mobile=browser.new_context(viewport={'width':390,'height':844},device_scale_factor=1,is_mobile=True,has_touch=True,locale='ko-KR',reduced_motion='reduce',accept_downloads=True)
+            init(mobile);m=mobile.new_page();m.on('pageerror',lambda e:errors.append(str(e)));m.goto(base,wait_until='networkidle')
+            ok('mobile entry no horizontal overflow',m.evaluate('document.documentElement.scrollWidth<=innerWidth'))
+            m.screenshot(path=str(OUT/'mobile-entry.png'),full_page=True);m.locator('#sampleBtn').click();m.locator('#analyzeBtn').click();m.locator('#results').wait_for(state='visible')
+            ok('mobile result no horizontal overflow',m.evaluate('document.documentElement.scrollWidth<=innerWidth'))
+            m.screenshot(path=str(OUT/'mobile-result.png'),full_page=True)
+            m.locator('#extraBtn').click();ok('mobile bonus works',m.locator('#extraContent').is_visible())
+            m.set_viewport_size({'width':320,'height':700});ok('320px result no horizontal overflow',m.evaluate('document.documentElement.scrollWidth<=innerWidth'));m.locator('#resetBtn').click();ok('320px input no horizontal overflow',m.evaluate('document.documentElement.scrollWidth<=innerWidth'))
+            ok('no uncaught JavaScript errors',not errors)
+            ok('no console errors',not console_errors)
+            success=True;browser.close()
+          finally:
+           (OUT/'checks.json').write_text(json.dumps({'success':success,'passed':len(checks),'checks':checks,'errors':errors,'console_errors':console_errors,'network_requests':requests,'browser':'Playwright Chromium on GitHub Actions; local Browser plugin unavailable and local browser navigation blocked','viewports':['1360x1000','390x844','320x700'],'scope':'Public deployed HTTPS site. Clipboard and native share APIs are mocked to inspect payloads; real Kakao/Instagram application handoff not tested.'},ensure_ascii=False,indent=2))
+          print('TOTAL',len(checks),'PASS')
+          PY
+      - name: Store browser evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: toktension-browser-evidence
+          path: /tmp/toktension-qa/
+          retention-days: 7
+          if-no-files-found: warn
