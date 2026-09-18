@@ -1,0 +1,64 @@
+name: TokTension checks
+on:
+  push:
+    branches: [apps/tok-tension]
+    paths: [tok-tension/**, .github/workflows/tok-tension-check.yml]
+permissions:
+  contents: read
+concurrency:
+  group: toktension-check
+  cancel-in-progress: true
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Syntax and deterministic parser regressions
+        run: |
+          node --check tok-tension/engine.js
+          node --check tok-tension/app.js
+          node <<'NODE'
+          const assert=require('node:assert/strict');
+          const fs=require('node:fs');
+          const E=require('./tok-tension/engine.js');
+          let tests=0;
+          function check(name,fn){fn();tests++;console.log('PASS '+name);}
+          const plain='나: 안녕?\n상대: 안녕 ㅎㅎ\n나: 뭐 해?\n상대: 커피 마셔\n나: 같이 갈까?\n상대: 좋아 ㅋㅋ';
+          const p=E.parse(plain),r=E.analyze(p,'나','상대');
+          check('plain-text speakers',()=>assert.deepEqual(p.names,['나','상대']));
+          check('message counts',()=>assert.equal(r.n,6));
+          check('question ratio',()=>assert.equal(r.question,50));
+          check('missing time never fabricated',()=>assert.equal(r.pace,null));
+          check('deterministic scores',()=>assert.deepEqual(E.summary(r),E.summary(E.analyze(p,'나','상대'))));
+          check('same person rejected',()=>assert.throws(()=>E.analyze(p,'나','나')));
+          check('insufficient evidence rejected',()=>assert.throws(()=>E.analyze(E.parse('나: 안녕\n상대: 응'),'나','상대')));
+          check('input size limit',()=>assert.throws(()=>E.parse('x'.repeat(500001))));
+          check('message count limit',()=>assert.throws(()=>E.parse(Array.from({length:20001},(_,i)=>(i%2?'상대':'나')+': x').join('\n'))));
+          check('12 AM and PM',()=>{assert.equal(E.clock('오전 12:00'),0);assert.equal(E.clock('오후 12:00'),720);assert.equal(E.clock('11:30 PM'),1410);});
+          check('invalid clock rejected',()=>assert.equal(E.clock('25:99'),null));
+          const pc=E.parse('2026년 9월 18일 금요일\n[나] [오후 6:10] 안녕?\n[상대] [오후 6:11] 응\n[나] [오후 6:12] 오늘?\n[상대] [오후 6:14] 좋아\n[나] [오후 6:15] 가자\n[상대] [오후 6:17] 응');
+          check('PC export and reply median',()=>assert.equal(E.analyze(pc,'나','상대').theirGap,2));
+          const mo=E.parse('2026. 9. 18. 오후 11:59, 나 : 안녕?\n2026. 9. 19. 오전 12:01, 상대 : 응\n2026. 9. 19. 오전 12:02, 나 : 오늘?\n2026. 9. 19. 오전 12:04, 상대 : 좋아\n2026. 9. 19. 오전 12:05, 나 : 가자\n2026. 9. 19. 오전 12:07, 상대 : 응');
+          check('mobile export across midnight',()=>assert.equal(E.analyze(mo,'나','상대').theirGap,2));
+          const group=E.parse('[나] [10:00] 안녕?\n[친구] [10:01] 응\n[상대] [10:02] 나도\n[나] [10:03] 뭐 해?\n[상대] [10:04] 쉬어\n[나] [10:05] 좋아\n[상대] [10:06] 응');
+          check('group interposition excluded',()=>assert.equal(E.analyze(group,'나','상대').theirGapCount,2));
+          check('multiline continuation',()=>assert.equal(E.parse('나: 첫째 줄\n둘째 줄\n상대: 응').messages[0].text,'첫째 줄\n둘째 줄'));
+          check('inert hostile input',()=>assert.equal(E.parse('나: <img src=x onerror=alert(1)>').messages[0].text,'<img src=x onerror=alert(1)>'));
+          check('share schema disallows injected type',()=>assert.equal(E.readSummary({v:1,t:80,s:80,a:80,q:80,p:80,k:'<script>'}),null));
+          check('share schema strips arbitrary fields',()=>assert.equal(E.readSummary({...E.summary(r),raw:'private'}).raw,undefined));
+          const sample=fs.readFileSync('tok-tension/app.js','utf8').match(/const sample=`([\s\S]*?)`;/)[1];
+          check('interactive sample has 20 messages',()=>assert.equal(E.parse(sample).messages.length,20));
+          check('all three reply tones populated',()=>{for(const t of ['light','warm','plan'])assert.equal(E.replies(r,t).length,3);});
+          console.log(tests+' regression checks passed.');
+          NODE
+      - name: Package only this app
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: toktension-source
+          path: tok-tension/
+          retention-days: 7
+          if-no-files-found: error
