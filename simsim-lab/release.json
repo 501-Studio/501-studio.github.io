@@ -1,5 +1,5 @@
 {
-  "locales": ["en", "ko", "es"],
+  "locales": ["en", "ko", "es", "ja"],
   "publish": false,
-  "revision": 1
+  "revision": 2
 }
