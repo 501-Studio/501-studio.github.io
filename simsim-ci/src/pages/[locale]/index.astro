@@ -1,0 +1,6 @@
+---
+import {locales} from '../../data/locales.mjs';
+export function getStaticPaths(){return locales.map(locale=>({params:{locale}}));}
+const {locale}=Astro.params;
+---
+<html lang={locale} dir={locale==='ar'?'rtl':'ltr'}><head>{locales.map(l=><link rel="alternate" hreflang={l} href={'/simsim-lab/'+l+'/'}/>)}<link rel="alternate" hreflang="x-default" href="/simsim-lab/en/"/></head><body><h1>{locale} · SimsimLAB</h1></body></html>

@@ -1,0 +1,1 @@
+export const locales=["en","ko","es","pt-BR","ja","id","hi","de","fr","ar","vi","th","tr","zh-CN"];

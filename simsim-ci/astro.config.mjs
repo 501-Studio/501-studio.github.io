@@ -1,0 +1,1 @@
+import { defineConfig } from 'astro/config'; export default defineConfig({site:'https://501-studio.github.io',base:'/simsim-lab',trailingSlash:'always',build:{format:'directory'}});
