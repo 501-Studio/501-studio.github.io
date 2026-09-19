@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://501-studio.github.io/simsim-lab/sitemap.xml
