@@ -1,0 +1,4 @@
+---
+import { localeCodes } from '../data/locales.mjs'; const base=import.meta.env.BASE_URL;
+---
+<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="robots" content="noindex"/><title>SimsimLAB</title></head><body><p>Opening SimsimLAB…</p><script define:vars={{base,localeCodes}}>const exact=(navigator.languages||[navigator.language||'en']).map(x=>String(x));let match=exact.find(x=>localeCodes.includes(x));if(!match){const short=exact.map(x=>x.split('-')[0]);match=localeCodes.find(l=>short.includes(l.split('-')[0]));}location.replace(`${base}${match||'en'}/`);</script><noscript><a href={`${base}en/`}>Open SimsimLAB</a></noscript></body></html>

@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import AdSlot from '../../../../components/AdSlot.astro';
+import { localeCodes, getPack } from '../../../../data/locales.mjs';
+import { tests } from '../../../../data/catalog.mjs';
+import { getLocalizedTest, getHomeCards } from '../../../../data/content.mjs';
+export function getStaticPaths(){ return localeCodes.flatMap(locale=>tests.map(t=>({params:{locale,slug:t.slug}}))); }
+const {locale,slug}=Astro.params; const p=getPack(locale); const test=getLocalizedTest(locale,slug); if(!test) return Astro.redirect(`${import.meta.env.BASE_URL}${locale}/`);
+const base=import.meta.env.BASE_URL; const recCards=getHomeCards(locale).filter(x=>test.recommended.includes(x.slug));
+---
+<BaseLayout locale={locale} slug={slug} page="test" title={test.seo.title} description={test.seo.description}>
+<section class={`quiz-hero accent-${test.accent}`}>
+<a class="back-home" href={`${base}${locale}/`}>← {p.ui.home}</a>
+<div class="quiz-title-row"><div class="quiz-icon">{test.emoji}</div><div><p class="eyebrow">SIMSIMLAB TEST</p><h1>{test.title}</h1><p>{test.shortDescription}</p></div></div>
+<button class="primary-cta quiz-start" type="button" data-quiz-start>{p.ui.start} <span>→</span></button><button class="favorite-inline" type="button" data-favorite={test.slug}>♡ {p.ui.favorite}</button>
+<p class="quiz-disclaimer">{p.ui.forFun}</p>
+</section>
+<section class="quiz-stage" data-quiz-stage hidden aria-live="polite"><div class="quiz-progress"><div><span data-progress-label>{p.ui.question} 1 / 8</span><button type="button" data-quiz-back>← {p.ui.back}</button></div><div class="progress-track"><span data-progress-bar></span></div></div><div class="question-card"><p class="question-number" data-question-number>01</p><h2 data-question-text></h2><div class="answer-list" data-answer-list></div></div></section>
+<section class="result-stage" data-result-stage hidden>
+<div class="result-card"><div class="result-top"><p>{p.ui.result}</p><span class="result-emoji" data-result-emoji></span><h2 data-result-name></h2><p class="result-tagline" data-result-tagline></p></div><div class="result-body"><p class="result-description" data-result-description></p><div class="metric-list" data-metrics></div><div class="result-facts"><div><small>{p.ui.strength}</small><strong data-result-strength></strong></div><div><small>{p.ui.quirk}</small><strong data-result-quirk></strong></div><div><small>{p.ui.match}</small><strong data-result-match></strong></div></div><p class="result-disclaimer">{p.ui.forFun}</p></div></div>
+<div class="viral-actions"><button class="share-main" type="button" data-share-result>↗ {p.ui.share}</button><button type="button" data-save-result>▣ {p.ui.save}</button><button type="button" data-copy-result>🔗 {p.ui.copy}</button><a href={`${base}${locale}/tests/friendship-compatibility/`}>👥 {p.ui.compare}</a><button type="button" data-retake>↺ {p.ui.again}</button><button type="button" data-result-random>🎲 {p.ui.randomAgain}</button></div>
+<AdSlot name="result-after-copy"/>
+<section class="recommendations"><h3>{p.ui.another}</h3><div>{recCards.map(t=><a href={`${base}${locale}/tests/${t.slug}/`} data-track="next_quiz_click" data-quiz={t.slug}><span>{t.emoji}</span><strong>{t.title}</strong><b>→</b></a>)}</div></section>
+</section>
+<section class="duo-invite-stage" data-duo-invite hidden><div class="invite-card"><span class="huge">🔗</span><h2>{p.ui.inviteTitle}</h2><p>{p.ui.inviteBody}</p><label><span class="sr-only">Nickname</span><input maxlength="20" data-nickname placeholder="Nickname (optional)"/></label><div class="viral-actions"><button class="share-main" type="button" data-share-invite>↗ {p.ui.invite}</button><button type="button" data-copy-invite>🔗 {p.ui.copy}</button><button type="button" data-local-friend>👥 {p.ui.friendTurn}</button></div></div></section>
+<section class="duo-result-stage" data-duo-result hidden><div class="compat-card"><p>{p.ui.compatibility}</p><strong class="compat-score" data-compat-score>--</strong><span>/100</span><h2 data-compat-name></h2><div class="metric-list" data-compat-metrics></div><p>{p.ui.forFun}</p></div><div class="viral-actions"><button class="share-main" type="button" data-share-result>↗ {p.ui.share}</button><button type="button" data-save-result>▣ {p.ui.save}</button><a href={`${base}${locale}/`}>🎲 {p.ui.another}</a></div></section>
+<script type="application/json" id="quiz-data" set:html={JSON.stringify({test,ui:p.ui,locale,base,allSlugs:tests.filter(t=>!t.duo).map(t=>t.slug)}).replace(/</g,'\\u003c')}></script>
+<script type="module" src={`${base}quiz-engine.js`}></script>
+</BaseLayout>
