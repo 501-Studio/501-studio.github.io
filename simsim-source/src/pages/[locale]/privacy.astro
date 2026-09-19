@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import {localeCodes,getPack} from '../../data/locales.mjs';
+export function getStaticPaths(){return localeCodes.map(locale=>({params:{locale}}));}
+const {locale}=Astro.params; const p=getPack(locale);
+---
+<BaseLayout locale={locale} title={`${p.ui.privacy} | SimsimLAB`} description={p.ui.about}>
+<article class="prose">
+<h1>{p.ui.privacy}</h1><p>{p.ui.about}</p>
+<h2>Local-first</h2><p>SimsimLAB calculates quiz answers in your browser. Solo answers are not sent to a SimsimLAB backend because there is no application backend.</p>
+<h2>2 Player links</h2><p>Two-player answer data is packed into the URL fragment after #. Browsers do not send URL fragments in normal HTTP requests. Optional nicknames are only included in the fragment when you choose to add one.</p>
+<h2>Browser storage</h2><p>Favorites and recently tried tests use localStorage. You can clear them with your browser’s site-data controls at any time.</p>
+<h2>Hosting logs</h2><p>GitHub Pages or a future CDN may process normal connection information such as IP address and user agent as part of serving the site. SimsimLAB does not add an analytics provider in this release.</p>
+</article></BaseLayout>

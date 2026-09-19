@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import TestCard from '../../components/TestCard.astro';
+import AdSlot from '../../components/AdSlot.astro';
+import { localeCodes, getPack } from '../../data/locales.mjs';
+import { getHomeCards, flagshipSlugs } from '../../data/content.mjs';
+export function getStaticPaths(){ return localeCodes.map(locale=>({params:{locale}})); }
+const {locale}=Astro.params; const p=getPack(locale); const tests=getHomeCards(locale);
+const featured=flagshipSlugs.map(s=>tests.find(t=>t.slug===s)).filter(Boolean); const duo=tests.filter(t=>t.duo); const base=import.meta.env.BASE_URL;
+const categories=['all','everyday','love','fantasy','chaos','whatif','two'];
+---
+<BaseLayout locale={locale} title={`SimsimLAB — ${p.ui.hero}`} description={p.ui.sub}>
+<section class="hero-shell">
+ <div class="hero-copy"><h1>{p.ui.hero}</h1><p>{p.ui.sub}</p><a class="primary-cta" href="#all-tests" data-random-test data-track="random_quiz_click">🎲 {p.ui.surprise}<span>→</span></a><p class="privacy-note">{p.ui.about}</p></div>
+ <div class="hero-visual" aria-hidden="true"><div class="hero-card"><span>GOOD<br/>QUESTIONS<br/><b>BRIGHTER YOU</b></span></div><div class="hero-cat"><span class="ears">△　△</span><span class="face">•ᴗ•</span><span class="glasses">▰ ▰</span></div><span class="doodle d1">✦</span><span class="doodle d2">★</span><span class="doodle d3">↗</span><span class="bubble">same boring you?<br/><b>no thanks</b></span></div>
+</section>
+<section class="section" id="featured"><div class="section-heading"><div><h2>⭐ {p.ui.featured}</h2><p>{p.ui.featuredSub}</p></div></div><div class="featured-grid">{featured.map((t,i)=><TestCard test={t} locale={locale} index={i}/>)}</div></section>
+<section class="section two-band" id="two-player"><div class="section-heading"><div><h2>👥 {p.ui.two}</h2><p>{p.ui.twoSub}</p></div></div><div class="duo-grid">{duo.map((t,i)=><a class="duo-card" href={`${base}${locale}/tests/${t.slug}/`} data-track="quiz_card_click" data-quiz={t.slug}><span>{t.emoji}</span><div><h3>{t.title}</h3><p>{t.shortDescription}</p></div><b>→</b></a>)}</div></section>
+<AdSlot name="home-mid"/>
+<section class="section recent-shell" data-recent-section hidden><div class="section-heading"><h2>🕘 {p.ui.recent}</h2></div><div class="recent-grid" data-recent-grid></div></section>
+<section class="section" id="all-tests">
+ <div class="section-heading explore-heading"><div><h2>🎮 {p.ui.explore}</h2><p>{p.ui.localOnly}</p></div><label class="search"><span>⌕</span><input type="search" data-test-search placeholder={p.ui.search}/></label></div>
+ <div class="category-tabs" role="group" aria-label={p.ui.category}>{categories.map((k,i)=><button type="button" class={i===0?'active':''} data-category-filter={k}>{p.categories[k]}</button>)}</div>
+ <div class="all-grid" data-test-grid>{tests.map((t,i)=><TestCard test={t} locale={locale} index={i}/>)}</div><div class="empty-search" data-empty-search hidden>¯\_(ツ)_/¯</div>
+</section>
+<section class="random-strip"><p>{p.ui.hero}</p><a class="primary-cta pink" href="#all-tests" data-random-test data-track="random_quiz_click">🎲 {p.ui.randomAgain}<span>→</span></a></section>
+<script type="application/json" id="home-card-data" set:html={JSON.stringify(tests.map(t=>({slug:t.slug,title:t.title,emoji:t.emoji,accent:t.accent,duo:t.duo,url:`${base}${locale}/tests/${t.slug}/`}))).replace(/</g,'\\u003c')}></script>
+<script type="module" src={`${base}home.js`}></script>
+</BaseLayout>
