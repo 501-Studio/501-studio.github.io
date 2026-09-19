@@ -1,1 +1,12 @@
-The requested file reference is not currently visible. Use files.search or files.list to rediscover the file, then retry with a returned ref_id or file_id.
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import {localeCodes,getPack} from '../../data/locales.mjs';
+export function getStaticPaths(){return localeCodes.map(locale=>({params:{locale}}));}
+const {locale}=Astro.params; const p=getPack(locale);
+---
+<BaseLayout locale={locale} title={`${p.ui.terms} | SimsimLAB`} description={p.ui.forFun}>
+<article class="prose"><h1>{p.ui.terms}</h1><p>{p.ui.forFun}</p>
+<h2>Entertainment only</h2><p>Scores, compatibility percentages, archetypes, and descriptions are playful deterministic outputs derived from the options you choose. They are not probability estimates, medical claims, employment advice, or relationship predictions.</p>
+<h2>Sharing</h2><p>Share only content you are comfortable making available to people who receive the link or image. Do not use results to pressure, insult, or rank another person.</p>
+<h2>Changes</h2><p>Quiz wording and scoring may be refined over time. The same version and the same answers always produce the same result and metrics.</p>
+</article></BaseLayout>
