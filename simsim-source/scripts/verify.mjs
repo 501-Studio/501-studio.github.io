@@ -14,6 +14,9 @@ for(const l of localeCodes){
     const x=getLocalizedTest(l,t.slug);
     assert(x.questions.length===8,`${l}/${t.slug}: 8 questions`);
     assert(x.questions.every(q=>q.answers.length===4),`${l}/${t.slug}: 4 answers`);
+    assert(x.questions.every(q=>new Set(q.answers.map(a=>typeof a==='string'?a:a.text)).size===4),`${l}/${t.slug}: unique answers inside question`);
+    assert(new Set(x.questions.map(q=>q.answers.map(a=>typeof a==='string'?a:a.text).join('||'))).size===8,`${l}/${t.slug}: each question has a different answer set`);
+    assert(x.questions.every(q=>q.answers.every((a,i)=>typeof a==='string'||(Number.isInteger(a.value)&&a.value>=0&&a.value<4&&typeof a.text==='string'&&a.text.trim()))),`${l}/${t.slug}: scored answer objects`);
     assert(x.results.length===5,`${l}/${t.slug}: 5 results`);
     assert(x.metrics.length===4,`${l}/${t.slug}: 4 metrics`);
     const raw=JSON.stringify(x);
