@@ -1,0 +1,18 @@
+import L0 from './locales/en.mjs';
+import L1 from './locales/ko.mjs';
+import L2 from './locales/es.mjs';
+import L3 from './locales/pt-BR.mjs';
+import L4 from './locales/ja.mjs';
+import L5 from './locales/id.mjs';
+import L6 from './locales/hi.mjs';
+import L7 from './locales/de.mjs';
+import L8 from './locales/fr.mjs';
+import L9 from './locales/ar.mjs';
+import L10 from './locales/vi.mjs';
+import L11 from './locales/th.mjs';
+import L12 from './locales/tr.mjs';
+import L13 from './locales/zh-CN.mjs';
+export const localePacks = {"en":L0,"ko":L1,"es":L2,"pt-BR":L3,"ja":L4,"id":L5,"hi":L6,"de":L7,"fr":L8,"ar":L9,"vi":L10,"th":L11,"tr":L12,"zh-CN":L13};
+export const localeCodes=Object.keys(localePacks);
+export const defaultLocale='en';
+export const getPack=(code)=>localePacks[code]||localePacks[defaultLocale];
