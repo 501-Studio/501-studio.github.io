@@ -1,0 +1,57 @@
+name: Publish SimsimLAB subsite
+on:
+  push:
+    branches: [simsim-lab-staging-20260919]
+    paths:
+      - 'simsim-source/**'
+      - '.github/workflows/simsim-publish.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: simsim-publish
+  cancel-in-progress: true
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout staging source
+        uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install and verify
+        working-directory: simsim-source
+        run: |
+          npm install --no-audit --no-fund
+          npm run verify
+          npm run build
+          test "$(find dist -path '*/tests/*/index.html' | wc -l)" -eq 700
+      - name: Checkout main site
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          path: main-site
+          fetch-depth: 0
+      - name: Copy built site without touching existing pages
+        run: |
+          rm -rf main-site/simsim-lab
+          mkdir -p main-site/simsim-lab
+          cp -a simsim-source/dist/. main-site/simsim-lab/
+          touch main-site/.nojekyll
+          test -f main-site/simsim-lab/ko/tests/rpg-class/index.html
+          test -f main-site/simsim-lab/ar/tests/dating-style/index.html
+      - name: Commit generated static site to main
+        working-directory: main-site
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .nojekyll simsim-lab
+          if git diff --cached --quiet; then
+            echo "No generated changes"
+            exit 0
+          fi
+          git commit -m "Deploy SimsimLAB global quiz site"
+          git push origin HEAD:main
