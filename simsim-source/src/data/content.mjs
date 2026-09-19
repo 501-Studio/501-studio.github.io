@@ -1,5 +1,6 @@
 import { tests, flagshipSlugs } from './catalog.mjs';
 import { getPack } from './locales.mjs';
+import { getAnswerSet } from './answerSets.mjs';
 
 const themedNames = {
   en: {
@@ -33,10 +34,13 @@ function recommend(test){
 export function getLocalizedTest(locale, slug){
   const p=getPack(locale); const i=tests.findIndex(t=>t.slug===slug); if(i<0) return null;
   const base=tests[i]; const title=p.titles[i];
-  const questions=p.prompts.map((prompt,qi)=>({
-    question:fill(prompt,{topic:title}),
-    answers:p.answers.map((a,ai)=> `${a}${qi===7 && ai===3 ? ' ✦' : ''}`)
-  }));
+  const questions=p.prompts.map((prompt,qi)=>{
+    const semantic=getAnswerSet(locale,qi,p.answers).map(text=>fill(text,{topic:title}));
+    const patterns=[[0,1,2,3],[1,3,0,2],[2,0,3,1],[3,1,2,0],[0,2,1,3],[1,0,3,2],[2,3,0,1],[3,2,1,0]];
+    const shift=i%4;
+    const order=patterns[qi].map(axis=>(axis+shift)%4);
+    return {question:fill(prompt,{topic:title}),answers:order.map(axis=>({text:semantic[axis],value:axis}))};
+  });
   const metrics=p.metrics[base.category] || p.metrics.two;
   if(base.duo){
     const results=p.duoTiers.map((name,ri)=>({
