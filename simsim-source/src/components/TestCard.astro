@@ -1,0 +1,10 @@
+---
+const {test, locale, index=0}=Astro.props; const base=import.meta.env.BASE_URL;
+---
+<article class={`test-card accent-${test.accent}`} data-category={test.category} data-title={test.title.toLocaleLowerCase(locale)}>
+  <a class="card-main" href={`${base}${locale}/tests/${test.slug}/`} data-track="quiz_card_click" data-quiz={test.slug}>
+    <div class="card-art"><span class="card-emoji" aria-hidden="true">{test.emoji}</span><span class="spark">✦</span></div>
+    <div class="card-copy"><p class="card-kicker">TEST {String(index+1).padStart(2,'0')}</p><h3>{test.title}</h3><p>{test.shortDescription}</p></div>
+  </a>
+  <div class="card-meta"><span>8 Q · 2 min</span><button class="favorite-button" type="button" aria-label="Favorite" data-favorite={test.slug}>♡</button></div>
+</article>

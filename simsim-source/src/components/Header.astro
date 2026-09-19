@@ -1,0 +1,15 @@
+---
+import { localeCodes, getPack } from '../data/locales.mjs';
+const { locale, slug = '', page='home' } = Astro.props;
+const pack=getPack(locale); const base=import.meta.env.BASE_URL;
+const urlFor=(l)=> page==='test' ? `${base}${l}/tests/${slug}/` : `${base}${l}/`;
+---
+<header class="site-header">
+  <a class="brand" href={`${base}${locale}/`} aria-label="SimsimLAB home"><span class="brand-flask" aria-hidden="true">⚗</span><strong>Simsim<span>LAB</span></strong></a>
+  <nav class="desktop-nav" aria-label="Primary"><a href={`${base}${locale}/#featured`}>{pack.ui.featured}</a><a href={`${base}${locale}/#two-player`}>{pack.ui.two}</a><a href={`${base}${locale}/#all-tests`}>{pack.ui.explore}</a></nav>
+  <div class="header-tools">
+    <label class="locale-select"><span class="sr-only">{pack.ui.language}</span><select id="locale-select" aria-label={pack.ui.language}>{localeCodes.map(l=><option value={urlFor(l)} selected={l===locale}>{getPack(l).name}</option>)}</select></label>
+    <button class="menu-button" type="button" data-menu-toggle aria-label={pack.ui.menu}>☰</button>
+  </div>
+  <nav class="mobile-nav" data-mobile-menu hidden><a href={`${base}${locale}/#featured`}>{pack.ui.featured}</a><a href={`${base}${locale}/#two-player`}>{pack.ui.two}</a><a href={`${base}${locale}/#all-tests`}>{pack.ui.explore}</a><a href={`${base}${locale}/privacy/`}>{pack.ui.privacy}</a></nav>
+</header>

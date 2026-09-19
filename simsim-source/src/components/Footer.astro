@@ -1,0 +1,5 @@
+---
+import { getPack } from '../data/locales.mjs';
+const {locale}=Astro.props; const p=getPack(locale); const base=import.meta.env.BASE_URL;
+---
+<footer class="site-footer"><div><a class="brand footer-brand" href={`${base}${locale}/`}><span class="brand-flask">⚗</span><strong>Simsim<span>LAB</span></strong></a><p>{p.ui.about}</p></div><div class="footer-links"><a href={`${base}${locale}/privacy/`}>{p.ui.privacy}</a><a href={`${base}${locale}/terms/`}>{p.ui.terms}</a></div><p class="disclaimer">{p.ui.forFun}</p></footer>
