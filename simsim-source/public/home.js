@@ -1,0 +1,8 @@
+import {track} from './analytics.js';
+const q=(s,r=document)=>r.querySelector(s),qa=(s,r=document)=>[...r.querySelectorAll(s)];const cards=JSON.parse(q('#home-card-data')?.textContent||'[]');
+track('homepage_view',{locale:document.documentElement.lang});
+qa('[data-category-filter]').forEach(b=>b.addEventListener('click',()=>{qa('[data-category-filter]').forEach(x=>x.classList.toggle('active',x===b));const k=b.dataset.categoryFilter;qa('[data-test-grid] .test-card').forEach(c=>c.hidden=k!=='all'&&c.dataset.category!==k)}));
+q('[data-test-search]')?.addEventListener('input',e=>{const term=e.target.value.trim().toLocaleLowerCase(document.documentElement.lang);let n=0;qa('[data-test-grid] .test-card').forEach(c=>{const show=!term||c.dataset.title.includes(term);c.hidden=!show;if(show)n++});q('[data-empty-search]').hidden=n>0});
+qa('[data-random-test]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();const solos=cards.filter(x=>!x.duo),t=solos[Math.floor(Math.random()*solos.length)];track('random_quiz_click',{locale:document.documentElement.lang,quizSlug:t.slug});location.href=t.url}));
+const recent=window.SimsimStorage?.read(window.SimsimStorage.recentKey)||[];const list=recent.map(s=>cards.find(c=>c.slug===s)).filter(Boolean).slice(0,4);
+if(list.length){const sec=q('[data-recent-section]'),grid=q('[data-recent-grid]');sec.hidden=false;grid.innerHTML=list.map(x=>`<a href="${x.url}"><span style="font-size:28px">${x.emoji}</span><strong>${x.title}</strong></a>`).join('')}

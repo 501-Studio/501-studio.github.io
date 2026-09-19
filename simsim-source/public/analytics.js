@@ -1,0 +1,3 @@
+const allowed=new Set(['homepage_view','quiz_card_click','quiz_start','question_answer','quiz_complete','result_view','result_share','result_image_save','copy_link','two_player_invite','two_player_complete','next_quiz_click','random_quiz_click','locale_change']);
+export function track(name,props={}){if(!allowed.has(name))return;const safe={event:name,locale:props.locale,quizSlug:props.quizSlug,referrer:props.referrer||document.referrer||undefined,resultType:props.resultType};window.dispatchEvent(new CustomEvent('simsim:analytics',{detail:safe}));if(Array.isArray(window.dataLayer))window.dataLayer.push(safe);}
+window.SimsimAnalytics={track};

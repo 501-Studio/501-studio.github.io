@@ -1,0 +1,26 @@
+name: SimsimLAB Build QA
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm install --no-audit --no-fund
+      - run: npm run verify
+      - run: npm run build
+      - name: Assert generated pages
+        run: |
+          test -f dist/en/tests/zombie-survival/index.html
+          test -f dist/ko/tests/rpg-class/index.html
+          test -f dist/ar/tests/dating-style/index.html
+          test -f dist/zh-CN/tests/friendship-compatibility/index.html
+          grep -q 'dir="rtl"' dist/ar/tests/zombie-survival/index.html
+          grep -q 'hreflang="x-default"' dist/ja/tests/rpg-class/index.html
