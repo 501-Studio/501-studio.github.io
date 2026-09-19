@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#d9f77c"><meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'sha256-1LL3rIk0fHpIdipqKaO0mRV1TbnCY/SUjeDCYJydTU0=' 'sha256-qKKVLm7r29EwxidPziAPkB0g9GV85NiSNHJXI3GqcHw=' 'sha256-oFKjYq8AgJGHqi1xYI6AqLChQ68QRIDb8WcLKv+DIA0=' 'sha256-YHnp0AtvI0Fya1SlcT2AUOPaZRBPJBs3rZGvkJwZVQ0=' 'sha256-Y+47m3v5PK8/8EaFjhiPQe/vCyfkbIdLlkHfOSw4KGs=' 'sha256-jYNY/Ixn7crl4lM8IoiKWpaUFmkyFE79IXLaXnLLNYc=' 'sha256-EzH7z3xcfBV1zzggjpXqAfbrmqBdhvhSwjpA5RrFQJc='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'none'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-1LL3rIk0fHpIdipqKaO0mRV1TbnCY/SUjeDCYJydTU0=' 'sha256-qKKVLm7r29EwxidPziAPkB0g9GV85NiSNHJXI3GqcHw=' 'sha256-oFKjYq8AgJGHqi1xYI6AqLChQ68QRIDb8WcLKv+DIA0=' 'sha256-YHnp0AtvI0Fya1SlcT2AUOPaZRBPJBs3rZGvkJwZVQ0=' 'sha256-Y+47m3v5PK8/8EaFjhiPQe/vCyfkbIdLlkHfOSw4KGs=' 'sha256-jYNY/Ixn7crl4lM8IoiKWpaUFmkyFE79IXLaXnLLNYc=' 'sha256-EzH7z3xcfBV1zzggjpXqAfbrmqBdhvhSwjpA5RrFQJc='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'none'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
 <title>톡텐션 — 우리 대화, 지금 몇 도야?</title><meta name="description" content="카톡과 인스타 DM을 붙여 넣거나 TXT·JSON으로 가져오고 텐션, 말풍선 비율, 답장 간격과 대화 유형을 확인하세요. 서버 전송 없이 브라우저에서만 분석하는 무료 대화 놀이.">
 <meta property="og:type" content="website"><meta property="og:title" content="톡텐션 — 우리 대화, 지금 몇 도야?"><meta property="og:description" content="대화 텐션부터 나의 대화 유형까지. 원문은 내 기기에, 결과는 친구에게! 심리 진단이 아닌 가벼운 대화 놀이."><meta name="twitter:card" content="summary">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23d9f77c'/%3E%3Cpath d='M16 17h32v25H31l-11 8v-8h-4z' fill='%23212924'/%3E%3Ccircle cx='26' cy='29' r='3' fill='%23d9f77c'/%3E%3Ccircle cx='39' cy='29' r='3' fill='%23d9f77c'/%3E%3C/svg%3E">
@@ -21,7 +21,7 @@
 
 .deep-quality>div:last-child{flex-shrink:0;min-width:82px}.deep-quality>div:last-child p{white-space:nowrap;font-size:10px}
 </style>
-</head><body>
+<link rel="stylesheet" href="visuals.css?v=1.3.0">\n</head><body>
 <a href="#chat" class="skip">대화 입력으로 바로가기</a><noscript>톡텐션은 브라우저에서만 계산합니다. 사용하려면 JavaScript를 켜주세요. 대화는 서버로 전송되지 않습니다.</noscript>
 <header class="wrap nav"><a href="./" class="brand" aria-label="톡텐션 처음으로"><svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="13" fill="#d9f77c"/><path d="M10 10h21v17H20l-7 5v-5h-3z" fill="#212924"/><circle cx="16" cy="18" r="2" fill="#d9f77c"/><circle cx="25" cy="18" r="2" fill="#d9f77c"/></svg>톡텐션</a><nav class="navlinks" aria-label="메인 메뉴"><a href="#how">사용 가이드</a><a href="#faq">궁금한 점</a><span class="navnote">JUST FOR FUN.</span></nav></header>
 <main class="wrap">
@@ -508,4 +508,4 @@ $('deepDemoBtn').addEventListener('click',()=>{epoch++;clearInput();chooseSource
 window.addEventListener('hashchange',()=>{if(!restoreShared()&&!location.hash)reset(false);});
 window.addEventListener('pagehide',()=>{reset(false);});chooseSource('kakao');restoreShared();
 })();
-</script></body></html>
+</script><script src="visuals.js?v=1.3.0" defer></script>\n</body></html>
