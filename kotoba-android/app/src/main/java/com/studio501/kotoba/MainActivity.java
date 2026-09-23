@@ -25,14 +25,14 @@ import androidx.webkit.WebViewCompat;
 import androidx.webkit.WebViewFeature;
 import com.google.mlkit.common.model.DownloadConditions;
 import com.google.mlkit.common.model.RemoteModelManager;
-import com.google.mlkit.vision.digitalink.DigitalInkRecognition;
-import com.google.mlkit.vision.digitalink.DigitalInkRecognitionModel;
-import com.google.mlkit.vision.digitalink.DigitalInkRecognitionModelIdentifier;
-import com.google.mlkit.vision.digitalink.DigitalInkRecognizer;
-import com.google.mlkit.vision.digitalink.DigitalInkRecognizerOptions;
-import com.google.mlkit.vision.digitalink.Ink;
-import com.google.mlkit.vision.digitalink.RecognitionContext;
-import com.google.mlkit.vision.digitalink.WritingArea;
+import com.google.mlkit.vision.digitalink.recognition.DigitalInkRecognition;
+import com.google.mlkit.vision.digitalink.recognition.DigitalInkRecognitionModel;
+import com.google.mlkit.vision.digitalink.recognition.DigitalInkRecognitionModelIdentifier;
+import com.google.mlkit.vision.digitalink.recognition.DigitalInkRecognizer;
+import com.google.mlkit.vision.digitalink.recognition.DigitalInkRecognizerOptions;
+import com.google.mlkit.vision.digitalink.recognition.Ink;
+import com.google.mlkit.vision.digitalink.recognition.RecognitionContext;
+import com.google.mlkit.vision.digitalink.recognition.WritingArea;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.io.ByteArrayInputStream;
@@ -151,6 +151,7 @@ public final class MainActivity extends ComponentActivity {
             ink.addStroke(stroke.build());
         }
         if(points<3){respond(p,null,"한 글자를 직접 써 주세요.");return;}recognizing=true;
+        // Never provide the expected answer or lesson vocabulary as recognition context.
         RecognitionContext context=RecognitionContext.builder().setWritingArea(new WritingArea(1000,1000)).build();
         RemoteModelManager.getInstance().isModelDownloaded(model).addOnSuccessListener(available->{
             if(!available){recognizing=false;respond(p,null,"설정에서 일본어 손글씨 모델을 먼저 다운로드해 주세요.");return;}

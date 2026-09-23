@@ -1,19 +1,33 @@
-name: Kotoba Android bridge compile
+name: Kotoba Android build and curriculum verification
 on:
   push:
     branches: [feature/kotoba-curriculum-v03]
-    paths: ['kotoba-android/**', '.github/workflows/kotoba-android-check.yml']
+    paths: ['jlpt-quest/**', 'kotoba-android/**', '.github/workflows/kotoba-android-check.yml']
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  compile:
+  verify-and-build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build icons and verify immutable licensed N1-N5 data
+        working-directory: jlpt-quest
+        run: npm run build
+      - name: Run curriculum and recognition-contract regression tests
+        working-directory: jlpt-quest
+        run: npm test
+      - name: Bundle all vocabulary and web assets for Android
+        working-directory: jlpt-quest
+        env:
+          KOTOBA_ANDROID_DIR: ../kotoba-android
+        run: npm run android:sync
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -27,9 +41,22 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.13'
-      - name: Verify actual Android and ML Kit APIs
+      - name: Build internal test APK and check Android lint
         working-directory: kotoba-android
-        run: gradle :app:compileDebugJavaWithJavac :app:lintDebug --stacktrace
+        run: gradle :app:assembleDebug :app:lintDebug --stacktrace
+      - name: Keep internal test APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: kotoba-v03-internal-debug-apk
+          path: kotoba-android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
+      - name: Keep reproducible full web bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: kotoba-v03-web-with-full-curriculum
+          path: jlpt-quest/
+          retention-days: 7
       - name: Keep compiler and lint evidence
         if: always()
         uses: actions/upload-artifact@v4
