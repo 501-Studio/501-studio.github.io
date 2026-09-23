@@ -1,5 +1,5 @@
-const CACHE='kotoba-quest-v0.1.0';
-const FILES=['./','./index.html','./styles.css','./icon.svg','./icon-192.png','./manifest.webmanifest','./src/app.js','./src/engine.js','./src/content.js','./src/ui.js','./src/audio.js','./src/handwriting.js'];
+const CACHE='kotoba-quest-v0.1.1';
+const FILES=['./','./index.html','./styles.css','./typography.css','./icon.svg','./icon-192.png','./manifest.webmanifest','./src/app.js','./src/engine.js','./src/content.js','./src/ui.js','./src/audio.js','./src/handwriting.js'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES)));});
 // No skipWaiting: a newer shell must not replace a live lesson mid-session.
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('kotoba-quest-')&&key!==CACHE).map(key=>caches.delete(key)))));});
