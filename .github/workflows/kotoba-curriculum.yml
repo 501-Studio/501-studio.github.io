@@ -1,0 +1,33 @@
+name: Kotoba pinned curriculum verification
+on:
+  push:
+    branches: [feat/kotoba-v03-android-course]
+    paths: [jlpt-quest/scripts/fetch-curriculum.py, .github/workflows/kotoba-curriculum.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  curriculum:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/kotoba-v03-android-course
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build and verify all five pinned levels
+        run: python3 jlpt-quest/scripts/fetch-curriculum.py
+      - name: Save generated vocabulary to this feature branch only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add jlpt-quest/data/curriculum.json jlpt-quest/data/OpenJLPT-NOTICE.md jlpt-quest/data/content-build-report.json
+          git diff --cached --quiet || git commit -m 'data(kotoba): bundle and audit pinned N1-N5 vocabulary'
+          git push origin HEAD:feat/kotoba-v03-android-course
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kotoba-full-vocabulary
+          path: jlpt-quest/data/
+          retention-days: 30
