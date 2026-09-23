@@ -1,0 +1,31 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'com.studio501.kotoba'
+    compileSdk 36
+    defaultConfig {
+        applicationId 'com.studio501.kotoba'
+        minSdk 26
+        targetSdk 36
+        versionCode 300
+        versionName '0.3.0'
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+    }
+    buildFeatures { buildConfig true }
+    buildTypes {
+        debug { applicationIdSuffix '.debug'; versionNameSuffix '-debug' }
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    lint { abortOnError true; checkReleaseBuilds true }
+    packaging { jniLibs { useLegacyPackaging = false } }
+}
+dependencies {
+    implementation 'androidx.webkit:webkit:1.16.0'
+    implementation 'com.google.mlkit:digital-ink-recognition:19.0.0'
+    implementation 'com.google.mlkit:translate:17.0.3'
+    testImplementation 'junit:junit:4.13.2'
+}
