@@ -1,0 +1,39 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'com.studio501.kotoba'
+    compileSdk 36
+    defaultConfig {
+        applicationId 'com.studio501.kotoba'
+        minSdk 23
+        targetSdk 36
+        versionCode 3
+        versionName '0.3.0'
+    }
+    buildFeatures { buildConfig true }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    buildTypes {
+        debug { applicationIdSuffix '.debug'; versionNameSuffix '-internal' }
+        release { minifyEnabled true; shrinkResources true; proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro' }
+    }
+    lint { abortOnError true }
+}
+dependencies {
+    implementation 'androidx.activity:activity:1.10.1'
+    implementation 'androidx.webkit:webkit:1.14.0'
+    implementation 'com.google.mlkit:digital-ink-recognition:19.0.0'
+}
+tasks.configureEach { task ->
+    if (task.name == 'preReleaseBuild') task.doFirst {
+        def marker = file('src/main/assets/www/data/coverage.json')
+        if (!marker.exists()) throw new GradleException('Run content:fetch and android:sync before a release build.')
+        def coverage = new groovy.json.JsonSlurper().parse(marker)
+        if (!coverage.allPacksComplete) throw new GradleException('Full N1-N5 packs are missing. Release blocked.')
+        def approvalFile = file('../../release-approval.json')
+        if (!approvalFile.exists()) throw new GradleException('Release QA approval missing. Use debug builds.')
+        def approval = new groovy.json.JsonSlurper().parse(approvalFile)
+        ['physicalDeviceInk','physicalDeviceAudio','offlineRestore','contentEditorialReview','privacyAndDataSafety','signedBundle','closedTesting'].each { key ->
+            if (approval[key] != true) throw new GradleException('Release QA not approved: ' + key)
+        }
+        if (coverage.levels.values().any { it.english > 0 }) throw new GradleException('Korean content localization is incomplete.')
+    }
+}
