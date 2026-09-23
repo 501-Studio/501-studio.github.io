@@ -113,6 +113,9 @@ public final class MainActivity extends ComponentActivity {
         try { DigitalInkRecognitionModelIdentifier identifier=DigitalInkRecognitionModelIdentifier.fromLanguageTag("ja");
             if(identifier!=null){model=DigitalInkRecognitionModel.builder(identifier).build();recognizer=DigitalInkRecognition.getClient(DigitalInkRecognizerOptions.builder(model).build());}
         } catch(Exception ignored) { /* Explicit unavailable response below. */ }
+        // Digital Ink models cannot be packaged as an APK asset by this API. Start preparing
+        // the Japanese model automatically on first launch, and retry automatically on use.
+        prepareInkModel();
         tts=new TextToSpeech(this,status->{ttsReady=status==TextToSpeech.SUCCESS;});
         tts.setOnUtteranceProgressListener(new UtteranceProgressListener(){
             @Override public void onStart(String id) {}
@@ -141,6 +144,30 @@ public final class MainActivity extends ComponentActivity {
             }
         } catch(Exception e){respond(request,null,"요청을 처리하지 못했습니다.");}
     }
+    private void prepareInkModel() {
+        if(model==null)return;
+        RemoteModelManager manager=RemoteModelManager.getInstance();
+        manager.isModelDownloaded(model)
+            .addOnSuccessListener(ready->{if(!ready)manager.download(model,new DownloadConditions.Builder().build());})
+            .addOnFailureListener(error->{/* Handwriting will retry the download when first used. */});
+    }
+    private void runRecognition(Pending p,Ink ink,RecognitionContext context) {
+        recognizer.recognize(ink,context).addOnSuccessListener(result->{
+            recognizing=false;
+            JSONArray candidates=new JSONArray();
+            for(int i=0;i<Math.min(5,result.getCandidates().size());i++)candidates.put(result.getCandidates().get(i).getText());
+            try{respond(p,new JSONObject().put("candidates",candidates),null);}catch(Exception ignored){}
+        }).addOnFailureListener(error->{recognizing=false;respond(p,null,"손글씨를 판독하지 못했습니다. 다시 써 주세요.");});
+    }
+    private void recognizeWhenReady(Pending p,Ink ink,RecognitionContext context) {
+        RemoteModelManager manager=RemoteModelManager.getInstance();
+        manager.isModelDownloaded(model).addOnSuccessListener(available->{
+            if(available){runRecognition(p,ink,context);return;}
+            manager.download(model,new DownloadConditions.Builder().build())
+                .addOnSuccessListener(v->runRecognition(p,ink,context))
+                .addOnFailureListener(error->{recognizing=false;respond(p,null,"손글씨 인식 모델을 자동으로 준비하지 못했습니다. 네트워크 연결과 저장 공간을 확인한 뒤 다시 눌러 주세요.");});
+        }).addOnFailureListener(error->{recognizing=false;respond(p,null,"손글씨 인식 모델 상태를 확인하지 못했습니다. 잠시 후 다시 눌러 주세요.");});
+    }
     private void recognize(Pending p,JSONObject body) throws Exception {
         if(recognizer==null||model==null){respond(p,null,"일본어 손글씨 인식을 사용할 수 없습니다.");return;}
         if(recognizing){respond(p,null,"이전 글자를 확인하고 있습니다.");return;}
@@ -153,10 +180,7 @@ public final class MainActivity extends ComponentActivity {
         if(points<3){respond(p,null,"한 글자를 직접 써 주세요.");return;}recognizing=true;
         // Never provide the expected answer or lesson vocabulary as recognition context.
         RecognitionContext context=RecognitionContext.builder().setWritingArea(new WritingArea(1000,1000)).build();
-        RemoteModelManager.getInstance().isModelDownloaded(model).addOnSuccessListener(available->{
-            if(!available){recognizing=false;respond(p,null,"설정에서 일본어 손글씨 모델을 먼저 다운로드해 주세요.");return;}
-            recognizer.recognize(ink.build(),context).addOnSuccessListener(result->{recognizing=false;JSONArray candidates=new JSONArray();for(int i=0;i<Math.min(5,result.getCandidates().size());i++)candidates.put(result.getCandidates().get(i).getText());try{respond(p,new JSONObject().put("candidates",candidates),null);}catch(Exception ignored){}}).addOnFailureListener(e->{recognizing=false;respond(p,null,"손글씨를 판독하지 못했습니다. 다시 써 주세요.");});
-        }).addOnFailureListener(e->{recognizing=false;respond(p,null,"인식 모델을 확인하지 못했습니다.");});
+        recognizeWhenReady(p,ink.build(),context);
     }
     private void speak(Pending p,JSONObject body) throws Exception {
         stopSpeech("새로운 재생이 시작되었습니다.");if(!ttsReady||tts==null){respond(p,null,"음성 엔진을 준비하고 있습니다. 다시 눌러 주세요.");return;}
