@@ -1,4 +1,4 @@
-name: Kotoba offline stroke APK verification
+name: Kotoba v0.3.3 chapter review and relaxed stroke verification
 on:
   push:
     branches: [feature/kotoba-curriculum-v03]
@@ -7,25 +7,25 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: kotoba-stroke-${{ github.ref }}
-  cancel-in-progress: true
+  group: kotoba-v033-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   verify-and-build:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     env:
-      KOTOBA_EVIDENCE_DIR: /tmp/kotoba-snap-qa
+      KOTOBA_EVIDENCE_DIR: /tmp/kotoba-v033-evidence
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Apply source migration to local stroke engine
-        run: python3 jlpt-quest/scripts/upgrade-snap.py
+      - name: Apply v0.3.3 chapter review migration
+        run: python3 jlpt-quest/scripts/upgrade-v033.py
       - name: Build complete offline vocabulary and pinned stroke assets
         working-directory: jlpt-quest
         run: npm run build
-      - name: Regression tests including full stroke-bank coverage
+      - name: Regression tests for 30-word chapters, unknown-only exams and relaxed strokes
         working-directory: jlpt-quest
         run: npm test
       - name: Sync APK-local assets
@@ -51,45 +51,46 @@ jobs:
         run: |
           python3 -m pip install playwright==1.57.0
           python3 -m playwright install --with-deps chromium
-      - name: Verify actual Canvas, IndexedDB, touch and cold offline asset loading
+      - name: Verify rendered 30-word scan, 2x2 choices, relaxed snapping and cold offline assets
         working-directory: jlpt-quest
         run: |
           python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/kotoba-http.log 2>&1 &
           python3 tests/snap-browser.py
-      - name: Save migrated source and licensed stroke pack to feature branch only
+      - name: Save verified v0.3.3 source and generated packs to feature branch
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -u -- jlpt-quest kotoba-android
-          git add jlpt-quest/data/strokes.json jlpt-quest/data/stroke-coverage.json jlpt-quest/data/licenses/
-          git diff --cached --quiet || git commit -m 'feat(kotoba): persist verified APK-local stroke snapping source and templates'
+          git add jlpt-quest/data/strokes.json jlpt-quest/data/stroke-coverage.json jlpt-quest/data/licenses/ jlpt-quest/data/N1.json jlpt-quest/data/N2.json jlpt-quest/data/N3.json jlpt-quest/data/N4.json jlpt-quest/data/N5.json jlpt-quest/data/coverage.json
+          git diff --cached --quiet || git commit -m 'feat(kotoba): persist verified v0.3.3 30-word chapter flow'
           git push origin HEAD:feature/kotoba-curriculum-v03
-      - name: Package reproducible full source including bundled vocabulary
+      - name: Package reproducible full source
         run: |
           python3 - <<'PY'
           import zipfile,pathlib
-          with zipfile.ZipFile('/tmp/kotoba-0.3.2-source.zip','w',zipfile.ZIP_DEFLATED) as z:
+          with zipfile.ZipFile('/tmp/kotoba-0.3.3-source.zip','w',zipfile.ZIP_DEFLATED) as z:
               for folder in ['jlpt-quest','kotoba-android']:
                   for p in pathlib.Path(folder).rglob('*'):
                       if not p.is_file() or any(x in p.parts for x in ['build','.gradle','node_modules','__pycache__']): continue
                       if 'src/main/assets/' in str(p): continue
-                      z.write(p,'kotoba-0.3.2/'+str(p))
+                      z.write(p,'kotoba-0.3.3/'+str(p))
           PY
       - uses: actions/upload-artifact@v4
         with:
-          name: kotoba-0.3.2-offline-strokes
+          name: kotoba-0.3.3-chapter-review
           path: |
             kotoba-android/app/build/outputs/apk/debug/app-debug.apk
-            /tmp/kotoba-0.3.2-source.zip
+            /tmp/kotoba-0.3.3-source.zip
           if-no-files-found: error
           retention-days: 30
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: kotoba-0.3.2-verification
+          name: kotoba-0.3.3-verification
           path: |
-            /tmp/kotoba-snap-qa/
+            /tmp/kotoba-v033-evidence/
             kotoba-android/app/build/reports/
             jlpt-quest/data/stroke-coverage.json
+            /tmp/kotoba-http.log
           if-no-files-found: warn
           retention-days: 30
