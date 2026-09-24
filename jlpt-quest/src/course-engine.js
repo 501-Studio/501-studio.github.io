@@ -36,7 +36,7 @@ export function submit(state,taskId,result,now=Date.now()){
  // No "I was right" route: quiz writing requires a recognizer verdict; audio needs completed playback.
  if(!result||result.status==='unavailable'||result.status==='ambiguous')return false;
  if((t.skill==='audio'||t.skill==='listening')&&!s.heard)return false;
- if(['trace','writing'].includes(t.skill)&&!['shape-template','mlkit'].includes(result.method))return false;
+ if(['trace','writing'].includes(t.skill)&&!['shape-template','mlkit','stroke-snap'].includes(result.method))return false;
  if(t.skill==='trace'&&!result.correct)return false;
  if(t.phase==='learn'){
   state.encountered[t.wordId]=state.encountered[t.wordId]||now;
@@ -83,7 +83,7 @@ export function validateState(input){
  for(const field of ['encountered','learned'])for(const [id,time]of Object.entries(input[field]||{})){if(ID.test(id)&&n(time))s[field][id]=time;}
  for(const [key,r]of Object.entries(input.memory||{})){const [id,skill]=key.split(':');if(!ID.test(id)||!SKILLS.includes(skill))continue;
   if(!r||!Number.isInteger(r.stage)||r.stage<0||r.stage>5||!n(r.due)||!n(r.lapses)||!n(r.successes)||!n(r.consecutive))throw new Error('복습 기록이 손상되었습니다.');
-  s.memory[key]={stage:r.stage,due:r.due,lapses:r.lapses,successes:r.successes,consecutive:r.consecutive,lastAt:n(r.lastAt)?r.lastAt:0,lastSession:String(r.lastSession||'').slice(0,80),method:['mlkit','shape-template','choice'].includes(r.method)?r.method:'choice'};
+  s.memory[key]={stage:r.stage,due:r.due,lapses:r.lapses,successes:r.successes,consecutive:r.consecutive,lastAt:n(r.lastAt)?r.lastAt:0,lastSession:String(r.lastSession||'').slice(0,80),method:['mlkit','shape-template','stroke-snap','choice'].includes(r.method)?r.method:'choice'};
  }
  s.starred=[...new Set((input.starred||[]).filter(id=>typeof id==='string'&&ID.test(id)))];
  for(const [id,c]of Object.entries(input.completed||{}))if(/^N[1-5]-lesson-[a-z0-9]+$/.test(id)&&n(c?.at)&&Array.isArray(c.wordIds)&&c.wordIds.every(id=>ID.test(id)))s.completed[id]={at:c.at,wordIds:c.wordIds,attempts:n(c.attempts)?c.attempts:0,firstCorrect:n(c.firstCorrect)?c.firstCorrect:0};
@@ -102,7 +102,7 @@ function validateSession(q){
  for(const [key,val]of Object.entries(q.passed||{})){const [id,skill]=key.split(':');if(q.wordIds.includes(id)&&SKILLS.includes(skill)&&typeof val==='boolean')s.passed[key]=val;}
  s.firstMisses=Array.isArray(q.firstMisses)?q.firstMisses.filter(x=>typeof x==='string'&&x.length<60):[];
  if(q.feedback)s.feedback={correct:q.feedback.correct===true,training:q.feedback.training===true,method:String(q.feedback.method||'').slice(0,30),recognized:String(q.feedback.recognized||'').slice(0,60),reason:String(q.feedback.reason||'').slice(0,200),gained:Number.isFinite(q.feedback.gained)?Math.max(0,q.feedback.gained):0};
- if(q.ink&&Array.isArray(q.ink.characters)&&q.ink.characters.length<=24){s.ink={characters:q.ink.characters.map(lines=>Array.isArray(lines)?lines.slice(0,60).filter(line=>Array.isArray(line)&&line.length<=2000&&line.every(p=>Array.isArray(p)&&p.length>=2&&p.slice(0,2).every(n=>Number.isFinite(n)&&n>=0&&n<=1))).map(line=>line.map(p=>p.slice(0,2))):[]),active:Number.isInteger(q.ink.active)?Math.max(0,Math.min(q.ink.characters.length-1,q.ink.active)):0,results:q.ink.characters.map((_,i)=>q.ink.results?.[i]===true),...(['mlkit','shape-template'].includes(q.ink.method)?{method:q.ink.method}:{})};}
+ if(q.ink&&Array.isArray(q.ink.characters)&&q.ink.characters.length<=24){s.ink={...(q.ink.mode==='stroke-snap-v1'?{mode:'stroke-snap-v1',hadError:q.ink.hadError===true,misses:Number.isSafeInteger(q.ink.misses)&&q.ink.misses>=0?q.ink.misses:0}:{}),characters:q.ink.characters.map(lines=>Array.isArray(lines)?lines.slice(0,60).filter(line=>Array.isArray(line)&&line.length<=2000&&line.every(p=>Array.isArray(p)&&p.length>=2&&p.slice(0,2).every(n=>Number.isFinite(n)&&n>=0&&n<=1))).map(line=>line.map(p=>p.slice(0,2))):[]),active:Number.isInteger(q.ink.active)?Math.max(0,Math.min(q.ink.characters.length-1,q.ink.active)):0,results:q.ink.characters.map((_,i)=>q.ink.results?.[i]===true),...(['mlkit','shape-template','stroke-snap'].includes(q.ink.method)?{method:q.ink.method}:{})};}
  if(Array.isArray(q.wordSnapshots))s.wordSnapshots=q.wordSnapshots.filter(w=>w&&ID.test(w.id)&&q.wordIds.includes(w.id)&&typeof w.word==='string'&&typeof w.reading==='string'&&typeof w.meaning==='string').map(w=>({id:w.id,level:w.level,word:w.word.slice(0,60),reading:w.reading.slice(0,100),meaning:w.meaning.slice(0,4000),language:w.language==='ko'?'ko':'en'}));
  s.completed=s.finished&&unresolved(s).length===0;return s;
 }

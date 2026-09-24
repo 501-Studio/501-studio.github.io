@@ -16,6 +16,10 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.activity.ComponentActivity;
 import androidx.activity.OnBackPressedCallback;
 import androidx.webkit.JavaScriptReplyProxy;
@@ -23,16 +27,6 @@ import androidx.webkit.WebMessageCompat;
 import androidx.webkit.WebViewAssetLoader;
 import androidx.webkit.WebViewCompat;
 import androidx.webkit.WebViewFeature;
-import com.google.mlkit.common.model.DownloadConditions;
-import com.google.mlkit.common.model.RemoteModelManager;
-import com.google.mlkit.vision.digitalink.recognition.DigitalInkRecognition;
-import com.google.mlkit.vision.digitalink.recognition.DigitalInkRecognitionModel;
-import com.google.mlkit.vision.digitalink.recognition.DigitalInkRecognitionModelIdentifier;
-import com.google.mlkit.vision.digitalink.recognition.DigitalInkRecognizer;
-import com.google.mlkit.vision.digitalink.recognition.DigitalInkRecognizerOptions;
-import com.google.mlkit.vision.digitalink.recognition.Ink;
-import com.google.mlkit.vision.digitalink.recognition.RecognitionContext;
-import com.google.mlkit.vision.digitalink.recognition.WritingArea;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.io.ByteArrayInputStream;
@@ -45,17 +39,14 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** Native-only services. Strokes and the target answer are never sent to a server. */
+/** APK-local stroke engine runs in bundled JavaScript. Native bridge: speech and backups only. */
 public final class MainActivity extends ComponentActivity {
     private static final String ORIGIN = "https://appassets.androidplatform.net";
     private static final String START = ORIGIN + "/assets/www/index.html";
-    private static final String SOURCE = "/evanclan/OpenJLPT/c42fd9fa3777bfc1775446f7c418d549dfd6e4cf/data/json/vocab/";
     private static final int EXPORT = 201, IMPORT = 202, MAX_BACKUP = 30_000_000;
     private WebView web;
     private TextToSpeech tts;
-    private boolean ttsReady, destroyed, recognizing;
-    private DigitalInkRecognizer recognizer;
-    private DigitalInkRecognitionModel model;
+    private boolean ttsReady, destroyed;
     private final ExecutorService io = Executors.newSingleThreadExecutor();
     private Pending audio, picker;
     private String exportData;
@@ -75,12 +66,17 @@ public final class MainActivity extends ComponentActivity {
         super.onCreate(saved);
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);
         web=new WebView(this); web.setBackgroundColor(Color.rgb(245,246,249));
-        setContentView(web);
-        web.setOnApplyWindowInsetsListener((v,insets)->{
-            if(Build.VERSION.SDK_INT>=30){android.graphics.Insets i=insets.getInsets(WindowInsets.Type.systemBars()|WindowInsets.Type.displayCutout());v.setPadding(i.left,i.top,i.right,i.bottom);}
-            else v.setPadding(insets.getSystemWindowInsetLeft(),insets.getSystemWindowInsetTop(),insets.getSystemWindowInsetRight(),insets.getSystemWindowInsetBottom());
-            return insets;
+        // Inset the parent, not the WebView itself: CSS fixed buttons then stay above navigation.
+        WindowCompat.setDecorFitsSystemWindows(getWindow(),false);
+        FrameLayout frame=new FrameLayout(this);frame.setBackgroundColor(Color.rgb(245,246,249));
+        frame.addView(web,new FrameLayout.LayoutParams(-1,-1));setContentView(frame);
+        WindowCompat.getInsetsController(getWindow(),frame).setAppearanceLightStatusBars(true);
+        WindowCompat.getInsetsController(getWindow(),frame).setAppearanceLightNavigationBars(true);
+        ViewCompat.setOnApplyWindowInsetsListener(frame,(v,insets)->{
+            androidx.core.graphics.Insets i=insets.getInsets(WindowInsetsCompat.Type.systemBars()|WindowInsetsCompat.Type.displayCutout()|WindowInsetsCompat.Type.ime());
+            v.setPadding(i.left,i.top,i.right,i.bottom);return WindowInsetsCompat.CONSUMED;
         });
+        ViewCompat.requestApplyInsets(frame);
         WebSettings ws=web.getSettings();ws.setJavaScriptEnabled(true);ws.setDomStorageEnabled(true);
         ws.setAllowFileAccess(false);ws.setAllowContentAccess(false);ws.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         ws.setMediaPlaybackRequiresUserGesture(true);if(Build.VERSION.SDK_INT>=26)ws.setSafeBrowsingEnabled(true);
@@ -90,7 +86,6 @@ public final class MainActivity extends ComponentActivity {
                 Uri u=req.getUrl();if("https".equals(u.getScheme())&&"appassets.androidplatform.net".equals(u.getHost())){
                     WebResourceResponse res=assets.shouldInterceptRequest(u);return res!=null?res:blocked();
                 }
-                if("https".equals(u.getScheme())&&"raw.githubusercontent.com".equals(u.getHost())&&u.getPath()!=null&&u.getPath().matches(java.util.regex.Pattern.quote(SOURCE)+"n[1-5]\\.json")&&"GET".equals(req.getMethod()))return null;
                 return blocked();
             }
             @Override public boolean shouldOverrideUrlLoading(WebView view,WebResourceRequest req){
@@ -104,18 +99,12 @@ public final class MainActivity extends ComponentActivity {
             }
         });
         if(!WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)){
-            new AlertDialog.Builder(this).setTitle("Android System WebView 업데이트 필요").setMessage("안전한 손글씨 인식을 위해 시스템 WebView를 업데이트한 뒤 앱을 다시 열어 주세요.").setPositiveButton("닫기",(d,w)->finish()).show();return;
+            new AlertDialog.Builder(this).setTitle("Android System WebView 업데이트 필요").setMessage("학습 화면과 기기 기능을 사용하려면 시스템 WebView를 업데이트한 뒤 앱을 다시 열어 주세요.").setPositiveButton("닫기",(d,w)->finish()).show();return;
         }
         WebViewCompat.addWebMessageListener(web,"KotobaNative",Collections.singleton(ORIGIN),(view,message,sourceOrigin,isMainFrame,proxy)->{
             if(!isMainFrame || !ORIGIN.equals(sourceOrigin.toString()))return;
             handle(message,new Pending("",proxy));
         });
-        try { DigitalInkRecognitionModelIdentifier identifier=DigitalInkRecognitionModelIdentifier.fromLanguageTag("ja");
-            if(identifier!=null){model=DigitalInkRecognitionModel.builder(identifier).build();recognizer=DigitalInkRecognition.getClient(DigitalInkRecognizerOptions.builder(model).build());}
-        } catch(Exception ignored) { /* Explicit unavailable response below. */ }
-        // Digital Ink models cannot be packaged as an APK asset by this API. Start preparing
-        // the Japanese model automatically on first launch, and retry automatically on use.
-        prepareInkModel();
         tts=new TextToSpeech(this,status->{ttsReady=status==TextToSpeech.SUCCESS;});
         tts.setOnUtteranceProgressListener(new UtteranceProgressListener(){
             @Override public void onStart(String id) {}
@@ -132,9 +121,6 @@ public final class MainActivity extends ComponentActivity {
         try { String raw=message.getData();if(raw==null||raw.length()>MAX_BACKUP+1000)return;JSONObject q=new JSONObject(raw);
             String id=q.getString("id"),type=q.getString("type");if(id.length()>100)return;Pending p=new Pending(id,base.reply);request=p;JSONObject body=q.optJSONObject("payload");if(body==null)body=new JSONObject();
             switch(type){
-                case "status": if(model==null){respond(p,null,"일본어 인식 모델을 사용할 수 없습니다.");return;}RemoteModelManager.getInstance().isModelDownloaded(model).addOnSuccessListener(ready->{try{respond(p,new JSONObject().put("ready",ready),null);}catch(Exception ignored){}}).addOnFailureListener(e->respond(p,null,"모델 상태 확인 실패"));break;
-                case "downloadModel": if(model==null){respond(p,null,"일본어 인식 모델을 사용할 수 없습니다.");return;}RemoteModelManager.getInstance().download(model,new DownloadConditions.Builder().build()).addOnSuccessListener(v->respond(p,new JSONObject(),null)).addOnFailureListener(e->respond(p,null,"모델을 내려받지 못했습니다. 네트워크와 저장 공간을 확인하세요."));break;
-                case "recognize": recognize(p,body);break;
                 case "speak": speak(p,body);break;
                 case "stopAudio": stopSpeech("재생이 중단되었습니다.");respond(p,new JSONObject(),null);break;
                 case "exportBackup": if(picker!=null){respond(p,null,"다른 파일 작업이 진행 중입니다.");return;}String data=body.getString("json");if(data.length()>MAX_BACKUP){respond(p,null,"백업이 너무 큽니다.");return;}new JSONObject(data);picker=p;exportData=data;Intent out=new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/json").putExtra(Intent.EXTRA_TITLE,"kotoba-backup.json");startActivityForResult(out,EXPORT);break;
@@ -143,44 +129,6 @@ public final class MainActivity extends ComponentActivity {
                 default: respond(p,null,"지원하지 않는 요청입니다.");
             }
         } catch(Exception e){respond(request,null,"요청을 처리하지 못했습니다.");}
-    }
-    private void prepareInkModel() {
-        if(model==null)return;
-        RemoteModelManager manager=RemoteModelManager.getInstance();
-        manager.isModelDownloaded(model)
-            .addOnSuccessListener(ready->{if(!ready)manager.download(model,new DownloadConditions.Builder().build());})
-            .addOnFailureListener(error->{/* Handwriting will retry the download when first used. */});
-    }
-    private void runRecognition(Pending p,Ink ink,RecognitionContext context) {
-        recognizer.recognize(ink,context).addOnSuccessListener(result->{
-            recognizing=false;
-            JSONArray candidates=new JSONArray();
-            for(int i=0;i<Math.min(5,result.getCandidates().size());i++)candidates.put(result.getCandidates().get(i).getText());
-            try{respond(p,new JSONObject().put("candidates",candidates),null);}catch(Exception ignored){}
-        }).addOnFailureListener(error->{recognizing=false;respond(p,null,"손글씨를 판독하지 못했습니다. 다시 써 주세요.");});
-    }
-    private void recognizeWhenReady(Pending p,Ink ink,RecognitionContext context) {
-        RemoteModelManager manager=RemoteModelManager.getInstance();
-        manager.isModelDownloaded(model).addOnSuccessListener(available->{
-            if(available){runRecognition(p,ink,context);return;}
-            manager.download(model,new DownloadConditions.Builder().build())
-                .addOnSuccessListener(v->runRecognition(p,ink,context))
-                .addOnFailureListener(error->{recognizing=false;respond(p,null,"손글씨 인식 모델을 자동으로 준비하지 못했습니다. 네트워크 연결과 저장 공간을 확인한 뒤 다시 눌러 주세요.");});
-        }).addOnFailureListener(error->{recognizing=false;respond(p,null,"손글씨 인식 모델 상태를 확인하지 못했습니다. 잠시 후 다시 눌러 주세요.");});
-    }
-    private void recognize(Pending p,JSONObject body) throws Exception {
-        if(recognizer==null||model==null){respond(p,null,"일본어 손글씨 인식을 사용할 수 없습니다.");return;}
-        if(recognizing){respond(p,null,"이전 글자를 확인하고 있습니다.");return;}
-        JSONArray lines=body.getJSONArray("strokes");if(lines.length()==0||lines.length()>60){respond(p,null,"획 수를 확인해 주세요.");return;}
-        Ink.Builder ink=Ink.builder();int points=0;
-        for(int i=0;i<lines.length();i++){JSONArray line=lines.getJSONArray(i);if(line.length()<1||line.length()>2000)throw new IllegalArgumentException();Ink.Stroke.Builder stroke=Ink.Stroke.builder();
-            for(int j=0;j<line.length();j++){JSONArray pt=line.getJSONArray(j);double x=pt.getDouble(0),y=pt.getDouble(1);if(Double.isNaN(x)||Double.isInfinite(x)||Double.isNaN(y)||Double.isInfinite(y)||x<0||x>1||y<0||y>1)throw new IllegalArgumentException();stroke.addPoint(Ink.Point.create((float)(x*1000),(float)(y*1000)));points++;}
-            ink.addStroke(stroke.build());
-        }
-        if(points<3){respond(p,null,"한 글자를 직접 써 주세요.");return;}recognizing=true;
-        // Never provide the expected answer or lesson vocabulary as recognition context.
-        RecognitionContext context=RecognitionContext.builder().setWritingArea(new WritingArea(1000,1000)).build();
-        recognizeWhenReady(p,ink.build(),context);
     }
     private void speak(Pending p,JSONObject body) throws Exception {
         stopSpeech("새로운 재생이 시작되었습니다.");if(!ttsReady||tts==null){respond(p,null,"음성 엔진을 준비하고 있습니다. 다시 눌러 주세요.");return;}
@@ -198,5 +146,5 @@ public final class MainActivity extends ComponentActivity {
     }
     @Override protected void onPause(){stopSpeech("앱이 잠시 멈춰 재생을 중단했습니다.");if(web!=null)web.onPause();super.onPause();}
     @Override protected void onResume(){super.onResume();if(web!=null)web.onResume();}
-    @Override protected void onDestroy(){stopSpeech("앱이 종료되었습니다.");destroyed=true;if(recognizer!=null)recognizer.close();if(tts!=null)tts.shutdown();if(web!=null)web.destroy();io.shutdown();super.onDestroy();}
+    @Override protected void onDestroy(){stopSpeech("앱이 종료되었습니다.");destroyed=true;if(tts!=null)tts.shutdown();if(web!=null)web.destroy();io.shutdown();super.onDestroy();}
 }

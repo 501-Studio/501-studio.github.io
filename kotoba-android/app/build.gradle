@@ -6,8 +6,8 @@ android {
         applicationId 'com.studio501.kotoba'
         minSdk 23
         targetSdk 36
-        versionCode 4
-        versionName '0.3.1'
+        versionCode 5
+        versionName '0.3.2'
     }
     buildFeatures { buildConfig true }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
@@ -20,7 +20,6 @@ android {
 dependencies {
     implementation 'androidx.activity:activity:1.10.1'
     implementation 'androidx.webkit:webkit:1.14.0'
-    implementation 'com.google.mlkit:digital-ink-recognition:19.0.0'
 }
 tasks.configureEach { task ->
     if (task.name == 'preReleaseBuild') task.doFirst {

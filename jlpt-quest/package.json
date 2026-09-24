@@ -1,1 +1,19 @@
-{"name":"kotoba-course","version":"0.3.1","private":true,"type":"module","engines":{"node":">=22"},"scripts":{"start":"python3 -m http.server 4173 --bind 0.0.0.0","test":"node --test tests/course.test.mjs tests/curriculum.test.mjs tests/recognition.test.mjs","content:fetch":"node scripts/vendor-content.mjs","release:check":"node scripts/release-check.mjs","android:sync":"node scripts/sync-android.mjs","icons:build":"node scripts/generate-icons.mjs","build":"npm run icons:build && npm run content:fetch"}}
+{
+  "name": "kotoba-course",
+  "version": "0.3.2",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "python3 -m http.server 4173 --bind 0.0.0.0",
+    "test": "node --test tests/course.test.mjs tests/curriculum.test.mjs tests/recognition.test.mjs tests/stroke-snap.test.mjs",
+    "content:fetch": "node scripts/vendor-content.mjs",
+    "release:check": "node scripts/release-check.mjs",
+    "android:sync": "node scripts/sync-android.mjs",
+    "icons:build": "node scripts/generate-icons.mjs",
+    "build": "npm run icons:build && npm run content:fetch && npm run strokes:build",
+    "strokes:build": "python3 scripts/bundle-strokes.py"
+  }
+}
