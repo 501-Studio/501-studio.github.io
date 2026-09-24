@@ -1,29 +1,34 @@
-name: Kotoba Android build and curriculum verification
+name: Kotoba offline stroke APK verification
 on:
   push:
     branches: [feature/kotoba-curriculum-v03]
     paths: ['jlpt-quest/**', 'kotoba-android/**', '.github/workflows/kotoba-android-check.yml']
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
+concurrency:
+  group: kotoba-stroke-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   verify-and-build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    env:
+      KOTOBA_EVIDENCE_DIR: /tmp/kotoba-snap-qa
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Build icons and verify immutable licensed N1-N5 data
+      - name: Apply source migration to local stroke engine
+        run: python3 jlpt-quest/scripts/upgrade-snap.py
+      - name: Build complete offline vocabulary and pinned stroke assets
         working-directory: jlpt-quest
         run: npm run build
-      - name: Run curriculum and recognition-contract regression tests
+      - name: Regression tests including full stroke-bank coverage
         working-directory: jlpt-quest
         run: npm test
-      - name: Bundle all vocabulary and web assets for Android
+      - name: Sync APK-local assets
         working-directory: jlpt-quest
         env:
           KOTOBA_ANDROID_DIR: ../kotoba-android
@@ -34,36 +39,57 @@ jobs:
           java-version: '17'
       - uses: android-actions/setup-android@v3
         with:
-          packages: platform-tools
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
           log-accepted-android-sdk-licenses: false
-      - name: Install compile SDK
-        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.13'
-      - name: Build internal test APK and check Android lint
+      - name: Compile internal APK and Android lint
         working-directory: kotoba-android
-        run: gradle :app:assembleDebug :app:lintDebug --stacktrace
-      - name: Keep internal test APK
-        uses: actions/upload-artifact@v4
+        run: gradle :app:assembleDebug :app:lintDebug --no-daemon --stacktrace
+      - name: Install browser verification tools
+        run: |
+          python3 -m pip install playwright==1.57.0
+          python3 -m playwright install --with-deps chromium
+      - name: Verify actual Canvas, IndexedDB, touch and cold offline asset loading
+        working-directory: jlpt-quest
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/kotoba-http.log 2>&1 &
+          python3 tests/snap-browser.py
+      - name: Save migrated source and licensed stroke pack to feature branch only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -u -- jlpt-quest kotoba-android
+          git add jlpt-quest/data/strokes.json jlpt-quest/data/stroke-coverage.json jlpt-quest/data/licenses/
+          git diff --cached --quiet || git commit -m 'feat(kotoba): persist verified APK-local stroke snapping source and templates'
+          git push origin HEAD:feature/kotoba-curriculum-v03
+      - name: Package reproducible full source including bundled vocabulary
+        run: |
+          python3 - <<'PY'
+          import zipfile,pathlib
+          with zipfile.ZipFile('/tmp/kotoba-0.3.2-source.zip','w',zipfile.ZIP_DEFLATED) as z:
+              for folder in ['jlpt-quest','kotoba-android']:
+                  for p in pathlib.Path(folder).rglob('*'):
+                      if not p.is_file() or any(x in p.parts for x in ['build','.gradle','node_modules','__pycache__']): continue
+                      if 'src/main/assets/' in str(p): continue
+                      z.write(p,'kotoba-0.3.2/'+str(p))
+          PY
+      - uses: actions/upload-artifact@v4
         with:
-          name: kotoba-v03-internal-debug-apk
-          path: kotoba-android/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
-          retention-days: 7
-      - name: Keep reproducible full web bundle
-        uses: actions/upload-artifact@v4
-        with:
-          name: kotoba-v03-web-with-full-curriculum
-          path: jlpt-quest/
-          retention-days: 7
-      - name: Keep compiler and lint evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: kotoba-android-compile-evidence
+          name: kotoba-0.3.2-offline-strokes
           path: |
+            kotoba-android/app/build/outputs/apk/debug/app-debug.apk
+            /tmp/kotoba-0.3.2-source.zip
+          if-no-files-found: error
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kotoba-0.3.2-verification
+          path: |
+            /tmp/kotoba-snap-qa/
             kotoba-android/app/build/reports/
-            kotoba-android/build/reports/
-          if-no-files-found: ignore
-          retention-days: 7
+            jlpt-quest/data/stroke-coverage.json
+          if-no-files-found: warn
+          retention-days: 30
