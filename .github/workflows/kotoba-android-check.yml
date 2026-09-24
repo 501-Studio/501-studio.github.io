@@ -35,6 +35,10 @@ jobs:
               "page.locator('[data-action=\"reveal-meaning\"]').click();check('meaning reveals without leaving word','산' in page.locator('.scan-reveals').inner_text())",
               "page.locator('[data-action=\"reveal-meaning\"]').click();page.locator('.scan-meaning').wait_for(state='visible');check('meaning reveals without leaving word','산' in page.locator('.scan-reveals').inner_text())"
           )
+          s=s.replace(
+              "footer_y=page.locator('.lesson-footer').bounding_box()['y'];boxes=page.locator('.answer-option').all_bounding_boxes()",
+              "footer_y=page.locator('.lesson-footer').bounding_box()['y'];boxes=page.locator('.answer-option').evaluate_all(\\\"(els)=>els.map(e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height}})\\\")"
+          )
           p.write_text(s)
           PY
       - name: Build complete offline vocabulary and pinned stroke assets
