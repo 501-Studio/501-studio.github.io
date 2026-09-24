@@ -21,7 +21,22 @@ jobs:
         with:
           node-version: '22'
       - name: Apply v0.3.3 chapter review migration
-        run: python3 jlpt-quest/scripts/upgrade-v033.py
+        run: |
+          python3 jlpt-quest/scripts/upgrade-v033.py
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('jlpt-quest/tests/snap-browser.py')
+          s=p.read_text()
+          s=s.replace(
+              "page.locator('[data-action=\"reveal-reading\"]').click();check('reading reveals without leaving word','やま' in page.locator('.scan-reveals').inner_text())",
+              "page.locator('[data-action=\"reveal-reading\"]').click();page.locator('.scan-reading').wait_for(state='visible');check('reading reveals without leaving word','やま' in page.locator('.scan-reveals').inner_text())"
+          )
+          s=s.replace(
+              "page.locator('[data-action=\"reveal-meaning\"]').click();check('meaning reveals without leaving word','산' in page.locator('.scan-reveals').inner_text())",
+              "page.locator('[data-action=\"reveal-meaning\"]').click();page.locator('.scan-meaning').wait_for(state='visible');check('meaning reveals without leaving word','산' in page.locator('.scan-reveals').inner_text())"
+          )
+          p.write_text(s)
+          PY
       - name: Build complete offline vocabulary and pinned stroke assets
         working-directory: jlpt-quest
         run: npm run build
