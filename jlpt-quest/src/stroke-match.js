@@ -38,7 +38,9 @@ export function matchStroke(input,target){
  if(il<.018||ratio<.32)return no('획이 너무 짧아요. 조금 더 길게 써 주세요.');
  if(ratio>2.9)return no('한 번에 한 획만 그어 주세요.');
  const a=resample(input),b=resample(target),direction=directionCos(a,b);
- if(direction<.12)return no('획 방향을 반대로 쓴 것 같아요.',{direction});
+ if(direction<-.25)return no('획 방향을 반대로 쓴 것 같아요.',{direction});
+ const inputDirect=dist(a[0],a.at(-1))/Math.max(.001,il),targetDirect=dist(b[0],b.at(-1))/Math.max(.001,tl);
+ if(targetDirect<.82&&inputDirect-targetDirect>.28)return no('꺾이는 모양을 조금 더 살려 주세요.',{inputDirect,targetDirect});
  const similarity=shapeSimilarity(input,target);
  if(similarity<.60)return no('모양을 조금 더 비슷하게 써 주세요.',{similarity,direction,ratio});
  return {accepted:true,reason:'모양이 맞아요. 제자리로 맞췄어요.',metrics:{similarity,direction,ratio,score:1-similarity}};
