@@ -101,7 +101,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add jlpt-quest/data/korean-glosses.json jlpt-quest/data/korean-coverage.json
-          git diff --cached --quiet || git commit -m 'data(kotoba): Koreanize all 8451 display meanings [skip ci]'
+          git diff --cached --quiet || git commit -m 'data(kotoba): Koreanize all 8451 display meanings'
           git push origin HEAD:feature/kotoba-curriculum-v03
       - uses: actions/upload-artifact@v4
         with:
