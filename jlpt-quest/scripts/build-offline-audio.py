@@ -62,11 +62,11 @@ def synth(job):
             raise RuntimeError((p.stderr or 'Open JTalk synthesis failed')[-800:])
         q=subprocess.run([
             ffmpeg,'-nostdin','-hide_banner','-loglevel','error','-y','-i',str(wav),
-            '-af','silenceremove=start_periods=1:start_duration=0.03:start_threshold=-50dB:stop_periods=1:stop_duration=0.05:stop_threshold=-50dB',
             '-ac','1','-ar','16000','-c:a','libopus','-b:a','18k','-vbr','on','-application','voip',str(target)
-        ],stdout=subprocess.DEVNULL,stderr=subprocess.PIPE,timeout=30)
-        if q.returncode or not target.exists() or target.stat().st_size<300:
-            raise RuntimeError((q.stderr or 'Opus encoding failed')[-800:])
+        ],stdout=subprocess.DEVNULL,stderr=subprocess.PIPE,text=True,timeout=30)
+        if q.returncode or not target.exists() or target.stat().st_size<180:
+            size=target.stat().st_size if target.exists() else -1
+            raise RuntimeError(f'Opus encoding failed for {reading!r} -> {file_name}; rc={q.returncode}; size={size}; stderr={(q.stderr or "")[-800:]}')
         return file_name,target.stat().st_size
     finally:
         wav.unlink(missing_ok=True)
