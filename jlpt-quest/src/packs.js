@@ -1,22 +1,20 @@
-import {LEVELS,STARTERS,EXPECTED,SOURCE_BASE,SOURCE_REV,parsePack,validateStoredPack} from './catalog.js';
+import {LEVELS,STARTERS,EXPECTED,SOURCE_REV,validateStoredPack} from './catalog.js';
 import {loadPack,savePack} from './storage.js';
 export const packs=new Map();
 export function catalog(){return LEVELS.flatMap(level=>packs.get(level)?.words||STARTERS.filter(w=>w.level===level));}
 export async function initializePacks(){
- for(const level of LEVELS){let cached=null;
-  try{const value=await loadPack(level);if(value)cached=validateStoredPack(value);if(cached?.complete&&cached.sourceRevision===SOURCE_REV){packs.set(level,cached);continue;}}catch{}
-  try{const r=await fetch(new URL(`../data/${level}.json`,import.meta.url));if(r.ok){const p=validateStoredPack(await r.json());if(p.level!==level)throw Error('급수 불일치');packs.set(level,p);try{await savePack(p);}catch{}continue;}}catch{}
-  packs.set(level,cached||{level,words:STARTERS.filter(w=>w.level===level),complete:false,source:'kotoba-editorial',sourceRows:60});
+ for(const level of LEVELS){
+  let bundled=null,cached=null;
+  try{const r=await fetch(new URL(`../data/${level}.json`,import.meta.url));if(!r.ok)throw Error('bundled pack missing');bundled=validateStoredPack(await r.json());if(!bundled.complete||bundled.words.some(w=>w.language!=='ko'))throw Error(`${level} 한국어 단어팩이 완전하지 않습니다.`);}catch(e){throw new Error(`${level} 내장 한국어 단어팩을 읽지 못했어요. 앱을 다시 설치해 주세요.`);}
+  try{const value=await loadPack(level);if(value)cached=validateStoredPack(value);}catch{}
+  // Never let an older English cache override the bundled Korean pack.
+  if(cached?.sourceRevision===SOURCE_REV&&cached.complete&&cached.words.every(w=>w.language==='ko')&&cached.words.length===bundled.words.length)packs.set(level,cached);
+  else {packs.set(level,bundled);try{await savePack(bundled);}catch{}}
  }
 }
-export async function installPack(level,signal){
+export async function installPack(level){
  if(!LEVELS.includes(level))throw new Error('급수를 확인해 주세요.');
- const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),20000);const abort=()=>controller.abort();signal?.addEventListener('abort',abort,{once:true});
- try{const response=await fetch(`${SOURCE_BASE}${level.toLowerCase()}.json`,{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer'});if(!response.ok)throw new Error('단어팩을 내려받지 못했습니다.');
- const text=await response.text();if(text.length>8e6)throw new Error('단어팩 크기가 허용 범위를 넘었습니다.');
- const p=parsePack(JSON.parse(text),level);const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));p.sha256=[...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('');p.installedAt=Date.now();
- await savePack(p);packs.set(level,p);return p;
- }catch(e){if(e.name==='AbortError')throw new Error('다운로드가 중단됐습니다. 기존 단어와 기록은 유지됩니다.');throw e;}
- finally{clearTimeout(timeout);signal?.removeEventListener('abort',abort);}
+ const pack=packs.get(level);if(!pack)throw new Error('내장 단어팩을 읽지 못했어요.');
+ return pack;
 }
-export const packInfo=level=>({installed:packs.get(level)?.words.length||60,available:EXPECTED[level],complete:packs.get(level)?.complete===true,english:packs.get(level)?.words.filter(w=>w.language==='en').length||0,revision:SOURCE_REV});
+export const packInfo=level=>({installed:packs.get(level)?.words.length||STARTERS.filter(w=>w.level===level).length,available:EXPECTED[level],complete:packs.get(level)?.complete===true,english:0,korean:packs.get(level)?.words.length||0,revision:SOURCE_REV});
