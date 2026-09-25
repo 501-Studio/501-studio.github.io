@@ -1,7 +1,7 @@
-import {LEVELS,EXPECTED,TITLES,courses,writingChars,writingPattern,validateStoredPack,SOURCE_REV} from './catalog.js';
+import {LEVELS,TITLES,courses,writingChars,writingPattern} from './catalog.js';
 import {fresh,current,createClass,classifySurvey,createReview,submit,next,remediate,unresolved,levelStats,dueItems,dueLabel,dayKey,streak,keyOf,validateState,courseLaps} from './course-engine.js';
 import {openStore,loadState,commit,rawState,replaceBackup,ConflictError} from './storage.js';
-import {packs,catalog,initializePacks,installPack,packInfo} from './packs.js';
+import {packs,catalog,initializePacks,packInfo} from './packs.js';
 import {btn,icon,esc,mark,ring,wave,heading,empty} from './view.js';
 import {attachStrokePad} from './stroke-pad.js';
 import {SNAP_MODE,validPrefix} from './stroke-match.js';
@@ -12,7 +12,7 @@ import {applyMotion,haptic,celebrate} from './motion.js';
 
 const root=document.querySelector('#app'),modal=document.querySelector('#modal-root');
 let state=fresh(),words=[],lookup=new Map(),ready=false,saving=false,busy=false,ink=null,storageOK=true,warning='',toastTimer,epoch=0,audioNonce=0,gradeNonce=0;
-let filter='due',wordFilter='all',search='',limit=80,courseLimit=24,pendingCourse=null,imported=null,priorFocus=null,downloading=false;
+let filter='due',wordFilter='all',search='',limit=80,courseLimit=24,pendingCourse=null,imported=null,priorFocus=null;
 let savedRevision=0,tail=Promise.resolve();
 const names={survey:'빠른 회독',study:'새 단어',audio:'발음 듣기',trace:'한자 따라 쓰기',meaning:'뜻 확인',listening:'듣기 시험',writing:'한자 쓰기 시험'};
 const route=()=>location.hash.slice(1)||'home';
@@ -136,8 +136,6 @@ async function play(slow=false,wordId=null,auto=false){const s=state.session,t=w
 function downloadJSON(object,name){const url=URL.createObjectURL(new Blob([JSON.stringify(object)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 async function exportBackup(){await tail;const backup={format:'kotoba-backup',version:2,exportedAt:new Date().toISOString(),state:structuredClone(state)};if(isNative())await callNative('exportBackup',{json:JSON.stringify(backup)},120000);else downloadJSON(backup,`kotoba-${dayKey()}.json`);toast('백업을 내보냈어요.');}
 function confirmImport(raw){if(raw.length>30e6)throw new Error('백업 파일은 30MB 이하로 제한됩니다.');const value=JSON.parse(raw);if(value.format!=='kotoba-backup'||![1,2].includes(value.version))throw new Error('코토바 백업 파일이 아닙니다.');const st=validateState(value.state);imported={state:st,packs:[]};openModal(`${modalHead('백업 기록으로 바꿀까요?')}<p>현재 기록을 덮어씁니다. 먼저 현재 기록을 백업해 주세요. 확인하기 전에는 아무 기록도 바뀌지 않습니다.</p><div class="modal-actions">${btn('export','현재 기록 백업','soft')}${btn('confirm-import','기록 교체','primary')}</div>`);}
-async function installLevels(levels){if(isNative())return packsModal();if(downloading)return;if(state.session&&!state.session.finished)return toast('진행 중인 수업을 마친 뒤 단어팩을 설치해 주세요.');downloading=true;packsModal();const status=document.querySelector('#pack-status');try{for(const l of levels){status.textContent=`${l} 전체팩을 내려받고 검증하고 있어요…`;const p=await installPack(l);mergeWords();status.textContent=`${l} ${p.words.length}단어 저장 완료`;}
- toast('요청한 전체 단어팩을 설치했어요.');}catch(e){toast(e.message);if(status)status.textContent=e.message;}finally{downloading=false;render();packsModal();}}
 document.addEventListener('click',async event=>{
  const el=event.target.closest('[data-action]');if(!el||el.disabled||!ready)return;const a=el.dataset.action,s=state.session,t=current(s);
  try{
