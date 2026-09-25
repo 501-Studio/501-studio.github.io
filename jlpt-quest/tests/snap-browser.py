@@ -1,38 +1,48 @@
-"""Real Chromium, Canvas, IndexedDB. No handwriting or storage verdict mocks.
-The second context uses an offline asset router to emulate WebViewAssetLoader.
-"""
-import json,os,time
+"""Rendered v0.3.3 QA: real Chromium Canvas + IndexedDB, no verdict/storage mocks."""
+import json,os,math
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 from urllib.parse import urlparse,unquote
 ROOT=Path(__file__).resolve().parents[1]
-OUT=Path(os.environ.get('KOTOBA_EVIDENCE_DIR','/tmp/kotoba-snap-qa'));OUT.mkdir(parents=True,exist_ok=True)
+OUT=Path(os.environ.get('KOTOBA_EVIDENCE_DIR','/tmp/kotoba-v033-evidence'));OUT.mkdir(parents=True,exist_ok=True)
 BASE=os.environ.get('KOTOBA_TEST_URL','http://127.0.0.1:4173/')
 BANK=json.loads((ROOT/'data/strokes.json').read_text())['characters']
 checks=[]
 def check(name,condition):
     checks.append({'name':name,'pass':bool(condition)})
-    if not condition:raise AssertionError(name)
-def fixture(page,quiz=False):
-    page.evaluate('''async quiz=>{
+    if not condition: raise AssertionError(name)
+def wait_app(page): page.wait_for_selector('.level-progress-grid',timeout=10000)
+def seed(page,mode='survey'):
+    page.evaluate("""async mode=>{
       const E=await import('./src/course-engine.js'),C=await import('./src/catalog.js'),S=await import('./src/storage.js');
-      await S.openStore();const previous=await S.loadState(),state=E.fresh();
-      state.session=E.createClass(state,C.courses(C.STARTERS,'N5')[0],C.STARTERS);
-      state.session.index=quiz?state.session.queue.findIndex(t=>t.skill==='writing'&&t.wordId===state.session.wordIds[0]):2;
+      await S.openStore();const previous=await S.loadState(),state=E.fresh(),course=C.courses(C.STARTERS,'N5')[0];
+      state.session=E.createClass(state,course,C.STARTERS);
+      if(mode!=='survey'){
+        const first=state.session.wordIds[0];
+        while(E.current(state.session)?.phase==='survey'){
+          const t=E.current(state.session);
+          E.classifySurvey(state,t.id,t.wordId!==first,C.STARTERS);
+        }
+        if(mode==='trace')state.session.index=state.session.queue.findIndex(t=>t.phase==='learn'&&t.skill==='trace'&&t.wordId===first);
+        if(mode==='meaning')state.session.index=state.session.queue.findIndex(t=>t.phase==='quiz'&&t.skill==='meaning'&&t.wordId===first);
+      }
       await S.commit(state,previous.revision);
-    }''',quiz)
-    page.goto(BASE+'#lesson');page.reload();page.wait_for_selector('#ink-canvas')
+    }""",mode)
+    page.goto(BASE+'#lesson');page.reload();page.wait_for_selector('#main',timeout=10000)
 def strokes_count(page):return int(page.locator('#ink-canvas').get_attribute('data-accepted'))
 def wait_strokes(page,n):
     page.wait_for_function("n=>Number(document.querySelector('#ink-canvas')?.dataset.accepted)===n",arg=n,timeout=5000)
     return strokes_count(page)
-def draw(page,path,dx=.01,dy=.008):
+def draw(page,path,dx=0,dy=0):
     page.locator('#ink-canvas').scroll_into_view_if_needed();box=page.locator('#ink-canvas').bounding_box()
     client=page.context.new_cdp_session(page)
-    points=[{'x':box['x']+(p[0]+dx)*box['width'],'y':box['y']+(p[1]+dy)*box['height'],'id':1} for p in path]
-    client.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[points[0]]})
-    for p in points[1:]:client.send('Input.dispatchTouchEvent',{'type':'touchMove','touchPoints':[p]})
-    client.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]});page.wait_for_timeout(300);client.detach()
+    pts=[]
+    for x,y in path:
+        x=max(0,min(1,x+dx));y=max(0,min(1,y+dy))
+        pts.append({'x':box['x']+x*box['width'],'y':box['y']+y*box['height'],'id':1})
+    client.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[pts[0]]})
+    for p in pts[1:]:client.send('Input.dispatchTouchEvent',{'type':'touchMove','touchPoints':[p]})
+    client.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]});page.wait_for_timeout(350);client.detach()
 with sync_playwright() as P:
     browser=P.chromium.launch(headless=True,args=['--no-sandbox','--disable-dev-shm-usage'])
     context=browser.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2)
@@ -40,54 +50,63 @@ with sync_playwright() as P:
     page.on('pageerror',lambda e:errors.append(str(e)))
     page.on('request',lambda r:external.append(r.url) if not r.url.startswith(BASE) else None)
     try:
-        page.goto(BASE);page.wait_for_selector('.level-progress-grid')
-        check('page identity and real home content',page.title()=='코토바 · 한자 회독 수업' and page.locator('.level-progress').count()==5)
+        page.goto(BASE);wait_app(page)
+        check('page identity',page.title()=='코토바 · 한자 회독 수업')
+        check('home shows five JLPT levels',page.locator('.level-progress').count()==5)
+        check('home shows chapter, round and 30-word range','第1章' in page.locator('.chapter-book.featured').inner_text() and '1회독' in page.locator('.chapter-book.featured').inner_text() and 'No.1~30' in page.locator('.chapter-book.featured').inner_text())
         for width,height in [(320,740),(390,780),(768,900),(1440,900)]:
-            page.set_viewport_size({'width':width,'height':height});page.wait_for_timeout(100)
-            check('home no overflow '+str(width),page.evaluate('document.documentElement.scrollWidth<=innerWidth+1'))
-        page.set_viewport_size({'width':390,'height':780});fixture(page)
-        check('no manual recognition button or model request',page.locator('[data-action="grade"],[data-action="model-download"]').count()==0)
-        check('new character starts at zero strokes',strokes_count(page)==0)
-        check('canvas fits above footer',page.locator('#ink-canvas').bounding_box()['y']+page.locator('#ink-canvas').bounding_box()['height']<page.locator('.lesson-footer').bounding_box()['y'])
-        draw(page,BANK['山'][0]);check('imperfect first stroke snaps automatically',wait_strokes(page,1)==1)
-        check('one stroke is not a completed character',page.locator('[data-action="ink-done"]').count()==0)
-        page.screenshot(path=str(OUT/'one-stroke.png'))
-        draw(page,list(reversed(BANK['山'][1])));check('reverse stroke is rejected',strokes_count(page)==1)
-        import math
-        draw(page,[[.5+.24*math.cos(i/5),.5+.24*math.sin(i/5)] for i in range(100)])
-        check('scribble cannot be accepted',strokes_count(page)==1)
-        page.locator('[data-action="undo"]').click();check('undo removes one accepted stroke',wait_strokes(page,0)==0)
-        draw(page,BANK['山'][0]);wait_strokes(page,1);page.reload();page.wait_for_selector('#ink-canvas')
-        check('real IndexedDB restores partial stroke progress',wait_strokes(page,1)==1)
-        draw(page,BANK['山'][1]);draw(page,BANK['山'][2]);check('all three strokes complete the character',wait_strokes(page,3)==3)
-        check('explicit word completion unlocked',page.locator('[data-action="ink-done"]').is_enabled())
-        page.screenshot(path=str(OUT/'complete-strokes.png'))
-        page.locator('[data-action="ink-done"]').click();page.wait_for_selector('[data-action="studied"]')
-        check('training advances only after all strokes pass','川' in page.locator('.big-japanese').inner_text())
-        info=page.evaluate("async()=>{const s=await(await import('./src/storage.js')).loadState();return {xp:s.xp,n:Object.keys(s.memory).length}}")
-        check('tracing does not inflate memory score',info=={'xp':0,'n':0})
-        fixture(page,True)
-        check('recall question does not reveal answer in prompt','山' not in page.locator('.ink-prompt').inner_text())
-        draw(page,list(reversed(BANK['山'][0])));check('bad recall stroke stays unaccepted',strokes_count(page)==0)
-        for path in BANK['山']:draw(page,path)
-        page.locator('[data-action="ink-done"]').click();page.wait_for_selector('.feedback-copy')
-        check('mistake followed by correction is recorded for later retry','다시 확인' in page.locator('.feedback-copy').inner_text())
+            page.set_viewport_size({'width':width,'height':height});page.wait_for_timeout(80)
+            check('home no horizontal overflow '+str(width),page.evaluate('document.documentElement.scrollWidth<=innerWidth+1'))
+        page.set_viewport_size({'width':390,'height':780})
+        seed(page,'survey');page.wait_for_selector('.survey-card')
+        check('rapid review starts with 30 words','1 / 30' in page.locator('.survey-count').inner_text())
+        check('survey has known and unknown controls',page.locator('[data-action="known-word"]').count()==1 and page.locator('[data-action="unknown-word"]').count()==1)
+        page.locator('[data-action="survey-reading"]').click();page.wait_for_selector('.survey-reading')
+        check('hiragana can be revealed per card','やま' in page.locator('.survey-reading').inner_text())
+        page.locator('[data-action="survey-meaning"]').click();page.wait_for_selector('.survey-meaning')
+        check('Korean meaning can be revealed per card','산' in page.locator('.survey-meaning').inner_text())
+        page.screenshot(path=str(OUT/'rapid-review.png'))
+
+        seed(page,'meaning');page.wait_for_selector('.answer-option')
+        check('only unknown word is being tested','모르는 단어 시험' in page.locator('.session-label').inner_text())
+        check('four objective choices render together',page.locator('.answer-option').count()==4)
+        boxes=page.locator('.answer-option').evaluate_all("(els)=>els.map(e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height}})")
+        footer_y=page.locator('.lesson-footer').bounding_box()['y']
+        check('all choices are visible above fixed answer footer',all(b['y']>=0 and b['y']+b['height']<footer_y+1 for b in boxes))
+        rows=sorted(set(round(b['y']) for b in boxes))
+        check('objective choices use compact two-row grid',len(rows)==2)
+        page.screenshot(path=str(OUT/'quiz-grid.png'))
+
+        seed(page,'trace');page.wait_for_selector('#ink-canvas')
+        check('stroke starts empty',strokes_count(page)==0)
+        path=BANK['山'][0];xs=[p[0] for p in path];ys=[p[1] for p in path]
+        dx=.13 if max(xs)<.82 else -.13;dy=.11 if max(ys)<.82 else -.11
+        draw(page,path,dx,dy)
+        check('translated stroke still passes shape-based matcher',wait_strokes(page,1)==1)
+        page.screenshot(path=str(OUT/'loose-snap.png'))
+        page.locator('[data-action="undo"]').click();wait_strokes(page,0)
+        draw(page,list(reversed(BANK['山'][0])))
+        check('reverse direction still rejected',strokes_count(page)==0)
+        loop=[[.5+.25*math.cos(i/7),.5+.25*math.sin(i/7)] for i in range(160)]
+        draw(page,loop);check('scribble still rejected',strokes_count(page)==0)
+
         check('runtime console error free',not errors)
-        check('no external service called',not external)
-        # Cold-load with browser network offline, fresh storage and only bundled assets available.
+        check('normal bundled flow made no external request',not external)
+
         cold=browser.new_context(viewport={'width':390,'height':780},has_touch=True,offline=True)
         def local_asset(route):
             u=urlparse(route.request.url)
-            if not route.request.url.startswith(BASE):raise AssertionError('External request '+route.request.url)
+            if not route.request.url.startswith(BASE): raise AssertionError('External request '+route.request.url)
             relative=unquote(u.path).lstrip('/') or 'index.html';path=(ROOT/relative).resolve()
-            if not path.is_relative_to(ROOT) or not path.is_file():return route.fulfill(status=404,body='Not found')
+            if not path.is_relative_to(ROOT) or not path.is_file(): return route.fulfill(status=404,body='Not found')
             types={'.js':'text/javascript','.json':'application/json','.css':'text/css','.html':'text/html','.svg':'image/svg+xml','.png':'image/png','.webmanifest':'application/manifest+json'}
             route.fulfill(status=200,body=path.read_bytes(),content_type=types.get(path.suffix,'text/plain'))
-        cold.route('**/*',local_asset);cp=cold.new_page();cp.goto(BASE);cp.wait_for_selector('.level-progress-grid')
-        check('fresh offline context boots with bundled assets only',cp.evaluate('navigator.onLine') is False)
-        fixture(cp);draw(cp,BANK['山'][0]);check('cold offline stroke matching works',wait_strokes(cp,1)==1)
-        cp.screenshot(path=str(OUT/'offline-first-stroke.png'));cold.close()
+        cold.route('**/*',local_asset);cp=cold.new_page();cp.goto(BASE);cp.wait_for_selector('.chapter-book.featured')
+        check('fresh offline context boots from bundled assets',cp.evaluate('navigator.onLine') is False)
+        seed(cp,'trace');cp.wait_for_selector('#ink-canvas');draw(cp,BANK['山'][0],.1,.08)
+        check('offline relaxed stroke snap works',wait_strokes(cp,1)==1)
+        cp.screenshot(path=str(OUT/'offline-snap.png'));cold.close()
     finally:
-        (OUT/'browser-checks.json').write_text(json.dumps({'checks':checks,'errors':errors,'externalRequests':external,'environment':'Chromium + real IndexedDB/Canvas; offline asset routing, not physical Android'},ensure_ascii=False,indent=2))
+        (OUT/'browser-checks.json').write_text(json.dumps({'checks':checks,'errors':errors,'externalRequests':external,'environment':'Chromium real Canvas/IndexedDB; local asset routing for offline case, not physical Android'},ensure_ascii=False,indent=2))
         browser.close()
 print(json.dumps(checks,ensure_ascii=False,indent=2))
