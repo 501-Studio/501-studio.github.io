@@ -73,7 +73,7 @@ jobs:
               assert not overlap, f'duplicate ids: {len(overlap)}'
               glosses.update(part['glosses']); total+=part['sourceWords']; reports[level]=report
           assert total==8451 and len(glosses)==8451,(total,len(glosses))
-          bad=[(k,v) for k,v in glosses.items() if not v.strip() or (not re.search('[가-힣]',v) and re.search('[A-Za-z]{2,}',v))]
+          bad=[(k,v) for k,v in glosses.items() if not v.strip() or re.search('[A-Za-z]',v)]
           assert not bad,bad[:20]
           payload={
             'version':1,'complete':True,'sourceWords':total,'koreanWords':len(glosses),
