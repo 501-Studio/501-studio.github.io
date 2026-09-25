@@ -36,7 +36,8 @@ export function matchStroke(input,target){
  if(!validPath(input)||!validPath(target))return no('한 획을 이어서 그어 주세요.');
  const il=pathLength(input),tl=pathLength(target),ratio=il/Math.max(.001,tl);
  if(il<.018||ratio<.32)return no('획이 너무 짧아요. 조금 더 길게 써 주세요.');
- if(ratio>2.9)return no('한 번에 한 획만 그어 주세요.');
+ const maxRatio=tl<.06?5.5:tl<.12?4.2:3.1;
+ if(ratio>maxRatio)return no('한 번에 한 획만 그어 주세요.');
  const a=resample(input),b=resample(target),direction=directionCos(a,b);
  if(direction<-.25)return no('획 방향을 반대로 쓴 것 같아요.',{direction});
  const inputDirect=dist(a[0],a.at(-1))/Math.max(.001,il),targetDirect=dist(b[0],b.at(-1))/Math.max(.001,tl);
