@@ -44,9 +44,10 @@ OVERRIDES={
 
 HANGUL=re.compile(r'[가-힣]')
 
-def load_words():
+def load_words(selected=None):
     out=[]
     for level in LEVELS:
+        if selected and level!=selected: continue
         pack=json.loads((DATA/f'{level}.json').read_text(encoding='utf-8'))
         out.extend(pack['words'])
     return out
@@ -64,11 +65,14 @@ def main():
     ap=argparse.ArgumentParser()
     ap.add_argument('--batch-size',type=int,default=96)
     ap.add_argument('--max-new-tokens',type=int,default=48)
+    ap.add_argument('--level',choices=LEVELS)
     args=ap.parse_args()
-    words=load_words()
+    words=load_words(args.level)
+    out_path=DATA/(f'korean-glosses-{args.level}.json' if args.level else 'korean-glosses.json')
+    coverage_path=DATA/(f'korean-coverage-{args.level}.json' if args.level else 'korean-coverage.json')
     existing={}
-    if OUT.exists():
-        raw=json.loads(OUT.read_text(encoding='utf-8'))
+    if out_path.exists():
+        raw=json.loads(out_path.read_text(encoding='utf-8'))
         if raw.get('modelRevision')==REVISION:
             existing.update(raw.get('glosses',{}))
     # Hand-edited Korean in packs always wins over machine output.
@@ -138,9 +142,10 @@ def main():
         'note':'Machine-translated draft glosses plus human overrides; education editorial review is still required.',
         'glosses':glosses
     }
-    OUT.write_text(json.dumps(payload,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
-    report={'complete':True,'sourceWords':len(words),'koreanWords':len(glosses),'englishVisible':0,'humanOverrides':sum(1 for p in OVERRIDES if p in by_pair)}
-    (DATA/'korean-coverage.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
+    if args.level: payload['level']=args.level
+    out_path.write_text(json.dumps(payload,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
+    report={'complete':True,'level':args.level,'sourceWords':len(words),'koreanWords':len(glosses),'englishVisible':0,'humanOverrides':sum(1 for p in OVERRIDES if p in by_pair)}
+    coverage_path.write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
     print(json.dumps(report,ensure_ascii=False,indent=2))
 
 if __name__=='__main__':main()
