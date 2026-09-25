@@ -28,7 +28,7 @@ jobs:
         env:
           HF_HUB_DISABLE_TELEMETRY: '1'
           TOKENIZERS_PARALLELISM: 'false'
-        run: python scripts/koreanize-content.py --batch-size 48
+        run: python scripts/koreanize-content.py --batch-size 96
       - name: Verify no vocabulary item lacks Korean
         working-directory: jlpt-quest
         run: |
