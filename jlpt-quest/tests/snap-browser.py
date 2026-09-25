@@ -25,6 +25,7 @@ def seed(page,mode='survey'):
         }
         if(mode==='trace')state.session.index=state.session.queue.findIndex(t=>t.phase==='learn'&&t.skill==='trace'&&t.wordId===first);
         if(mode==='meaning')state.session.index=state.session.queue.findIndex(t=>t.phase==='quiz'&&t.skill==='meaning'&&t.wordId===first);
+        if(mode==='listening')state.session.index=state.session.queue.findIndex(t=>t.phase==='quiz'&&t.skill==='listening'&&t.wordId===first);
       }
       await S.commit(state,previous.revision);
     }""",mode)
@@ -44,7 +45,7 @@ def draw(page,path,dx=0,dy=0):
     for p in pts[1:]:client.send('Input.dispatchTouchEvent',{'type':'touchMove','touchPoints':[p]})
     client.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]});page.wait_for_timeout(350);client.detach()
 with sync_playwright() as P:
-    browser=P.chromium.launch(headless=True,args=['--no-sandbox','--disable-dev-shm-usage'])
+    browser=P.chromium.launch(headless=True,args=['--no-sandbox','--disable-dev-shm-usage','--autoplay-policy=no-user-gesture-required'])
     context=browser.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2)
     page=context.new_page();errors=[];external=[]
     page.on('pageerror',lambda e:errors.append(str(e)))
@@ -76,6 +77,14 @@ with sync_playwright() as P:
         rows=sorted(set(round(b['y']) for b in boxes))
         check('objective choices use compact two-row grid',len(rows)==2)
         page.screenshot(path=str(OUT/'quiz-grid.png'))
+
+        seed(page,'listening');page.wait_for_selector('#audio-status')
+        page.wait_for_function("()=>document.querySelector('#audio-status')?.textContent.includes('1회 자동재생 완료')",timeout=12000)
+        check('listening prompt auto-plays exactly once before choices are submitted',page.locator('#audio-status').inner_text().startswith('1회 자동재생 완료'))
+        check('listening choices unlock after bundled auto audio',page.locator('.answer-option:not([disabled])').count()==4)
+        page.locator('[data-action="listen"]').click()
+        page.wait_for_function("()=>document.querySelector('#audio-status')?.textContent.includes('1회 자동재생 완료')",timeout=12000)
+        check('user can replay after automatic first listen',page.locator('#audio-status').inner_text().startswith('1회 자동재생 완료'))
 
         seed(page,'trace');page.wait_for_selector('#ink-canvas')
         check('stroke starts empty',strokes_count(page)==0)
