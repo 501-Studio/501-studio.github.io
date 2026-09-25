@@ -23,16 +23,29 @@ dependencies {
 }
 tasks.configureEach { task ->
     if (task.name == 'preReleaseBuild') task.doFirst {
-        def marker = file('src/main/assets/www/data/coverage.json')
-        if (!marker.exists()) throw new GradleException('Run content:fetch and android:sync before a release build.')
-        def coverage = new groovy.json.JsonSlurper().parse(marker)
+        def web = file('src/main/assets/www')
+        def coverageFile = new File(web, 'data/coverage.json')
+        def audioFile = new File(web, 'data/audio-coverage.json')
+        if (!coverageFile.exists() || !audioFile.exists()) throw new GradleException('Run the complete offline build and android:sync before a release build.')
+        def coverage = new groovy.json.JsonSlurper().parse(coverageFile)
+        def audio = new groovy.json.JsonSlurper().parse(audioFile)
         if (!coverage.allPacksComplete) throw new GradleException('Full N1-N5 packs are missing. Release blocked.')
+        if (!audio.complete) throw new GradleException('Offline pronunciation pack is incomplete. Release blocked.')
+        if (coverage.levels.values().any { it.english > 0 }) throw new GradleException('Korean content localization is incomplete.')
+        def privacy = new File(web,'privacy.html').text
+        def terms = new File(web,'terms.html').text
+        if ((privacy + terms).contains('출시 전 입력')) throw new GradleException('Legal documents still contain release placeholders.')
+        def legalFile = file('../../jlpt-quest/release/legal.json')
+        if (!legalFile.exists()) throw new GradleException('Release legal metadata missing.')
+        def legal = new groovy.json.JsonSlurper().parse(legalFile)
+        ['developerLegalName','supportEmail','privacyContactEmail','publicPrivacyUrl','targetAudience'].each { key ->
+            if (!legal[key] || legal[key].toString().contains('REQUIRED')) throw new GradleException('Legal metadata incomplete: ' + key)
+        }
         def approvalFile = file('../../release-approval.json')
         if (!approvalFile.exists()) throw new GradleException('Release QA approval missing. Use debug builds.')
         def approval = new groovy.json.JsonSlurper().parse(approvalFile)
-        ['physicalDeviceInk','physicalDeviceAudio','offlineRestore','contentEditorialReview','privacyAndDataSafety','signedBundle','closedTesting'].each { key ->
+        ['physicalDeviceInk','physicalDeviceAudio','offlineRestore','accessibility','contentEditorialReview','privacyAndDataSafety','contentRating','storeListing','signedBundle','playAppSigning','closedTesting','legalDocsPublished'].each { key ->
             if (approval[key] != true) throw new GradleException('Release QA not approved: ' + key)
         }
-        if (coverage.levels.values().any { it.english > 0 }) throw new GradleException('Korean content localization is incomplete.')
     }
 }
