@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "sourceRevision": "c42fd9fa3777bfc1775446f7c418d549dfd6e4cf",
+  "allPacksComplete": true,
+  "generatedAt": "2026-09-25T05:40:51.808Z",
+  "levels": {
+    "N5": {
+      "raw": 662,
+      "words": 669,
+      "merged": 1,
+      "supplemental": 8,
+      "english": 596,
+      "sourceSha256": "3e606fc15fd5d177fa7c3928c17f28b0d34ac84ec6bdbfe0947b339d9d815a6d",
+      "complete": true
+    },
+    "N4": {
+      "raw": 632,
+      "words": 655,
+      "merged": 0,
+      "supplemental": 23,
+      "english": 583,
+      "sourceSha256": "978b9813afaac181fe1308eb1ad7d4cb4ad4ffc9178fa88fc7fb2832de5dbb62",
+      "complete": true
+    },
+    "N3": {
+      "raw": 1784,
+      "words": 1798,
+      "merged": 0,
+      "supplemental": 14,
+      "english": 1686,
+      "sourceSha256": "d8ce3998ebb254567436ef3d34c96f6aac83c2c88dbfb85af5e5935bd1bd21ed",
+      "complete": true
+    },
+    "N2": {
+      "raw": 1793,
+      "words": 1844,
+      "merged": 0,
+      "supplemental": 51,
+      "english": 1777,
+      "sourceSha256": "12094a0f89a8f4a77f7d230aa280900c60c149f60dba2a810589f60407d3190f",
+      "complete": true
+    },
+    "N1": {
+      "raw": 3463,
+      "words": 3485,
+      "merged": 0,
+      "supplemental": 22,
+      "english": 3412,
+      "sourceSha256": "e9662df1dba34c2f566a128f203c8a78296c1c2c1a337b8ef036ca516ea8430e",
+      "complete": true
+    }
+  }
+}
