@@ -1,5 +1,6 @@
 package com.studio501.kotoba;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
@@ -50,6 +51,7 @@ public final class MainActivity extends ComponentActivity {
         final String id; final JavaScriptReplyProxy reply;
         Pending(String id, JavaScriptReplyProxy reply) { this.id=id; this.reply=reply; }
     }
+    @SuppressLint("RequiresFeature")
     private void respond(Pending request, Object data, String error) {
         if (request==null || destroyed) return;
         runOnUiThread(() -> { if(destroyed)return; try {
@@ -58,6 +60,7 @@ public final class MainActivity extends ComponentActivity {
             request.reply.postMessage(response.toString());
         } catch (Exception ignored) { /* A closed web document has no reply target. */ } });
     }
+    @SuppressLint({"SetJavaScriptEnabled","RequiresFeature"})
     @Override public void onCreate(Bundle saved) {
         super.onCreate(saved);
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);
