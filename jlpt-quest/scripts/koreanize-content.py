@@ -33,6 +33,7 @@ OVERRIDES={
     'おととい|おととい':'그저께',
     '明後日|あさって':'모레',
     '一昨日|おととい':'그저께',
+    'ゼロ|ぜろ':'영 · 0',
 }
 
 HANGUL=re.compile(r'[가-힣]')
@@ -49,6 +50,8 @@ def compact(text:str)->str:
     text=text.replace(' ; ',' · ').replace('; ',' · ').replace(';',' · ')
     text=text.replace(' / ',' · ')
     text=re.sub(r'( · ){2,}',' · ',text)
+    parts=text.split()
+    if parts and len(set(parts))==1:text=parts[0]
     return text.strip(' ·,;')
 
 def main():
@@ -99,7 +102,10 @@ def main():
             for (key,source,word,reading),ko in zip(batch,translated):
                 ko=compact(ko)
                 if not HANGUL.search(ko):
-                    raise RuntimeError(f'No Hangul translation: {word}({reading}) {source!r} -> {ko!r}')
+                    if re.search(r'[A-Za-z]{2,}',ko):
+                        raise RuntimeError(f'No Korean translation: {word}({reading}) {source!r} -> {ko!r}')
+                    # Numbers/symbols are language-neutral; keep only after removing duplicate tokens.
+                    if not ko:raise RuntimeError(f'Empty translation: {word}({reading}) {source!r}')
                 glosses[key]=ko
             done=min(start+args.batch_size,len(pending))
             if done%480<args.batch_size:
@@ -109,7 +115,7 @@ def main():
     by_pair={w['word']+'|'+w.get('reading',''):w['id'] for w in words}
     for pair,ko in OVERRIDES.items():
         if pair in by_pair:glosses[by_pair[pair]]=ko
-    missing=[w['id'] for w in words if w['id'] not in glosses or not HANGUL.search(glosses[w['id']])]
+    missing=[w['id'] for w in words if w['id'] not in glosses or not glosses[w['id']].strip() or (not HANGUL.search(glosses[w['id']]) and re.search(r'[A-Za-z]{2,}',glosses[w['id']]))]
     if missing:raise SystemExit(f'Korean coverage failed: {len(missing)} missing')
     payload={
         'version':1,'complete':True,'sourceWords':len(words),'koreanWords':len(glosses),
