@@ -1,6 +1,9 @@
 name: Kotoba Korean-only vocabulary localization
 on:
   workflow_dispatch:
+  push:
+    branches: [feature/kotoba-curriculum-v03]
+    paths: ['jlpt-quest/scripts/koreanize-content.py', '.github/workflows/kotoba-koreanize.yml']
 permissions:
   contents: write
 concurrency:
