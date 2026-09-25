@@ -1,6 +1,7 @@
 import {STARTER_ROWS} from '../data/starter.js';
 export const LEVELS=['N5','N4','N3','N2','N1'];
 export const EXPECTED={N5:662,N4:632,N3:1784,N2:1793,N1:3463};
+export const CHAPTER_SIZE=30;
 export const SOURCE_REV='c42fd9fa3777bfc1775446f7c418d549dfd6e4cf';
 export const SOURCE_BASE=`https://raw.githubusercontent.com/evanclan/OpenJLPT/${SOURCE_REV}/data/json/vocab/`;
 export const TITLES={N5:'기초 한자와 일상',N4:'일상에서 한 걸음 더',N3:'생각과 경험을 표현하기',N2:'사회와 논리를 읽기',N1:'정교한 개념과 표현'};
@@ -34,5 +35,11 @@ export function parsePack(rows,level,{strict=true}={}){
 }
 export function writingChars(word){const chars=[...word.word],kanji=chars.filter(c=>/\p{Script=Han}/u.test(c));return kanji.length?kanji:chars.filter(c=>/[\p{Script=Hiragana}\p{Script=Katakana}ー]/u.test(c));}
 export function writingPattern(word){return /\p{Script=Han}/u.test(word.word)?word.word.replace(/\p{Script=Han}/gu,'□'):word.word.replace(/[\p{Script=Hiragana}\p{Script=Katakana}ー]/gu,'□');}
-export function courses(words,level){const list=words.filter(w=>w.level===level);return Array.from({length:Math.ceil(list.length/5)},(_,i)=>{const chunk=list.slice(i*5,i*5+5),id=`${level}-lesson-${hash(chunk.map(w=>w.id).join('|'))}`;return {id,level,index:i+1,title:UNIT_TITLES[level]?.[i]||`${TITLES[level]} ${String(i+1).padStart(3,'0')}`,wordIds:chunk.map(w=>w.id)};});}
+export function courses(words,level){
+ const list=words.filter(w=>w.level===level);
+ return Array.from({length:Math.ceil(list.length/CHAPTER_SIZE)},(_,i)=>{
+  const start=i*CHAPTER_SIZE,chunk=list.slice(start,start+CHAPTER_SIZE);
+  return {id:`${level}-chapter-${i+1}`,level,index:i+1,title:UNIT_TITLES[level]?.[i]||TITLES[level],startNo:start+1,endNo:start+chunk.length,wordIds:chunk.map(w=>w.id)};
+ });
+}
 export function validateStoredPack(pack){if(!pack||!LEVELS.includes(pack.level)||!Array.isArray(pack.words)||pack.words.length>16000)throw new Error('저장된 단어팩이 손상되었습니다.');const ids=new Set();for(const w of pack.words){if(!w||typeof w.word!=='string'||!w.word||typeof w.reading!=='string'||typeof w.meaning!=='string'||w.meaning.length>4000||w.level!==pack.level||w.id!==idFor(w.level,w.word,w.reading)||ids.has(w.id))throw new Error('저장된 단어팩에 잘못된 항목이 있습니다.');ids.add(w.id);}return pack;}
