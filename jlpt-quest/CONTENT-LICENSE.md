@@ -44,3 +44,18 @@ Kotoba modification: each curriculum reading is synthesized during the reproduci
 Open JTalk and the NAIST Japanese Dictionary are used only on the build machine. The Debian Open JTalk Japanese dictionary package identifies the converted NAIST dictionary as BSD-style licensed. The generated audio is distributed with attribution to the HTS Voice licensors and its CC BY 3.0 terms.
 
 The installed Google Play Android build is intended to perform vocabulary, handwriting and listening without network access. Audio coverage metadata is generated as `data/audio-coverage.json`; `data/audio-manifest.json` maps every installed vocabulary ID to a bundled pronunciation clip.
+
+
+## Korean display gloss generation — M2M100 MIT
+
+For vocabulary entries that did not already have a hand-edited Korean gloss, Kotoba generates a Korean display gloss once during release preparation with the pinned **facebook/m2m100_418M** translation model, revision `55c2e61bbf05dfb8d7abccdc3fae6fc8512fd636`.
+
+- Model: https://huggingface.co/facebook/m2m100_418M
+- Model license: MIT
+- The model is used only on the build/release-preparation machine and is **not included in the installed app**.
+- The resulting Korean gloss layer is stored in `data/korean-glosses.json`.
+- Existing hand-edited Korean meanings always override machine output.
+- Short/common ambiguous items may have explicit human overrides.
+- Production release still requires educational/editorial review of generated Korean glosses.
+
+The installed app must not fall back to visible English definitions. Release tests require every installed vocabulary item to have a Korean display meaning (or a language-neutral numeric/symbol meaning) and report zero English display meanings.
