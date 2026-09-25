@@ -40,6 +40,11 @@ OVERRIDES={
     '垂れる|たれる':'늘어지다 · 처지다 · 떨어지다',
     '壷|つぼ':'항아리 · 단지 · 화병',
     '揺らぐ|ゆらぐ':'흔들리다 · 동요하다',
+    'スカート|すかーと':'치마 · 스커트',
+    'テレビ|てれび':'텔레비전',
+    '牛肉|ぎゅうにく':'소고기',
+    '飛ぶ|とぶ':'날다 · 뛰어오르다',
+    '零|れい':'영 · 0',
 }
 
 HANGUL=re.compile(r'[가-힣]')
@@ -116,7 +121,7 @@ def main():
                     key,source,word,reading=item
                     ko=compact(ko)
                     ko=re.sub(r'^(사전의?\s*)?(뜻|의미)\s*[:：]\s*','',ko).strip()
-                    if (not ko) or (not HANGUL.search(ko) and re.search(r'[A-Za-z]{2,}',ko)):
+                    if (not ko) or re.search(r'[A-Za-z]',ko) or (not HANGUL.search(ko) and re.search(r'[A-Za-z0-9]',ko)):
                         bad.append(item);continue
                     glosses[key]=ko
                 done=min(start+args.batch_size,len(items))
@@ -134,7 +139,7 @@ def main():
     by_pair={w['word']+'|'+w.get('reading',''):w['id'] for w in words}
     for pair,ko in OVERRIDES.items():
         if pair in by_pair:glosses[by_pair[pair]]=ko
-    missing=[w['id'] for w in words if w['id'] not in glosses or not glosses[w['id']].strip() or (not HANGUL.search(glosses[w['id']]) and re.search(r'[A-Za-z]{2,}',glosses[w['id']]))]
+    missing=[w['id'] for w in words if w['id'] not in glosses or not glosses[w['id']].strip() or re.search(r'[A-Za-z]',glosses[w['id']])]
     if missing:raise SystemExit(f'Korean coverage failed: {len(missing)} missing')
     payload={
         'version':1,'complete':True,'sourceWords':len(words),'koreanWords':len(glosses),
