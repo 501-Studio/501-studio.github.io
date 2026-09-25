@@ -19,7 +19,7 @@ try{
  if(!/targetSdk\s+36/.test(gradle))failures.push('targetSdk 36 아님');
 }catch{failures.push('Android 출시 설정 확인 실패');}
 try{
- legal=await get(new URL('../../release/legal.json',import.meta.url));
+ legal=await get(new URL('../release/legal.json',import.meta.url));
  for(const key of ['developerLegalName','supportEmail','privacyContactEmail','publicPrivacyUrl','targetAudience'])if(!legal[key]||String(legal[key]).includes('REQUIRED'))failures.push(`법적 정보 미확정: ${key}`);
  if(legal.publicPrivacyUrl&&!/^https:\/\//.test(legal.publicPrivacyUrl))failures.push('개인정보처리방침 공개 URL은 HTTPS 필요');
 }catch{failures.push('release/legal.json 미작성');}
