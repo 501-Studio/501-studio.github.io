@@ -1,17 +1,29 @@
-// Resolve only on complete playback, not merely on a start event. Audio stays user-initiated.
-const synth=globalThis.speechSynthesis;let current=null,cancelPending=null;
-export const voices=()=>synth?synth.getVoices().filter(v=>/^ja(?:[-_]|$)/i.test(v.lang)):[];
-export const hasSpeech=()=>!!synth;
-export function stopAudio(){if(cancelPending){const cancel=cancelPending;cancelPending=null;cancel();}synth?.cancel();current=null;}
-export async function speak(text,rate=.9,{onStart=()=>{}}={}) {
- if(!synth)throw new Error('이 브라우저에서는 음성을 재생할 수 없어요. Chrome 또는 Safari에서 열어 주세요.');
- stopAudio();let list=voices();
- if(!list.length){await new Promise(resolve=>{let timer;const done=()=>{clearTimeout(timer);synth.removeEventListener('voiceschanged',done);resolve();};synth.addEventListener('voiceschanged',done);timer=setTimeout(done,900);});list=voices();}
- if(!list.length)throw new Error('일본어 음성이 없어요. 기기 음성 설정에서 일본어를 추가한 뒤 다시 눌러 주세요.');
- return new Promise((resolve,reject)=>{const u=new SpeechSynthesisUtterance(text);current=u;u.lang='ja-JP';u.voice=list.find(v=>v.localService)||list[0];u.rate=rate;let ended=false;
- const done=error=>{if(ended)return;ended=true;clearTimeout(timer);if(current===u){current=null;cancelPending=null;}error?reject(error):resolve(true);};
- const timer=setTimeout(()=>{done(new Error('음성 재생을 완료하지 못했어요. 다시 재생하거나 기기 음성 설정을 확인해 주세요.'));synth.cancel();},15000);
- cancelPending=()=>done(new Error('재생이 중단되었어요.'));
- u.onstart=onStart;u.onend=()=>done();u.onerror=()=>done(new Error('음성 재생에 실패했어요. 기기의 일본어 음성과 볼륨을 확인해 주세요.'));synth.speak(u);
+// APK/PWA-local pronunciation audio. The Android build bundles every clip.
+let current=null,manifestPromise=null,cancelPending=null;
+const manifestUrl=new URL('../data/audio-manifest.json',import.meta.url);
+async function manifest(){
+ if(!manifestPromise)manifestPromise=fetch(manifestUrl).then(r=>{if(!r.ok)throw new Error('오프라인 음성 목록을 읽지 못했어요.');return r.json();}).then(m=>{if(!m.complete||!m.clips)throw new Error('오프라인 음성팩이 완전하지 않아요.');return m;});
+ return manifestPromise;
+}
+export async function hasSpeech(wordId){try{const m=await manifest();return !!m.clips[wordId];}catch{return false;}}
+export function stopAudio(){
+ if(cancelPending){const fn=cancelPending;cancelPending=null;fn();}
+ if(current){try{current.pause();current.currentTime=0;}catch{}current=null;}
+}
+export async function speak(wordId,rate=.85,{onStart=()=>{}}={}){
+ stopAudio();
+ const m=await manifest(),file=m.clips[wordId];
+ if(!file)throw new Error('이 단어의 오프라인 음성이 누락됐어요. 앱을 업데이트해 주세요.');
+ const audio=new Audio(new URL('../data/audio/'+file,import.meta.url));
+ current=audio;audio.preload='auto';audio.playbackRate=Math.max(.5,Math.min(1.2,rate));audio.defaultPlaybackRate=audio.playbackRate;
+ return new Promise((resolve,reject)=>{
+  let done=false;
+  const finish=error=>{if(done)return;done=true;audio.onended=audio.onerror=audio.onplaying=null;if(current===audio){current=null;cancelPending=null;}error?reject(error):resolve(true);};
+  cancelPending=()=>finish(new Error('재생이 중단되었어요.'));
+  audio.onplaying=()=>onStart();
+  audio.onended=()=>finish();
+  audio.onerror=()=>finish(new Error('내장 발음 파일을 재생하지 못했어요. 앱 파일을 다시 설치해 주세요.'));
+  const promise=audio.play();
+  if(promise?.catch)promise.catch(()=>finish(new Error('자동 재생이 차단됐어요. 듣기 버튼을 눌러 주세요.')));
  });
 }
