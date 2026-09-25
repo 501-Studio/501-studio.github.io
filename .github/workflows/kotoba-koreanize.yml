@@ -1,0 +1,65 @@
+name: Kotoba Korean-only vocabulary localization
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: kotoba-koreanize-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pinned CPU translation stack
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch==2.4.1
+          python -m pip install transformers==4.44.2 sentencepiece==0.2.0 sacremoses==0.1.1
+      - name: Generate Korean meanings for every installed vocabulary entry
+        working-directory: jlpt-quest
+        env:
+          HF_HUB_DISABLE_TELEMETRY: '1'
+          TOKENIZERS_PARALLELISM: 'false'
+        run: python scripts/koreanize-content.py --batch-size 48
+      - name: Verify no vocabulary item lacks Korean
+        working-directory: jlpt-quest
+        run: |
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+          root=Path('data')
+          k=json.loads((root/'korean-glosses.json').read_text())
+          assert k['complete'] and k['sourceWords']==k['koreanWords']
+          assert all(re.search('[가-힣]',v) for v in k['glosses'].values())
+          for pair,expected in {
+            'あさって|あさって':'모레','あそこ|あそこ':'저기 · 저곳',
+            'あちら|あちら':'저쪽 · 저곳','あっち|あっち':'저쪽'
+          }.items():
+            word,reading=pair.split('|')
+            found=[]
+            for level in ['N5','N4','N3','N2','N1']:
+              pack=json.loads((root/f'{level}.json').read_text())
+              found += [w for w in pack['words'] if w['word']==word and w.get('reading','')==reading]
+            assert found, pair
+            assert all(k['glosses'][w['id']]==expected for w in found), pair
+          print(json.dumps(json.loads((root/'korean-coverage.json').read_text()),ensure_ascii=False,indent=2))
+          PY
+      - name: Save Korean localization layer
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add jlpt-quest/data/korean-glosses.json jlpt-quest/data/korean-coverage.json
+          git diff --cached --quiet || git commit -m 'data(kotoba): Koreanize all vocabulary meanings [skip ci]'
+          git push origin HEAD:feature/kotoba-curriculum-v03
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kotoba-korean-glosses
+          path: |
+            jlpt-quest/data/korean-glosses.json
+            jlpt-quest/data/korean-coverage.json
+          retention-days: 30
