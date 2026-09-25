@@ -5,7 +5,7 @@ export const SKILLS=['meaning','listening','writing'];
 export const keyOf=(id,skill)=>`${id}:${skill}`;
 export const nowId=()=>globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`;
 export const dayKey=(time=Date.now())=>{const d=new Date(time);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
-export function fresh(){return {version:SCHEMA,revision:0,settings:{level:'N5',furigana:true,motion:true,haptics:true,penWidth:4,rate:.85,goal:10},memory:{},encountered:{},learned:{},completed:{},starred:[],daily:{},xp:0,session:null,legacy:null};}
+export function fresh(){return {version:SCHEMA,revision:0,settings:{level:'N5',furigana:true,motion:true,haptics:true,penWidth:4,rate:.85,goal:10},memory:{},encountered:{},known:{},learned:{},completed:{},starred:[],daily:{},xp:0,session:null,legacy:null};}
 export function schedule(old,correct,sessionId,now=Date.now(),method='auto'){
  const r={stage:-1,due:0,lapses:0,successes:0,lastSession:'',consecutive:0,...old};
  if(!correct)return {...r,stage:0,due:now+INTERVALS[0],lapses:r.lapses+1,consecutive:0,lastAt:now,lastSession:sessionId,method};
@@ -15,16 +15,37 @@ export function schedule(old,correct,sessionId,now=Date.now(),method='auto'){
 export function shuffle(list,rng=Math.random){const out=[...list];for(let i=out.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[out[i],out[j]]=[out[j],out[i]];}return out;}
 export function optionsFor(word,words,skill){const field=skill==='listening'?'word':'meaning',other=[...new Set(words.filter(w=>w.level===word.level&&w.language===word.language&&w[field]!==word[field]).map(w=>w[field]))];return shuffle([word[field],...shuffle(other).slice(0,3)]);}
 const task=(word,phase,skill,words)=>({id:nowId(),wordId:word.id,phase,skill,attempt:0,options:['meaning','listening'].includes(skill)&&phase==='quiz'?optionsFor(word,words,skill):[]});
+function priorLaps(state,id){const p=state.completed[id];return Number.isSafeInteger(p?.laps)?p.laps:(p?.at?1:0);}
+function finalizeClass(state,s,now=Date.now()){
+ if(s.kind!=='class'||s.finalized)return;
+ const previous=state.completed[s.course.id]||{};
+ state.completed[s.course.id]={at:now,wordIds:[...s.wordIds],attempts:s.attempts,firstCorrect:s.firstCorrect,laps:priorLaps(state,s.course.id)+1,known:s.knownIds.length,unknown:s.unknownIds.length};
+ for(const id of s.unknownIds)state.learned[id]=state.learned[id]||now;
+ s.finalized=true;if(!previous.at){state.xp+=25;s.earned+=25;}
+}
+export function courseLaps(state,courseId){return priorLaps(state,courseId);}
 export function createClass(state,course,words){
- const map=new Map(words.map(w=>[w.id,w]));const selected=course.wordIds.map(id=>map.get(id));if(!selected.length||selected.some(w=>!w||!writingChars(w).length))throw new Error('이 수업의 단어 또는 쓰기 표기를 확인해야 합니다.');
- const training=selected.filter(w=>!state.learned[w.id]).flatMap(w=>[task(w,'learn','study',words),task(w,'learn','audio',words),task(w,'learn','trace',words)]);
- const quiz=SKILLS.flatMap(skill=>shuffle(selected).map(w=>task(w,'quiz',skill,words)));
- return {id:nowId(),kind:'class',course:{...course},wordIds:[...course.wordIds],queue:[...training,...quiz],index:0,originalQuiz:quiz.length,firstCorrect:0,firstAnswered:0,passed:{},feedback:null,finished:false,completed:false,ink:null,heard:false,selection:null,startedAt:Date.now(),earned:0,attempts:0,firstMisses:[],wordSnapshots:selected};
+ const map=new Map(words.map(w=>[w.id,w]));const selected=course.wordIds.map(id=>map.get(id));if(!selected.length||selected.length>30||selected.some(w=>!w||!writingChars(w).length))throw new Error('이 챕터의 단어 또는 쓰기 표기를 확인해야 합니다.');
+ const survey=selected.map(w=>task(w,'survey','survey',words));
+ return {id:nowId(),kind:'class',course:{...course},wordIds:[...course.wordIds],queue:survey,index:0,originalQuiz:0,firstCorrect:0,firstAnswered:0,passed:{},feedback:null,finished:false,completed:false,finalized:false,ink:null,heard:false,selection:null,startedAt:Date.now(),earned:0,attempts:0,firstMisses:[],knownIds:[],unknownIds:[],surveyReading:false,surveyMeaning:false,wordSnapshots:selected};
+}
+export function classifySurvey(state,taskId,known,words,now=Date.now()){
+ const s=state.session,t=current(s);if(!s||s.kind!=='class'||s.finished||t?.id!==taskId||t.phase!=='survey'||t.skill!=='survey')return false;
+ const id=t.wordId;state.encountered[id]=state.encountered[id]||now;
+ s.knownIds=s.knownIds.filter(x=>x!==id);s.unknownIds=s.unknownIds.filter(x=>x!==id);
+ if(known){s.knownIds.push(id);state.known[id]=now;}else{s.unknownIds.push(id);delete state.known[id];}
+ s.index++;s.surveyReading=false;s.surveyMeaning=false;s.selection=null;s.heard=false;s.ink=null;
+ if(s.index<s.queue.length)return true;
+ if(!s.unknownIds.length){s.finished=true;s.completed=true;finalizeClass(state,s,now);return true;}
+ const map=new Map(words.map(w=>[w.id,w])),unknown=s.unknownIds.map(id=>map.get(id)).filter(Boolean);
+ const training=unknown.flatMap(w=>[task(w,'learn','audio',words),task(w,'learn','trace',words)]);
+ const quiz=SKILLS.flatMap(skill=>shuffle(unknown).map(w=>task(w,'quiz',skill,words)));
+ s.queue.push(...training,...quiz);s.originalQuiz=quiz.length;return true;
 }
 export function createReview(state,words,filter='due',now=Date.now()){
  const map=new Map(words.map(w=>[w.id,w]));const due=dueItems(state,words,now,filter).slice(0,15);if(!due.length)return null;
  const queue=due.map(r=>task(map.get(r.wordId),'quiz',r.skill,words));const wordIds=[...new Set(due.map(x=>x.wordId))];
- return {id:nowId(),kind:'review',wordIds,queue,index:0,originalQuiz:queue.length,firstCorrect:0,firstAnswered:0,passed:{},feedback:null,finished:false,completed:false,ink:null,heard:false,selection:null,startedAt:now,earned:0,attempts:0,firstMisses:[],wordSnapshots:wordIds.map(id=>map.get(id))};
+ return {id:nowId(),kind:'review',wordIds,queue,index:0,originalQuiz:queue.length,firstCorrect:0,firstAnswered:0,passed:{},feedback:null,finished:false,completed:false,finalized:false,ink:null,heard:false,selection:null,startedAt:now,earned:0,attempts:0,firstMisses:[],knownIds:[],unknownIds:[...wordIds],surveyReading:false,surveyMeaning:false,wordSnapshots:wordIds.map(id=>map.get(id))};
 }
 export const current=s=>s?.queue?.[s.index]||null;
 export function dueItems(state,words,now=Date.now(),filter='due'){
@@ -33,8 +54,7 @@ export function dueItems(state,words,now=Date.now(),filter='due'){
 function award(state,t,correct,now){const day=dayKey(now),d=state.daily[day]||{keys:[],words:[],xp:0};const k=keyOf(t.wordId,t.skill);if(d.keys.includes(k))return 0;const n=t.phase==='quiz'?(correct?10:2):0;if(!n)return 0;d.keys.push(k);if(!d.words.includes(t.wordId))d.words.push(t.wordId);d.xp+=n;state.daily[day]=d;state.xp+=n;return n;}
 export function submit(state,taskId,result,now=Date.now()){
  const s=state.session,t=current(s);if(!s||s.finished||s.feedback||t?.id!==taskId)return false;
- // No "I was right" route: quiz writing requires a recognizer verdict; audio needs completed playback.
- if(!result||result.status==='unavailable'||result.status==='ambiguous')return false;
+ if(!result||result.status==='unavailable'||result.status==='ambiguous'||t.phase==='survey')return false;
  if((t.skill==='audio'||t.skill==='listening')&&!s.heard)return false;
  if(['trace','writing'].includes(t.skill)&&!['shape-template','mlkit','stroke-snap'].includes(result.method))return false;
  if(t.skill==='trace'&&!result.correct)return false;
@@ -51,53 +71,51 @@ export function submit(state,taskId,result,now=Date.now()){
  if(!correct&&t.attempt<2){const retry={...t,id:nowId(),attempt:t.attempt+1};s.queue.splice(Math.min(s.index+4,s.queue.length),0,retry);}
  s.feedback={correct,method:result.method||'choice',recognized:result.recognized||'',gained,reason:result.reason||'',assisted:!!result.assisted};return true;
 }
-export function unresolved(s){const required=s.kind==='class'?s.wordIds.flatMap(id=>SKILLS.map(skill=>keyOf(id,skill))):[...new Set(s.queue.filter(t=>t.phase==='quiz').map(t=>keyOf(t.wordId,t.skill)))];return required.filter(key=>s.passed[key]!==true);}
+export function unresolved(s){const ids=s.kind==='class'?s.unknownIds:s.wordIds;const required=ids.flatMap(id=>SKILLS.map(skill=>keyOf(id,skill)));return required.filter(key=>s.passed[key]!==true);}
 export function next(state,now=Date.now()){
  const s=state.session;if(!s||!s.feedback||s.finished)return false;s.index++;s.feedback=null;s.ink=null;s.heard=false;s.selection=null;s.assisted=false;
  if(s.index<s.queue.length)return true;s.finished=true;s.completed=unresolved(s).length===0;
- if(s.completed&&s.kind==='class'){
-  const previous=state.completed[s.course.id];state.completed[s.course.id]={at:now,wordIds:[...s.wordIds],attempts:s.attempts,firstCorrect:s.firstCorrect};
-  for(const id of s.wordIds)state.learned[id]=state.learned[id]||now;
-  if(!previous){state.xp+=25;s.earned+=25;}
- }
+ if(s.completed&&s.kind==='class')finalizeClass(state,s,now);
  return true;
 }
 export function remediate(state){const old=state.session;if(!old?.finished)return false;const missing=unresolved(old);if(!missing.length)return false;
  const queue=missing.map(key=>{const [id,skill]=key.split(':');const t=old.queue.find(t=>t.wordId===id&&t.skill===skill&&t.phase==='quiz');return {...t,id:nowId(),attempt:0};});
- state.session={...old,id:nowId(),queue,index:0,feedback:null,finished:false,completed:false,ink:null,heard:false,selection:null,assisted:false,earned:0,firstCorrect:0,firstAnswered:0,originalQuiz:queue.length,attempts:0,firstMisses:[],startedAt:Date.now()};return true;
+ state.session={...old,id:nowId(),queue,index:0,feedback:null,finished:false,completed:false,finalized:false,ink:null,heard:false,selection:null,assisted:false,earned:0,firstCorrect:0,firstAnswered:0,originalQuiz:queue.length,attempts:0,firstMisses:[],startedAt:Date.now()};return true;
 }
 export function levelStats(state,words,level,now=Date.now()){
- const list=words.filter(w=>w.level===level);const encountered=list.filter(w=>state.encountered[w.id]).length,learned=list.filter(w=>state.learned[w.id]).length;
+ const list=words.filter(w=>w.level===level);const encountered=list.filter(w=>state.encountered[w.id]).length,learned=list.filter(w=>state.learned[w.id]||state.known[w.id]).length;
  const due=list.filter(w=>SKILLS.some(k=>state.memory[keyOf(w.id,k)]?.due<=now)).length;
  const mastered=list.filter(w=>SKILLS.every(k=>(state.memory[keyOf(w.id,k)]?.stage??-1)>=3)).length;
- return {total:list.length,encountered,learned,due,mastered,unseen:list.length-encountered};
+ return {total:list.length,encountered,learned,due,mastered,known:list.filter(w=>state.known[w.id]).length,unseen:list.length-encountered};
 }
 export function dueLabel(due,now=Date.now()){const d=due-now;return d<=0?'지금 복습':d<3600000?`${Math.ceil(d/MINUTE)}분 뒤`:d<DAY?`${Math.ceil(d/3600000)}시간 뒤`:`${Math.ceil(d/DAY)}일 뒤`;}
 export function streak(state,now=Date.now()){const d=new Date(now);d.setHours(12,0,0,0);if(!state.daily[dayKey(d)]?.keys.length)d.setDate(d.getDate()-1);let n=0;while(state.daily[dayKey(d)]?.keys.length){n++;d.setDate(d.getDate()-1);}return n;}
 const ID=/^N[1-5]-[a-z0-9]+$/;
+const COURSE=/^N[1-5]-(?:lesson-[a-z0-9]+|chapter-\d+)$/;
 export function validateState(input){
  if(!input||input.version!==SCHEMA||!LEVELS.includes(input.settings?.level))throw new Error('지원하지 않는 학습 기록 형식입니다.');
  const s=fresh(),n=(v,max=9e15)=>Number.isFinite(v)&&v>=0&&v<=max;
  s.revision=Number.isSafeInteger(input.revision)&&input.revision>=0?input.revision:0;s.xp=n(input.xp)?input.xp:0;
  s.settings={...s.settings,level:input.settings.level,furigana:input.settings.furigana!==false,motion:input.settings.motion!==false,haptics:input.settings.haptics!==false,goal:[5,10,20,30].includes(input.settings.goal)?input.settings.goal:10,rate:[.7,.85,1].includes(input.settings.rate)?input.settings.rate:.85,penWidth:[3,4,6].includes(input.settings.penWidth)?input.settings.penWidth:4};
- for(const field of ['encountered','learned'])for(const [id,time]of Object.entries(input[field]||{})){if(ID.test(id)&&n(time))s[field][id]=time;}
+ for(const field of ['encountered','known','learned'])for(const [id,time]of Object.entries(input[field]||{})){if(ID.test(id)&&n(time))s[field][id]=time;}
  for(const [key,r]of Object.entries(input.memory||{})){const [id,skill]=key.split(':');if(!ID.test(id)||!SKILLS.includes(skill))continue;
   if(!r||!Number.isInteger(r.stage)||r.stage<0||r.stage>5||!n(r.due)||!n(r.lapses)||!n(r.successes)||!n(r.consecutive))throw new Error('복습 기록이 손상되었습니다.');
   s.memory[key]={stage:r.stage,due:r.due,lapses:r.lapses,successes:r.successes,consecutive:r.consecutive,lastAt:n(r.lastAt)?r.lastAt:0,lastSession:String(r.lastSession||'').slice(0,80),method:['mlkit','shape-template','stroke-snap','choice'].includes(r.method)?r.method:'choice'};
  }
  s.starred=[...new Set((input.starred||[]).filter(id=>typeof id==='string'&&ID.test(id)))];
- for(const [id,c]of Object.entries(input.completed||{}))if(/^N[1-5]-lesson-[a-z0-9]+$/.test(id)&&n(c?.at)&&Array.isArray(c.wordIds)&&c.wordIds.every(id=>ID.test(id)))s.completed[id]={at:c.at,wordIds:c.wordIds,attempts:n(c.attempts)?c.attempts:0,firstCorrect:n(c.firstCorrect)?c.firstCorrect:0};
+ for(const [id,c]of Object.entries(input.completed||{}))if(COURSE.test(id)&&n(c?.at)&&Array.isArray(c.wordIds)&&c.wordIds.every(id=>ID.test(id)))s.completed[id]={at:c.at,wordIds:c.wordIds,attempts:n(c.attempts)?c.attempts:0,firstCorrect:n(c.firstCorrect)?c.firstCorrect:0,laps:Number.isSafeInteger(c.laps)&&c.laps>=1?c.laps:1,known:n(c.known)?c.known:0,unknown:n(c.unknown)?c.unknown:0};
  for(const [d,r]of Object.entries(input.daily||{}))if(/^\d{4}-\d{2}-\d{2}$/.test(d)&&Array.isArray(r?.keys)&&Array.isArray(r.words)&&n(r.xp))s.daily[d]={keys:[...new Set(r.keys.filter(k=>typeof k==='string'&&k.length<60))].slice(0,50000),words:r.words.filter(id=>ID.test(id)),xp:r.xp};
  if(input.session){s.session=validateSession(input.session);}
  s.legacy=input.legacy?{version:Number(input.legacy.version)||1,xp:n(input.legacy.xp)?input.legacy.xp:0,note:'이전 자가평가 기록은 자동 채점 숙련도에 합산하지 않음'}:null;
  return s;
 }
 function validateSession(q){
- const phase=['learn','quiz'],skills=['study','audio','trace',...SKILLS];
- if(!q||!['class','review'].includes(q.kind)||typeof q.id!=='string'||!Array.isArray(q.wordIds)||q.wordIds.length>20||!q.wordIds.every(id=>ID.test(id))||!Array.isArray(q.queue)||!q.queue.length||q.queue.length>200||!Number.isInteger(q.index)||q.index<0||q.index>q.queue.length||(!q.finished&&q.index===q.queue.length))throw new Error('진행 중인 수업 데이터가 손상되었습니다.');
- if(q.kind==='class'&&(!q.course||!/^N[1-5]-lesson-[a-z0-9]+$/.test(q.course.id)||!LEVELS.includes(q.course.level)))throw new Error('수업 정보가 손상되었습니다.');
- if(q.queue.some(t=>!t||typeof t.id!=='string'||!q.wordIds.includes(t.wordId)||!phase.includes(t.phase)||!skills.includes(t.skill)||(t.phase==='quiz'&&!SKILLS.includes(t.skill))||(t.phase==='learn'&&SKILLS.includes(t.skill))||!Array.isArray(t.options)||t.options.some(x=>typeof x!=='string'||x.length>4000)||!Number.isInteger(t.attempt)||t.attempt<0||t.attempt>2))throw new Error('수업 문항이 손상되었습니다.');
- const s={id:q.id.slice(0,80),kind:q.kind,course:q.course?{id:String(q.course.id).slice(0,100),level:q.course.level,title:String(q.course.title).slice(0,100),index:q.course.index,wordIds:[...q.wordIds]}:null,wordIds:[...q.wordIds],queue:q.queue.map(t=>({id:t.id.slice(0,80),wordId:t.wordId,phase:t.phase,skill:t.skill,attempt:t.attempt,options:t.options})),index:q.index,passed:{},feedback:null,finished:q.finished===true,completed:false,ink:null,heard:q.heard===true,selection:typeof q.selection==='string'?q.selection:null,assisted:q.assisted===true,wordSnapshots:[]};
+ const phase=['survey','learn','quiz'],skills=['survey','study','audio','trace',...SKILLS];
+ if(!q||!['class','review'].includes(q.kind)||typeof q.id!=='string'||!Array.isArray(q.wordIds)||q.wordIds.length>30||!q.wordIds.every(id=>ID.test(id))||!Array.isArray(q.queue)||!q.queue.length||q.queue.length>400||!Number.isInteger(q.index)||q.index<0||q.index>q.queue.length||(!q.finished&&q.index===q.queue.length))throw new Error('진행 중인 수업 데이터가 손상되었습니다.');
+ if(q.kind==='class'&&(!q.course||!COURSE.test(q.course.id)||!LEVELS.includes(q.course.level)))throw new Error('수업 정보가 손상되었습니다.');
+ if(q.queue.some(t=>!t||typeof t.id!=='string'||!q.wordIds.includes(t.wordId)||!phase.includes(t.phase)||!skills.includes(t.skill)||(t.phase==='quiz'&&!SKILLS.includes(t.skill))||(t.phase==='survey'&&t.skill!=='survey')||(t.phase==='learn'&&!['study','audio','trace'].includes(t.skill))||!Array.isArray(t.options)||t.options.some(x=>typeof x!=='string'||x.length>4000)||!Number.isInteger(t.attempt)||t.attempt<0||t.attempt>2))throw new Error('수업 문항이 손상되었습니다.');
+ const cleanIds=a=>[...new Set((Array.isArray(a)?a:[]).filter(id=>q.wordIds.includes(id)))];
+ const s={id:q.id.slice(0,80),kind:q.kind,course:q.course?{id:String(q.course.id).slice(0,100),level:q.course.level,title:String(q.course.title||'').slice(0,100),index:q.course.index,startNo:q.course.startNo,endNo:q.course.endNo,wordIds:[...q.wordIds]}:null,wordIds:[...q.wordIds],queue:q.queue.map(t=>({id:t.id.slice(0,80),wordId:t.wordId,phase:t.phase,skill:t.skill,attempt:t.attempt,options:t.options})),index:q.index,passed:{},feedback:null,finished:q.finished===true,completed:false,finalized:q.finalized===true,ink:null,heard:q.heard===true,selection:typeof q.selection==='string'?q.selection:null,assisted:q.assisted===true,knownIds:cleanIds(q.knownIds),unknownIds:cleanIds(q.unknownIds),surveyReading:q.surveyReading===true,surveyMeaning:q.surveyMeaning===true,wordSnapshots:[]};
  for(const key of ['originalQuiz','firstCorrect','firstAnswered','earned','attempts','startedAt'])s[key]=Number.isFinite(q[key])&&q[key]>=0?q[key]:0;
  for(const [key,val]of Object.entries(q.passed||{})){const [id,skill]=key.split(':');if(q.wordIds.includes(id)&&SKILLS.includes(skill)&&typeof val==='boolean')s.passed[key]=val;}
  s.firstMisses=Array.isArray(q.firstMisses)?q.firstMisses.filter(x=>typeof x==='string'&&x.length<60):[];
