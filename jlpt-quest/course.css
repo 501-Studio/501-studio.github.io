@@ -9,3 +9,28 @@
 @media(max-width:700px){.level-progress>div>span{font-size:17px}.level-progress>div>span>small{font-size:10px}.level-progress-grid{gap:2px}}
 /* A passed character gets a centered check; the old v0.2 corner badge rule must not hide the label. */
 .character-tabs>button>.icon{position:static;width:22px;height:22px;border-radius:0;background:none;color:currentColor;padding:0}
+
+
+/* v0.3.3 — 30-word chapter shelf, rapid review and compact quiz */
+.chapter-book{position:relative;display:grid;grid-template-columns:74px minmax(0,1fr) 58px;align-items:center;min-height:190px;width:100%;max-width:430px;margin:18px auto;border:0;border-radius:28px;background:linear-gradient(105deg,#5f5ca8 0 24%,#7464e8 24% 100%);color:white;overflow:visible;box-shadow:0 12px 30px rgba(70,58,142,.16);text-align:left}
+.chapter-book.featured{min-height:225px;cursor:pointer}
+.chapter-book.current{box-shadow:0 0 0 3px #cfc5ff,0 12px 30px rgba(70,58,142,.18)}
+.book-spine{height:100%;background:linear-gradient(180deg,#454f87,#555a96);display:block}
+.book-copy{padding:20px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center}
+.book-copy b{font-size:30px;letter-spacing:-1px}.book-copy strong{font-family:'Noto Sans CJK JP','Yu Gothic',sans-serif;font-size:32px;font-weight:500;line-height:1.25}.book-copy span{font-size:20px;margin-top:8px}.book-copy small{font-size:14px;opacity:.76}
+.book-open{width:46px;height:64px;border-radius:13px;background:#8b7bf0;display:grid;place-items:center;margin-right:12px}.book-open .icon{width:26px;height:26px}
+.book-ribbon{position:absolute;left:-10px;top:21px;z-index:3;background:#ececf3;color:#5b5c67;font-size:13px;font-weight:800;padding:10px 19px 10px 15px;clip-path:polygon(0 0,100% 0,86% 50%,100% 100%,0 100%);box-shadow:0 5px 12px rgba(0,0,0,.06)}
+.chapter-summary{max-width:430px;margin:0 auto 22px}.chapter-summary>b{display:block;font-size:17px}.chapter-summary p{font-size:12px;color:#7e8797;margin:6px 0 16px}
+.chapter-library{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 22px;align-items:start}.chapter-library .chapter-book{margin:0;min-height:205px}
+.survey-card{position:relative;background:white;border:1px solid #ececf2;border-radius:28px;padding:48px 24px 28px;min-height:350px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:0 12px 28px rgba(42,46,75,.06)}
+.survey-card>strong{font-family:'Noto Sans CJK JP','Yu Gothic',sans-serif;font-size:68px;font-weight:650;line-height:1.35;word-break:break-all}.survey-count{position:absolute;right:20px;top:18px;font-size:12px;color:#9aa1ad}.survey-reading{font-size:20px;color:#817a94;margin-top:8px}.survey-meaning{font-size:22px;font-weight:700;margin-top:22px;overflow-wrap:anywhere}.survey-placeholder{font-size:13px;color:#a2a7b1;margin-top:24px}
+.survey-reveals{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin-top:28px}.survey-reveals button{min-height:48px;border-radius:14px;background:#f5f3fb;color:#6e638f;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:7px}.survey-reveals button.active{background:#ebe6ff;color:#5d4ad1}.survey-reveals .icon{width:18px;height:18px}
+.survey-footer{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}.survey-footer .btn{width:100%;min-width:0}.survey-footer .unknown{color:#675c80;background:#f1eef7}.survey-footer .known{background:#6754e8}
+.options{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px!important;margin-top:14px!important}.answer-option{min-height:64px!important;padding:11px 12px!important;display:flex!important;align-items:center!important;gap:9px!important}.answer-option b{font-size:14px!important;line-height:1.35!important;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.answer-option>span{width:24px;height:24px;display:grid;place-items:center;border-radius:7px;background:#f0eef8;font-size:11px;flex:0 0 auto}
+.session-label{flex-wrap:wrap;gap:4px 12px}.session-label>span:first-child{font-weight:700;color:#5d6270}
+@media(max-width:700px){
+ .chapter-library{grid-template-columns:1fr;gap:16px}.chapter-book{grid-template-columns:68px minmax(0,1fr) 54px;min-height:180px;border-radius:24px}.chapter-book.featured{min-height:205px}.book-copy b{font-size:27px}.book-copy strong{font-size:29px}.book-copy span{font-size:18px}.book-copy small{font-size:13px}.book-open{width:42px;height:58px}
+ .survey-card{min-height:315px;padding:42px 20px 24px}.survey-card>strong{font-size:58px}.survey-reading{font-size:18px}.survey-meaning{font-size:20px}.survey-reveals{margin-top:23px}
+ .options{grid-template-columns:1fr 1fr!important;gap:8px!important}.answer-option{min-height:58px!important;padding:9px!important}.answer-option b{font-size:12px!important}.question .heading{margin-bottom:13px}.question .heading h1{font-size:22px}.word-question{padding:6px 0 12px}.word-question .big-japanese>strong{font-size:43px}.listening-stage{padding-top:8px!important;padding-bottom:8px!important}.lesson-footer.survey-mode .lesson-footer-inner{display:block}
+}
+@media(max-width:350px){.survey-card>strong{font-size:51px}.survey-reveals button{font-size:10px}.survey-footer{gap:8px}.survey-footer .btn{font-size:12px;padding:10px 6px}.answer-option b{font-size:11px!important}}
