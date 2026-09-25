@@ -27,3 +27,20 @@ KanjiVG, copyright Ulrich Apel and contributors.
 Kotoba changes: select characters used by this curriculum; sample SVG cubic/quadratic paths in order; normalize 109-unit SVG coordinates; simplify polylines at a fixed tolerance and round coordinates to 4 decimals. The derived strokes.json dataset is CC BY-SA 3.0. Preserve these notices and the same license for adaptations of the stroke data. Source archive hash and derived data hash are in data/stroke-coverage.json.
 
 The 2,244-character, 22,615-stroke pack is bundled locally, not downloaded by the installed APK. Reuse does not imply endorsement by KanjiVG. No Duolingo assets or third-party fonts are included.
+
+
+## Offline pronunciation audio — HTS Voice CC BY 3.0
+
+The Android release bundles Japanese pronunciation clips generated at build time with Open JTalk and **HTS Voice "NIT ATR503 M001" version 1.05**.
+
+- Voice project: https://open-jtalk.sourceforge.net/
+- Voice license notice: https://open-jtalk.sourceforge.net/readme_hts_voice_nitech_jp_atr503_m001.php
+- License: Creative Commons Attribution 3.0, https://creativecommons.org/licenses/by/3.0/
+- Copyright © 2003–2012 Nagoya Institute of Technology, Department of Computer Science
+- Copyright © 2003–2008 Tokyo Institute of Technology, Interdisciplinary Graduate School of Science and Engineering
+
+Kotoba modification: each curriculum reading is synthesized during the reproducible build, leading/trailing silence is trimmed, and audio is encoded as mono 16 kHz Ogg Opus. Identical readings share one clip. The installed app contains the resulting audio files and does not contain the Open JTalk engine, model, or Japanese dictionary executable data.
+
+Open JTalk and the NAIST Japanese Dictionary are used only on the build machine. The Debian Open JTalk Japanese dictionary package identifies the converted NAIST dictionary as BSD-style licensed. The generated audio is distributed with attribution to the HTS Voice licensors and its CC BY 3.0 terms.
+
+The installed Google Play Android build is intended to perform vocabulary, handwriting and listening without network access. Audio coverage metadata is generated as `data/audio-coverage.json`; `data/audio-manifest.json` maps every installed vocabulary ID to a bundled pronunciation clip.
