@@ -34,6 +34,7 @@ OVERRIDES={
     '明後日|あさって':'모레',
     '一昨日|おととい':'그저께',
     'ゼロ|ぜろ':'영 · 0',
+    'など|など':'등 · 따위',
 }
 
 HANGUL=re.compile(r'[가-힣]')
@@ -92,25 +93,34 @@ def main():
         model.eval()
         target=tokenizer.get_lang_id('ko')
         started=time.time()
-        for start in range(0,len(pending),args.batch_size):
-            batch=pending[start:start+args.batch_size]
-            texts=[x[1] for x in batch]
-            encoded=tokenizer(texts,return_tensors='pt',padding=True,truncation=True,max_length=160)
-            with torch.inference_mode():
-                generated=model.generate(**encoded,forced_bos_token_id=target,max_new_tokens=args.max_new_tokens,num_beams=2,early_stopping=True)
-            translated=tokenizer.batch_decode(generated,skip_special_tokens=True)
-            for (key,source,word,reading),ko in zip(batch,translated):
-                ko=compact(ko)
-                if not HANGUL.search(ko):
-                    if re.search(r'[A-Za-z]{2,}',ko):
-                        raise RuntimeError(f'No Korean translation: {word}({reading}) {source!r} -> {ko!r}')
-                    # Numbers/symbols are language-neutral; keep only after removing duplicate tokens.
-                    if not ko:raise RuntimeError(f'Empty translation: {word}({reading}) {source!r}')
-                glosses[key]=ko
-            done=min(start+args.batch_size,len(pending))
-            if done%480<args.batch_size:
-                elapsed=time.time()-started
-                print(f'translated {done}/{len(pending)} in {elapsed:.1f}s',flush=True)
+        retry=[]
+        def run_batches(items,contextual=False):
+            bad=[]
+            for start in range(0,len(items),args.batch_size):
+                batch=items[start:start+args.batch_size]
+                texts=[('dictionary meaning: '+x[1]) if contextual else x[1] for x in batch]
+                encoded=tokenizer(texts,return_tensors='pt',padding=True,truncation=True,max_length=160)
+                with torch.inference_mode():
+                    generated=model.generate(**encoded,forced_bos_token_id=target,max_new_tokens=args.max_new_tokens,num_beams=2,early_stopping=True)
+                translated=tokenizer.batch_decode(generated,skip_special_tokens=True)
+                for item,ko in zip(batch,translated):
+                    key,source,word,reading=item
+                    ko=compact(ko)
+                    ko=re.sub(r'^(사전의?\s*)?(뜻|의미)\s*[:：]\s*','',ko).strip()
+                    if (not ko) or (not HANGUL.search(ko) and re.search(r'[A-Za-z]{2,}',ko)):
+                        bad.append(item);continue
+                    glosses[key]=ko
+                done=min(start+args.batch_size,len(items))
+                if not contextual and done%480<args.batch_size:
+                    print(f'translated {done}/{len(items)} in {time.time()-started:.1f}s',flush=True)
+            return bad
+        retry=run_batches(pending,False)
+        if retry:
+            print(f'retrying {len(retry)} difficult glosses with dictionary context',flush=True)
+            retry=run_batches(retry,True)
+        if retry:
+            sample='; '.join(f'{w}({r})={src!r}' for _,src,w,r in retry[:30])
+            raise RuntimeError(f'{len(retry)} meanings still have no Korean translation: {sample}')
     # Re-apply human overrides after MT/cache.
     by_pair={w['word']+'|'+w.get('reading',''):w['id'] for w in words}
     for pair,ko in OVERRIDES.items():
