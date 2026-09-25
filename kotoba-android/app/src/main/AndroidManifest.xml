@@ -1,6 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.VIBRATE" />
-    <queries><intent><action android:name="android.intent.action.TTS_SERVICE" /></intent></queries>
     <application android:label="코토바" android:icon="@drawable/ic_launcher"
         android:theme="@style/AppTheme" android:usesCleartextTraffic="false"
         android:allowBackup="false" android:supportsRtl="true"
