@@ -6,8 +6,6 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.speech.tts.TextToSpeech;
-import android.speech.tts.UtteranceProgressListener;
 import android.view.View;
 import android.view.WindowInsets;
 import android.webkit.RenderProcessGoneDetail;
@@ -35,20 +33,18 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** APK-local stroke engine runs in bundled JavaScript. Native bridge: speech and backups only. */
+/** APK-local learning, stroke and pronunciation assets. Native bridge handles backups and exit only. */
 public final class MainActivity extends ComponentActivity {
     private static final String ORIGIN = "https://appassets.androidplatform.net";
     private static final String START = ORIGIN + "/assets/www/index.html";
     private static final int EXPORT = 201, IMPORT = 202, MAX_BACKUP = 30_000_000;
     private WebView web;
-    private TextToSpeech tts;
-    private boolean ttsReady, destroyed;
+    private boolean destroyed;
     private final ExecutorService io = Executors.newSingleThreadExecutor();
-    private Pending audio, picker;
+    private Pending picker;
     private String exportData;
     private static final class Pending {
         final String id; final JavaScriptReplyProxy reply;
@@ -79,7 +75,8 @@ public final class MainActivity extends ComponentActivity {
         ViewCompat.requestApplyInsets(frame);
         WebSettings ws=web.getSettings();ws.setJavaScriptEnabled(true);ws.setDomStorageEnabled(true);
         ws.setAllowFileAccess(false);ws.setAllowContentAccess(false);ws.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-        ws.setMediaPlaybackRequiresUserGesture(true);if(Build.VERSION.SDK_INT>=26)ws.setSafeBrowsingEnabled(true);
+        // Listening prompts auto-play once from APK-local Ogg files. No network TTS is used.
+        ws.setMediaPlaybackRequiresUserGesture(false);if(Build.VERSION.SDK_INT>=26)ws.setSafeBrowsingEnabled(true);
         final WebViewAssetLoader assets=new WebViewAssetLoader.Builder().addPathHandler("/assets/",new WebViewAssetLoader.AssetsPathHandler(this)).build();
         web.setWebViewClient(new WebViewClient(){
             @Override public WebResourceResponse shouldInterceptRequest(WebView view,WebResourceRequest req){
@@ -94,7 +91,7 @@ public final class MainActivity extends ComponentActivity {
                 return true;
             }
             @Override public boolean onRenderProcessGone(WebView view,RenderProcessGoneDetail detail){
-                stopSpeech("화면이 재시작되어 재생을 중단했습니다.");view.destroy();
+                view.destroy();
                 new AlertDialog.Builder(MainActivity.this).setTitle("학습 화면을 다시 열어 주세요").setMessage("이미 저장된 기록은 유지됩니다.").setPositiveButton("다시 열기",(d,w)->recreate()).setNegativeButton("닫기",(d,w)->finish()).show();return true;
             }
         });
@@ -105,13 +102,6 @@ public final class MainActivity extends ComponentActivity {
             if(!isMainFrame || !ORIGIN.equals(sourceOrigin.toString()))return;
             handle(message,new Pending("",proxy));
         });
-        tts=new TextToSpeech(this,status->{ttsReady=status==TextToSpeech.SUCCESS;});
-        tts.setOnUtteranceProgressListener(new UtteranceProgressListener(){
-            @Override public void onStart(String id) {}
-            @Override public void onDone(String id){runOnUiThread(()->{if(audio!=null&&audio.id.equals(id)){Pending p=audio;audio=null;respond(p,new JSONObject(),null);}});}
-            @Override public void onError(String id){runOnUiThread(()->{if(audio!=null&&audio.id.equals(id))stopSpeech("일본어 음성 재생에 실패했습니다.");});}
-            @Override public void onStop(String id,boolean interrupted){runOnUiThread(()->{if(audio!=null&&audio.id.equals(id))stopSpeech("재생이 중단되었습니다.");});}
-        });
         getOnBackPressedDispatcher().addCallback(this,new OnBackPressedCallback(true){@Override public void handleOnBackPressed(){web.evaluateJavascript("window.dispatchEvent(new Event('kotoba-back'))",null);}});
         web.loadUrl(START);
     }
@@ -121,8 +111,6 @@ public final class MainActivity extends ComponentActivity {
         try { String raw=message.getData();if(raw==null||raw.length()>MAX_BACKUP+1000)return;JSONObject q=new JSONObject(raw);
             String id=q.getString("id"),type=q.getString("type");if(id.length()>100)return;Pending p=new Pending(id,base.reply);request=p;JSONObject body=q.optJSONObject("payload");if(body==null)body=new JSONObject();
             switch(type){
-                case "speak": speak(p,body);break;
-                case "stopAudio": stopSpeech("재생이 중단되었습니다.");respond(p,new JSONObject(),null);break;
                 case "exportBackup": if(picker!=null){respond(p,null,"다른 파일 작업이 진행 중입니다.");return;}String data=body.getString("json");if(data.length()>MAX_BACKUP){respond(p,null,"백업이 너무 큽니다.");return;}new JSONObject(data);picker=p;exportData=data;Intent out=new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/json").putExtra(Intent.EXTRA_TITLE,"kotoba-backup.json");startActivityForResult(out,EXPORT);break;
                 case "importBackup": if(picker!=null){respond(p,null,"다른 파일 작업이 진행 중입니다.");return;}picker=p;startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/json"),IMPORT);break;
                 case "requestExit": new AlertDialog.Builder(this).setTitle("코토바를 닫을까요?").setMessage("저장한 학습 기록은 유지됩니다.").setPositiveButton("닫기",(d,w)->finish()).setNegativeButton("계속 학습",(d,w)->respond(p,new JSONObject(),null)).show();break;
@@ -130,13 +118,6 @@ public final class MainActivity extends ComponentActivity {
             }
         } catch(Exception e){respond(request,null,"요청을 처리하지 못했습니다.");}
     }
-    private void speak(Pending p,JSONObject body) throws Exception {
-        stopSpeech("새로운 재생이 시작되었습니다.");if(!ttsReady||tts==null){respond(p,null,"음성 엔진을 준비하고 있습니다. 다시 눌러 주세요.");return;}
-        String text=body.getString("text");double rate=body.optDouble("rate",.85);if(text.trim().isEmpty()||text.length()>120||rate<.5||rate>1.2){respond(p,null,"음성 입력을 확인해 주세요.");return;}
-        int available=tts.setLanguage(Locale.JAPANESE);if(available==TextToSpeech.LANG_MISSING_DATA||available==TextToSpeech.LANG_NOT_SUPPORTED){respond(p,null,"기기 음성 설정에서 일본어 음성을 설치해 주세요.");return;}
-        tts.setSpeechRate((float)rate);audio=p;int result=tts.speak(text,TextToSpeech.QUEUE_FLUSH,new Bundle(),p.id);if(result==TextToSpeech.ERROR)stopSpeech("음성을 재생하지 못했습니다.");
-    }
-    private void stopSpeech(String reason){Pending old=audio;audio=null;if(tts!=null)tts.stop();respond(old,null,reason);}
     @Override protected void onActivityResult(int requestCode,int resultCode,Intent data){super.onActivityResult(requestCode,resultCode,data);if(requestCode!=EXPORT&&requestCode!=IMPORT)return;
         Pending p=picker;picker=null;String json=exportData;exportData=null;
         if(resultCode!=RESULT_OK||data==null||data.getData()==null){respond(p,null,"파일 선택이 취소되었습니다.");return;}Uri uri=data.getData();
@@ -144,7 +125,7 @@ public final class MainActivity extends ComponentActivity {
             else{try(InputStream in=getContentResolver().openInputStream(uri);ByteArrayOutputStream out=new ByteArrayOutputStream()){if(in==null)throw new IllegalStateException();byte[] chunk=new byte[8192];int n;while((n=in.read(chunk))!=-1){if(out.size()+n>MAX_BACKUP)throw new IllegalArgumentException();out.write(chunk,0,n);}respond(p,new JSONObject().put("json",new String(out.toByteArray(),StandardCharsets.UTF_8)),null);}}}
             catch(Exception e){respond(p,null,"백업 파일을 읽거나 저장하지 못했습니다.");}});
     }
-    @Override protected void onPause(){stopSpeech("앱이 잠시 멈춰 재생을 중단했습니다.");if(web!=null)web.onPause();super.onPause();}
+    @Override protected void onPause(){if(web!=null)web.onPause();super.onPause();}
     @Override protected void onResume(){super.onResume();if(web!=null)web.onResume();}
-    @Override protected void onDestroy(){stopSpeech("앱이 종료되었습니다.");destroyed=true;if(tts!=null)tts.shutdown();if(web!=null)web.destroy();io.shutdown();super.onDestroy();}
+    @Override protected void onDestroy(){destroyed=true;if(web!=null)web.destroy();io.shutdown();super.onDestroy();}
 }
