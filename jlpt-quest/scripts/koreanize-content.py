@@ -57,8 +57,8 @@ def compact(text:str)->str:
 
 def main():
     ap=argparse.ArgumentParser()
-    ap.add_argument('--batch-size',type=int,default=48)
-    ap.add_argument('--max-new-tokens',type=int,default=72)
+    ap.add_argument('--batch-size',type=int,default=96)
+    ap.add_argument('--max-new-tokens',type=int,default=48)
     args=ap.parse_args()
     words=load_words()
     existing={}
@@ -99,9 +99,9 @@ def main():
             for start in range(0,len(items),args.batch_size):
                 batch=items[start:start+args.batch_size]
                 texts=[('dictionary meaning: '+x[1]) if contextual else x[1] for x in batch]
-                encoded=tokenizer(texts,return_tensors='pt',padding=True,truncation=True,max_length=160)
+                encoded=tokenizer(texts,return_tensors='pt',padding=True,truncation=True,max_length=128)
                 with torch.inference_mode():
-                    generated=model.generate(**encoded,forced_bos_token_id=target,max_new_tokens=args.max_new_tokens,num_beams=2,early_stopping=True)
+                    generated=model.generate(**encoded,forced_bos_token_id=target,max_new_tokens=args.max_new_tokens,num_beams=1)
                 translated=tokenizer.batch_decode(generated,skip_special_tokens=True)
                 for item,ko in zip(batch,translated):
                     key,source,word,reading=item
