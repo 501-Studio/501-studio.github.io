@@ -30,6 +30,14 @@ jobs:
       - name: Regression tests for chapters, offline audio, legal assets and relaxed strokes
         working-directory: jlpt-quest
         run: npm test
+      - name: Confirm unapproved production release is blocked
+        working-directory: jlpt-quest
+        run: |
+          if npm run release:check; then
+            echo "Release gate unexpectedly passed" >&2
+            exit 1
+          fi
+          echo "Release correctly blocked until editorial, legal, signing and Play approvals are complete."
       - name: Sync APK-local assets
         working-directory: jlpt-quest
         env:
