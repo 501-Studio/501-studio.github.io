@@ -12,7 +12,7 @@ concurrency:
 jobs:
   verify-and-build:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 45
     env:
       KOTOBA_EVIDENCE_DIR: /tmp/kotoba-v034-evidence
     steps:
@@ -48,7 +48,7 @@ jobs:
           gradle-version: '8.13'
       - name: Compile internal APK and Android lint
         working-directory: kotoba-android
-        run: gradle :app:assembleDebug :app:lintDebug --no-daemon --stacktrace
+        run: gradle :app:assembleDebug :app:bundleDebug :app:lintDebug --no-daemon --stacktrace
       - name: Install browser verification tools
         run: |
           python3 -m pip install playwright==1.57.0
@@ -82,6 +82,7 @@ jobs:
           name: kotoba-0.3.4-full-offline
           path: |
             kotoba-android/app/build/outputs/apk/debug/app-debug.apk
+            kotoba-android/app/build/outputs/bundle/debug/app-debug.aab
             /tmp/kotoba-0.3.4-source.zip
           if-no-files-found: error
           retention-days: 30
