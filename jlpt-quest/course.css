@@ -34,3 +34,5 @@
  .options{grid-template-columns:1fr 1fr!important;gap:8px!important}.answer-option{min-height:58px!important;padding:9px!important}.answer-option b{font-size:12px!important}.question .heading{margin-bottom:13px}.question .heading h1{font-size:22px}.word-question{padding:6px 0 12px}.word-question .big-japanese>strong{font-size:43px}.listening-stage{padding-top:8px!important;padding-bottom:8px!important}.lesson-footer.survey-mode .lesson-footer-inner{display:block}
 }
 @media(max-width:350px){.survey-card>strong{font-size:51px}.survey-reveals button{font-size:10px}.survey-footer{gap:8px}.survey-footer .btn{font-size:12px;padding:10px 6px}.answer-option b{font-size:11px!important}}
+
+.audio-button-label{font-size:12px;font-weight:800;line-height:1;color:currentColor}.legal-links{display:flex;flex-direction:column;gap:4px;margin-top:12px}
