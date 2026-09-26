@@ -1,0 +1,15 @@
+{
+  "physicalDeviceInk": false,
+  "physicalDeviceAudio": false,
+  "offlineRestore": false,
+  "accessibility": false,
+  "contentEditorialReview": false,
+  "privacyAndDataSafety": false,
+  "contentRating": false,
+  "storeListing": false,
+  "signedBundle": false,
+  "playAppSigning": false,
+  "closedTesting": false,
+  "legalDocsPublished": false,
+  "note": "검증·Play Console 설정 전 true로 바꾸지 마세요."
+}

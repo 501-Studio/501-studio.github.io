@@ -1,0 +1,48 @@
+{
+  "complete": true,
+  "sourceWords": 8451,
+  "koreanWords": 8451,
+  "englishVisible": 0,
+  "levels": {
+    "N5": {
+      "complete": true,
+      "level": "N5",
+      "sourceWords": 669,
+      "koreanWords": 669,
+      "englishVisible": 0,
+      "humanOverrides": 18
+    },
+    "N4": {
+      "complete": true,
+      "level": "N4",
+      "sourceWords": 655,
+      "koreanWords": 655,
+      "englishVisible": 0,
+      "humanOverrides": 3
+    },
+    "N3": {
+      "complete": true,
+      "level": "N3",
+      "sourceWords": 1798,
+      "koreanWords": 1798,
+      "englishVisible": 0,
+      "humanOverrides": 11
+    },
+    "N2": {
+      "complete": true,
+      "level": "N2",
+      "sourceWords": 1844,
+      "koreanWords": 1844,
+      "englishVisible": 0,
+      "humanOverrides": 14
+    },
+    "N1": {
+      "complete": true,
+      "level": "N1",
+      "sourceWords": 3485,
+      "koreanWords": 3485,
+      "englishVisible": 0,
+      "humanOverrides": 22
+    }
+  }
+}
