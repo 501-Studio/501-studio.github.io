@@ -1,4 +1,4 @@
-name: Kotoba v0.3.4 full-offline Play readiness verification
+name: Kotoba v0.3.5 full-offline Play readiness verification
 on:
   push:
     branches: [feature/kotoba-curriculum-v03]
@@ -7,14 +7,14 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: kotoba-v034-${{ github.ref }}
+  group: kotoba-v035-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   verify-and-build:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      KOTOBA_EVIDENCE_DIR: /tmp/kotoba-v034-evidence
+      KOTOBA_EVIDENCE_DIR: /tmp/kotoba-v035-evidence
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -66,43 +66,44 @@ jobs:
         run: |
           python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/kotoba-http.log 2>&1 &
           python3 tests/snap-browser.py
-      - name: Save verified v0.3.4 source metadata and generated packs to feature branch
+      - name: Save verified v0.3.5 source metadata and generated packs to feature branch
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -u -- jlpt-quest kotoba-android
-          git add jlpt-quest/data/strokes.json jlpt-quest/data/stroke-coverage.json jlpt-quest/data/licenses/ jlpt-quest/data/N1.json jlpt-quest/data/N2.json jlpt-quest/data/N3.json jlpt-quest/data/N4.json jlpt-quest/data/N5.json jlpt-quest/data/coverage.json
-          git diff --cached --quiet || git commit -m 'feat(kotoba): persist verified v0.3.4 full-offline metadata [skip ci]'
+          git add jlpt-quest/data/strokes.json jlpt-quest/data/stroke-coverage.json jlpt-quest/data/licenses/ jlpt-quest/data/N1.json jlpt-quest/data/N2.json jlpt-quest/data/N3.json jlpt-quest/data/N4.json jlpt-quest/data/N5.json jlpt-quest/data/coverage.json jlpt-quest/data/korean-glosses.json jlpt-quest/data/korean-coverage.json
+          git diff --cached --quiet || git commit -m 'feat(kotoba): persist verified v0.3.5 full-offline metadata [skip ci]'
           git push origin HEAD:feature/kotoba-curriculum-v03
       - name: Package reproducible full source
         run: |
           python3 - <<'PY'
           import zipfile,pathlib
-          with zipfile.ZipFile('/tmp/kotoba-0.3.4-source.zip','w',zipfile.ZIP_DEFLATED) as z:
+          with zipfile.ZipFile('/tmp/kotoba-0.3.5-source.zip','w',zipfile.ZIP_DEFLATED) as z:
               for folder in ['jlpt-quest','kotoba-android']:
                   for p in pathlib.Path(folder).rglob('*'):
                       if not p.is_file() or any(x in p.parts for x in ['build','.gradle','node_modules','__pycache__']): continue
                       if 'src/main/assets/' in str(p) or '/data/audio/' in str(p): continue
-                      z.write(p,'kotoba-0.3.4/'+str(p))
+                      z.write(p,'kotoba-0.3.5/'+str(p))
           PY
       - uses: actions/upload-artifact@v4
         with:
-          name: kotoba-0.3.4-full-offline
+          name: kotoba-0.3.5-full-offline
           path: |
             kotoba-android/app/build/outputs/apk/debug/app-debug.apk
             kotoba-android/app/build/outputs/bundle/debug/app-debug.aab
-            /tmp/kotoba-0.3.4-source.zip
+            /tmp/kotoba-0.3.5-source.zip
           if-no-files-found: error
           retention-days: 30
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: kotoba-0.3.4-verification
+          name: kotoba-0.3.5-verification
           path: |
-            /tmp/kotoba-v034-evidence/
+            /tmp/kotoba-v035-evidence/
             kotoba-android/app/build/reports/
             jlpt-quest/data/stroke-coverage.json
             jlpt-quest/data/audio-coverage.json
+            jlpt-quest/data/korean-coverage.json
             /tmp/kotoba-http.log
           if-no-files-found: warn
           retention-days: 30
