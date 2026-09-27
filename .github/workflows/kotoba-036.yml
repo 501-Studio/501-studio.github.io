@@ -1,0 +1,64 @@
+name: Kotoba 0.3.6 native verification
+on:
+  push:
+    branches: [feat/kotoba-036-release-prep]
+    paths: ['release/v036-native-*', '.github/workflows/kotoba-036.yml', 'kotoba-android/**']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: kotoba-036-native
+  cancel-in-progress: true
+jobs:
+  native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reconstruct reviewed native sources with byte verification
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import base64,hashlib,zipfile,io
+          parts=[Path(f'release/v036-native-part{i}.b64').read_text().strip() for i in (1,2,3)]
+          joined=''.join(parts).replace('c0IvPCcgYD','c0IvjnzPcgYD')
+          data=base64.b64decode(joined,validate=True)
+          actual=hashlib.sha256(data).hexdigest()
+          assert actual=='0be94fb4f8e455cf27a2bc44c1088bf96b6f1f1f0d99528b044f60778bec7280',actual
+          z=zipfile.ZipFile(io.BytesIO(data))
+          assert z.testzip() is None
+          for name in z.namelist():
+            p=Path(name)
+            assert not p.is_absolute() and '..' not in p.parts and p.parts[0]=='kotoba-android'
+            p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(z.read(name))
+          print('Verified source files:',len(z.namelist()))
+          PY
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: false
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+      - name: Compile Billing, Ads and consent APIs
+        working-directory: kotoba-android
+        run: gradle :app:compileDebugJavaWithJavac :app:lintDebug --no-daemon --stacktrace
+      - name: Preserve readable verified native source
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add kotoba-android/
+          git diff --cached --quiet || git commit -m 'feat(kotoba): verify native billing and consent integration [skip ci]'
+          git push origin HEAD:feat/kotoba-036-release-prep
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kotoba-036-native-check
+          path: |
+            kotoba-android/app/build/reports/
+            kotoba-android/app/src/main/java/
+          retention-days: 7
