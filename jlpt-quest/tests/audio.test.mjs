@@ -10,10 +10,10 @@ test('every referenced audio file is bundled, non-empty Ogg Opus',()=>{
  const unique=new Set(Object.values(manifest.clips));assert.equal(unique.size,manifest.uniqueClips);
  for(const name of unique){const p=new URL('../data/audio/'+name,import.meta.url);const b=fs.readFileSync(p);assert.ok(b.length>300,name);assert.equal(b.subarray(0,4).toString(),'OggS',name);}
 });
-test('installed Android app has no Internet permission or TTS dependency',()=>{
+test('core audio stays bundled while Ads and Billing use explicit network permission',()=>{
  const manifestXml=fs.readFileSync(new URL('../../kotoba-android/app/src/main/AndroidManifest.xml',import.meta.url),'utf8');
  const main=fs.readFileSync(new URL('../../kotoba-android/app/src/main/java/com/studio501/kotoba/MainActivity.java',import.meta.url),'utf8');
- assert.doesNotMatch(manifestXml,/android\.permission\.INTERNET|TTS_SERVICE/);
+ assert.doesNotMatch(manifestXml,/TTS_SERVICE|RECORD_AUDIO/);assert.match(manifestXml,/android\.permission\.INTERNET/);
  assert.doesNotMatch(main,/TextToSpeech|speech\.tts|case "speak"|stopSpeech/);
  assert.match(main,/setMediaPlaybackRequiresUserGesture\(false\)/);
 });

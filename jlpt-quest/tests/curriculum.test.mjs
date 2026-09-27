@@ -15,7 +15,7 @@ test('missing chapter metadata is rejected instead of crashing at finish',()=>{c
 
 test('previously visible English screenshot meanings are explicitly Korean',()=>{
  const words=loaded.flatMap(p=>p.words),expect=new Map([
-  ['あさって|あさって','모레'],['あそこ|あそこ','저기 · 저곳'],['あちら|あちら','저쪽 · 저곳'],['あっち|あっち','저쪽']
+  ['あさって|あさって','모레'],['あそこ|あそこ','저기, 저곳'],['あちら|あちら','저쪽, 저곳'],['あっち|あっち','저쪽']
  ]);
  for(const [pair,ko] of expect){const [word,reading]=pair.split('|'),rows=words.filter(w=>w.word===word&&w.reading===reading);assert.ok(rows.length,pair);for(const w of rows)assert.equal(w.meaning,ko,pair);}
 });

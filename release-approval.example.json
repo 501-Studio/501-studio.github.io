@@ -11,5 +11,7 @@
   "playAppSigning": false,
   "closedTesting": false,
   "legalDocsPublished": false,
-  "note": "검증·Play Console 설정 전 true로 바꾸지 마세요."
+  "billingSandbox": false,
+  "consentAndAdFree": false,
+  "rtdnAndRefunds": false
 }

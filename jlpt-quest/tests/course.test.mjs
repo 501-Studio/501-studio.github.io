@@ -16,9 +16,9 @@ test('a chapter starts as exactly thirty rapid-review cards',()=>{const s=setup(
 test('known words are not added to the focused exam',()=>{
  const s=setup(),unknown=[chapter.wordIds[0],chapter.wordIds[1]];survey(s,unknown);
  assert.equal(s.session.knownIds.length,28);assert.equal(s.session.unknownIds.length,2);
- assert.equal(s.session.queue.length,30+2*2+2*3);assert.equal(s.session.originalQuiz,6);
- assert.ok(s.session.queue.slice(30,34).every(t=>t.phase==='learn'));
- assert.deepEqual(new Set(s.session.queue.slice(34).map(t=>t.wordId)),new Set(unknown));
+ assert.equal(s.session.queue.length,30+2*4+2*3);assert.equal(s.session.originalQuiz,6);
+ assert.ok(s.session.queue.slice(30,38).every(t=>t.phase==='learn'));
+ assert.deepEqual(new Set(s.session.queue.slice(38).map(t=>t.wordId)),new Set(unknown));
 });
 test('all-known chapter completes immediately without fake SRS mastery',()=>{
  const s=setup();survey(s,[]);
@@ -31,12 +31,12 @@ test('marking a previously known word unknown removes the known shortcut',()=>{
 });
 test('unknown words receive audio and tracing before the three exam types',()=>{
  const s=setup(),id=chapter.wordIds[0];survey(s,[id]);
- assert.deepEqual(s.session.queue.slice(30,32).map(t=>t.skill),['audio','trace']);
- assert.deepEqual(new Set(s.session.queue.slice(32).map(t=>t.skill)),new Set(['meaning','listening','writing']));
+ assert.deepEqual(s.session.queue.slice(30,34).map(t=>t.skill),['audio','trace','trace','trace']);
+ assert.deepEqual(new Set(s.session.queue.slice(34).map(t=>t.skill)),new Set(['meaning','listening','writing']));
 });
 test('one unknown word requires all three exam skills to complete chapter',()=>{
  const s=setup(),id=chapter.wordIds[0];survey(s,[id]);run(s);
- assert.equal(s.session.completed,true);assert.equal(s.learned[id],NOW+4);assert.equal(courseLaps(s,chapter.id),1);
+ assert.equal(s.session.completed,true);assert.equal(s.learned[id],NOW+6);assert.equal(courseLaps(s,chapter.id),1);
  for(const skill of ['meaning','listening','writing'])assert.equal(s.session.passed[keyOf(id,skill)],true);
 });
 test('one failed writing skill blocks the whole chapter until remediation',()=>{

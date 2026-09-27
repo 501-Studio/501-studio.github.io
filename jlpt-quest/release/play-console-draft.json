@@ -1,0 +1,98 @@
+{
+  "status": "DRAFT_NOT_SAVED_TO_PLAY_CONSOLE_OR_ADMOB",
+  "accountEmail": "501.dingerlab@gmail.com",
+  "developerDisplayName": "Studio 501",
+  "legalOperatorName": null,
+  "operatorAddress": null,
+  "app": {
+    "name": "코토바: JLPT 단어 회독",
+    "defaultLanguage": "ko-KR",
+    "category": "EDUCATION",
+    "packageName": "com.studio501.kotoba",
+    "supportEmail": "501.dingerlab@gmail.com",
+    "shortDescription": "30단어씩 회독하고, 모르는 단어를 듣고 쓰며 익히는 일본어 학습 앱",
+    "containsAds": true,
+    "inAppPurchases": true,
+    "loginRequired": false,
+    "appAccessInstructions": "회원가입 없이 학습 가능합니다. 광고 제거 구매를 제외한 핵심 학습은 무료로 이용할 수 있습니다."
+  },
+  "products": [
+    {
+      "type": "subscription",
+      "productId": "kotoba_premium",
+      "basePlanId": "monthly",
+      "billingPeriod": "P1M",
+      "renewal": "auto",
+      "region": "KR",
+      "currency": "KRW",
+      "price": 1800,
+      "title": "코토바 프리미엄 월간",
+      "benefit": "광고 제거",
+      "trial": null,
+      "status": "not-created"
+    },
+    {
+      "type": "subscription",
+      "productId": "kotoba_premium",
+      "basePlanId": "annual",
+      "billingPeriod": "P1Y",
+      "renewal": "auto",
+      "region": "KR",
+      "currency": "KRW",
+      "price": 9000,
+      "title": "코토바 프리미엄 연간",
+      "benefit": "광고 제거",
+      "trial": null,
+      "status": "not-created"
+    },
+    {
+      "type": "one-time-non-consumable",
+      "productId": "kotoba_lifetime",
+      "region": "KR",
+      "currency": "KRW",
+      "price": 14000,
+      "title": "코토바 프리미엄 평생",
+      "benefit": "광고 제거 영구 이용권",
+      "status": "not-created"
+    }
+  ],
+  "admob": {
+    "appPlatform": "Android",
+    "appName": "코토바",
+    "packageName": "com.studio501.kotoba",
+    "appId": null,
+    "bannerAdUnitId": null,
+    "interstitialAdUnitId": null,
+    "testIdsOnlyInCurrentBuild": true,
+    "mediation": false,
+    "adPersonalization": "non-personalized-request",
+    "umpMessagePublished": false,
+    "appAdsTxtPublisherId": null
+  },
+  "ownerRequired": {
+    "targetAudienceAges": null,
+    "iarcQuestionnaireCertification": null,
+    "publicPrivacyUrl": null,
+    "publicTermsUrl": null,
+    "paymentsProfile": null,
+    "merchantTaxInformation": null,
+    "uploadKeystore": null,
+    "playAppSigning": null,
+    "testerRequirementAndCompletion": null
+  },
+  "neverAutomaticallyDo": [
+    "real charge",
+    "accept developer/merchant legal terms",
+    "activate production products",
+    "submit for review",
+    "publish release"
+  ],
+  "declarations": {
+    "collection": true,
+    "sharing": "Ads SDK data is collected/shared; confirm services exception semantics against actual release",
+    "encryptedInTransit": true,
+    "accountCreation": false,
+    "deleteAccountWebUrl": "not applicable to a separate app account; no account creation",
+    "privacyPolicyMustChangeFromNoCollection": true
+  }
+}

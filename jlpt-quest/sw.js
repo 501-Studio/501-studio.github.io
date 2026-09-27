@@ -1,9 +1,9 @@
-const NAME='kotoba-course-0.3.5';
+const NAME='kotoba-course-0.3.6';
 const CORE=[
- './','./index.html','./styles.css','./typography.css','./course.css','./snap.css',
+ './','./index.html','./styles.css','./typography.css','./course.css','./snap.css','./release.css',
  './icon.svg','./icon-192.png','./icon-512.png','./manifest.webmanifest',
  './privacy.html','./terms.html','./licenses.html','./CONTENT-LICENSE.md',
- './src/app.js','./src/catalog.js','./src/course-engine.js','./src/storage.js','./src/packs.js',
+ './src/app.js','./src/fit-text.js','./src/commerce.js','./src/catalog.js','./src/course-engine.js','./src/storage.js','./src/packs.js',
  './src/native.js','./src/shape-grader.js','./src/audio.js','./src/ink.js','./src/view.js',
  './src/ui.js','./src/motion.js','./src/stroke-match.js','./src/stroke-bank.js','./src/stroke-pad.js',
  './data/starter.js','./data/strokes.json','./data/coverage.json','./data/audio-manifest.json',
