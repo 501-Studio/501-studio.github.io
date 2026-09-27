@@ -81,6 +81,7 @@ jobs:
           cat /tmp/kotoba037-qa/release-gate.txt
           test "$STATUS" -ne 0
           grep -q 'RELEASE BLOCKED' /tmp/kotoba037-qa/release-gate.txt
+          if grep -q 'Offline audio' /tmp/kotoba037-qa/release-gate.txt; then exit 1; fi
       - name: Bundle exact tested learning assets
         working-directory: jlpt-quest
         run: npm run android:sync
@@ -89,6 +90,9 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: false
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.13'
