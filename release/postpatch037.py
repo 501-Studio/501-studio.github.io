@@ -64,3 +64,10 @@ with zipfile.ZipFile(out/'executed-source.zip','w',zipfile.ZIP_DEFLATED) as z:
     for p in files:z.write(p,str(p))
 (out/'executed-browser037.py').write_text(text)
 print('Real native UI fixture; complete kana rows; nonduplicating privacy-respecting example readings. No approval bypass.')
+
+# Android rotation fixture follows the production survey markup (.survey-headword).
+android=Path('kotoba-android/app/src/androidTest/java/com/studio501/kotoba/LessonRotationTest.java')
+if android.exists():
+    t=android.read_text()
+    t=t.replace("document.querySelector('.survey-card .big-japanese strong')","document.querySelector('.survey-card .survey-headword strong')")
+    android.write_text(t)
