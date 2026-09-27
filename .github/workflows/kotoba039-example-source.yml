@@ -1,0 +1,25 @@
+name: Kotoba 039 example coverage
+on:
+  push:
+    branches: [feat/kotoba-039-examples-study]
+    paths: [release/collect-examples039.py, .github/workflows/kotoba039-example-source.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install fugashi==1.5.2 unidic-lite==1.0.8
+      - run: python release/collect-examples039.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: examples039-candidates
+          path: /tmp/examples039/
+          retention-days: 30
