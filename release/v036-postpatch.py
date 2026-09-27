@@ -1,7 +1,10 @@
 """Explicit post-transfer product/QA corrections; retain every behavior assertion."""
 from pathlib import Path
-import hashlib,json
+import hashlib,json,subprocess
 root=Path('jlpt-quest')
+# Icons are generated assets; the baseline Git checkout contains only the 192px icon.
+# Regenerate both sizes with the existing dependency-free original artwork generator.
+subprocess.run(['node',str(root/'scripts/generate-icons.mjs')],check=True)
 # Restore the actual selected bold pen width instead of reverting 8px on reload.
 engine=root/'src/course-engine.js'
 engine.write_text(engine.read_text().replace("penWidth:[3,4,6].includes(input.settings.penWidth)","penWidth:[3,4,6,8].includes(input.settings.penWidth)"))
@@ -27,5 +30,9 @@ test.write_text(src)
 evidence=Path('/tmp/kotoba036-qa');evidence.mkdir(exist_ok=True)
 (evidence/'executed-browser-test.py').write_text(src)
 (evidence/'executed-source-checksums.json').write_text(json.dumps({str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in [test,app,engine,root/'src/stroke-pad.js',root/'release.css']},indent=2))
+assets=['index.html','styles.css','typography.css','course.css','snap.css','release.css','src','data','icon.svg','icon-192.png','icon-512.png','manifest.webmanifest','privacy.html','terms.html','licenses.html','CONTENT-LICENSE.md']
+checks={name:(root/name).exists() for name in assets}
+(evidence/'asset-preflight.json').write_text(json.dumps(checks,indent=2))
+assert all(checks.values()),checks
 Path('billing-server/.gitignore').write_text('__pycache__/\n*.pyc\n.env\n*.pem\n*.key\n')
-print('Checked product and executable QA source; recorded hashes.')
+print('Checked product, assets and executable QA source; recorded hashes.')
