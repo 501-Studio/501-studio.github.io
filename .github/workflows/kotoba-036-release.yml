@@ -17,25 +17,26 @@ jobs:
       KOTOBA_EVIDENCE_DIR: /tmp/kotoba-036-evidence
     steps:
       - uses: actions/checkout@v4
-      - name: Restore checksummed 0.3.6 source overlay
+      - name: Restore checksummed source overlay and explicit repairs
         run: |
           python3 - <<'PY'
-          import base64,hashlib,json,lzma
+          import base64,hashlib,json,lzma,runpy
           from pathlib import Path
           paths=sorted(Path('release-036').glob('patch.*.b64'))
-          assert len(paths)==11, f'Expected eleven parts, found {len(paths)}'
+          assert len(paths)==11
           raw=base64.b64decode(''.join(p.read_text().strip() for p in paths),validate=True)
-          assert hashlib.sha256(raw).hexdigest()=='ab66fc77a91b0b13a0b7a5270a3a4075b64366ef3028831f03767ed230a11fd0','Overlay checksum mismatch'
-          files=json.loads(lzma.decompress(raw))
-          assert len(files)==43
+          assert hashlib.sha256(raw).hexdigest()=='ab66fc77a91b0b13a0b7a5270a3a4075b64366ef3028831f03767ed230a11fd0'
+          files=json.loads(lzma.decompress(raw)); assert len(files)==43
           for name,content in files.items():
               p=Path(name)
               assert not p.is_absolute() and '..' not in p.parts
               assert p.parts[0] in ['jlpt-quest','kotoba-android','purchase-server']
               assert isinstance(content,str)
-              p.parent.mkdir(parents=True,exist_ok=True)
-              p.write_text(content,encoding='utf-8')
-          print('Verified and restored',len(files),'source files')
+              p.parent.mkdir(parents=True,exist_ok=True);p.write_text(content,encoding='utf-8')
+          for repair in sorted(Path('release-036').glob('repair-*.py')):
+              print('Applying',repair);runpy.run_path(str(repair))
+          Path('/tmp/kotoba-036-evidence').mkdir(exist_ok=True)
+          print('Restored',len(files),'source files and repairs')
           PY
       - uses: actions/setup-node@v4
         with:
@@ -43,33 +44,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install offline pronunciation build tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y open-jtalk open-jtalk-mecab-naist-jdic hts-voice-nitech-jp-atr503-m001 ffmpeg fonts-noto-cjk
-      - name: Build Korean curriculum, editorial corrections, strokes and audio
-        working-directory: jlpt-quest
-        run: npm run build
-      - name: Web logic and purchase-verifier contract tests
-        run: |
-          mkdir -p /tmp/kotoba-036-evidence
-          (cd jlpt-quest && npm test) | tee /tmp/kotoba-036-evidence/web-tests.txt
-          (cd purchase-server && node --test test/*.test.mjs) | tee /tmp/kotoba-036-evidence/server-tests.txt
-      - name: Verify production release is blocked until actual approvals
-        working-directory: jlpt-quest
-        run: |
-          set +e
-          npm run release:check > /tmp/kotoba-036-evidence/release-gate.txt 2>&1
-          status=$?
-          set -e
-          cat /tmp/kotoba-036-evidence/release-gate.txt
-          test "$status" -ne 0
-          grep -q 'RELEASE BLOCKED' /tmp/kotoba-036-evidence/release-gate.txt
-      - name: Package Android-local assets
-        working-directory: jlpt-quest
-        env:
-          KOTOBA_ANDROID_DIR: ../kotoba-android
-        run: npm run android:sync
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -81,14 +55,48 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.13'
-      - name: Compile preview APK and AAB against actual Billing Ads and Integrity SDKs
+      - name: Verify actual native SDK interfaces before long content build
+        working-directory: kotoba-android
+        run: gradle :app:compileDebugJavaWithJavac :app:lintDebug --no-daemon --stacktrace
+      - name: Install offline pronunciation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y open-jtalk open-jtalk-mecab-naist-jdic hts-voice-nitech-jp-atr503-m001 ffmpeg fonts-noto-cjk
+      - name: Restore deterministic pronunciation cache
+        uses: actions/cache@v4
+        with:
+          path: jlpt-quest/data/audio
+          key: kotoba-036-audio-${{ hashFiles('jlpt-quest/scripts/build-offline-audio.py', 'jlpt-quest/data/editorial-036.json') }}
+      - name: Build curriculum editorial corrections strokes and audio
+        working-directory: jlpt-quest
+        run: npm run build
+      - name: Test web logic and purchase-verifier contracts
+        run: |
+          (cd jlpt-quest && npm test) | tee /tmp/kotoba-036-evidence/web-tests.txt
+          (cd purchase-server && node --test test/*.test.mjs) | tee /tmp/kotoba-036-evidence/server-tests.txt
+      - name: Verify production release remains blocked
+        working-directory: jlpt-quest
+        run: |
+          set +e
+          npm run release:check > /tmp/kotoba-036-evidence/release-gate.txt 2>&1
+          status=$?
+          set -e
+          cat /tmp/kotoba-036-evidence/release-gate.txt
+          test "$status" -ne 0
+          grep -q 'RELEASE BLOCKED' /tmp/kotoba-036-evidence/release-gate.txt
+      - name: Sync APK-local assets
+        working-directory: jlpt-quest
+        env:
+          KOTOBA_ANDROID_DIR: ../kotoba-android
+        run: npm run android:sync
+      - name: Build actual preview APK and AAB
         working-directory: kotoba-android
         run: gradle :app:assembleDebug :app:bundleDebug :app:lintDebug --no-daemon --stacktrace
-      - name: Install browser test dependencies
+      - name: Install browser testing
         run: |
           python -m pip install playwright
           python -m playwright install --with-deps chromium
-      - name: Render actual mobile UI and verify offline learning
+      - name: Verify actual rendered mobile interactions and offline assets
         working-directory: jlpt-quest
         env:
           KOTOBA_TEST_URL: http://127.0.0.1:4173/
@@ -98,7 +106,13 @@ jobs:
           trap 'kill $server_pid || true' EXIT
           sleep 2
           python tests/release036-browser.py
-      - name: Record package integrity and archive complete reproducible source
+      - name: Inspect APK metadata and signature
+        run: |
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging kotoba-android/app/build/outputs/apk/debug/app-debug.apk > /tmp/kotoba-036-evidence/apk-badging.txt
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs kotoba-android/app/build/outputs/apk/debug/app-debug.apk > /tmp/kotoba-036-evidence/apk-signature.txt
+          grep "versionName='0.3.6'" /tmp/kotoba-036-evidence/apk-badging.txt
+          grep "name='com.studio501.kotoba.preview'" /tmp/kotoba-036-evidence/apk-badging.txt
+      - name: Archive complete source and package integrity
         run: |
           python3 - <<'PY'
           import hashlib,json,zipfile
@@ -109,18 +123,17 @@ jobs:
           report.update({'version':'0.3.6','versionCode':9,'package':'com.studio501.kotoba.preview','productionPublished':False,'liveCommerce':False,'liveAds':False})
           Path('/tmp/kotoba-036-evidence/package-integrity.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
           with zipfile.ZipFile('/tmp/kotoba-0.3.6-source.zip','w',zipfile.ZIP_DEFLATED) as z:
-              for root in ['jlpt-quest','kotoba-android','purchase-server']:
+              for root in ['jlpt-quest','kotoba-android','purchase-server','release-036']:
                   for p in Path(root).rglob('*'):
                       if not p.is_file():continue
                       if any(x in p.parts for x in ['.gradle','build','node_modules','__pycache__','.git']):continue
                       if 'src/main/assets/' in p.as_posix():continue
                       if p.suffix.lower() in ['.ttf','.otf','.woff','.woff2','.jks','.keystore','.pem','.key']:continue
                       z.write(p,'kotoba-0.3.6/'+p.as_posix())
-              p=Path('.github/workflows/kotoba-036-release.yml')
-              z.write(p,'kotoba-0.3.6/'+p.as_posix())
+              p=Path('.github/workflows/kotoba-036-release.yml');z.write(p,'kotoba-0.3.6/'+p.as_posix())
           print(json.dumps(report,indent=2))
           PY
-      - name: Save verified source on preparation branch only
+      - name: Save verified sources on preparation branch only
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
