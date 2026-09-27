@@ -13,8 +13,9 @@ android {
         applicationId 'com.studio501.kotoba'
         minSdk 24
         targetSdk 36
-        versionCode 9
-        versionName '0.3.6'
+        versionCode 10
+        versionName '0.3.7'
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         manifestPlaceholders = [admobAppId: appIdValue]
         buildConfigField 'boolean', 'ADS_ENABLED', envValue('KOTOBA_ADS_ENABLED','true')
         buildConfigField 'boolean', 'SELLING_ENABLED', verifiedSales.toString()
@@ -38,6 +39,9 @@ dependencies {
     implementation 'com.google.android.gms:play-services-ads:25.4.0'
     implementation 'com.google.android.ump:user-messaging-platform:4.0.0'
     testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test:core:1.6.1'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
 }
 tasks.configureEach { task ->
     if (task.name == 'preReleaseBuild') task.doFirst {

@@ -1,6 +1,11 @@
 package com.studio501.kotoba;
 
 import android.annotation.SuppressLint;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.provider.Settings;
+import androidx.core.content.ContextCompat;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
@@ -39,12 +44,16 @@ import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** APK-local learning, stroke and pronunciation assets. Native bridge handles backups and exit only. */
+/** APK-local learning, stroke and pronunciation assets. Native bridge handles backups, notifications, installed speech and commerce. */
 public final class MainActivity extends ComponentActivity {
     private static final String ORIGIN = "https://appassets.androidplatform.net";
     private static final String START = ORIGIN + "/assets/www/index.html";
     private static final int EXPORT = 201, IMPORT = 202, MAX_BACKUP = 30_000_000;
     private WebView web;
+    private JapaneseSpeech speech;
+    private boolean refreshSpeech=false;
+    private Pending notificationPermission;
+    private static final int NOTIFICATIONS=203;
     private boolean destroyed;
     private PlayCommerce commerce;
     private PlayAds ads;
@@ -116,7 +125,12 @@ public final class MainActivity extends ComponentActivity {
         getOnBackPressedDispatcher().addCallback(this,new OnBackPressedCallback(true){@Override public void handleOnBackPressed(){web.evaluateJavascript("window.dispatchEvent(new Event('kotoba-back'))",null);}});
         commerce=new PlayCommerce(this,()->{if(ads!=null)ads.update();if(!destroyed)web.evaluateJavascript("window.dispatchEvent(new Event('kotoba-commerce-changed'))",null);});
         ads=new PlayAds(this,adSlot,()->commerce!=null&&commerce.adsAllowed());
-        web.loadUrl(START);
+        ReviewReminders.channel(this);
+        ReviewReminders.schedule(this);
+        String restored=saved!=null?saved.getString("kotoba-url",START):START;
+        if(restored==null||!(restored.equals(START)||restored.matches(java.util.regex.Pattern.quote(START)+"#(home|lesson|kana|kana-practice|review|words|course|profile)")))restored=START;
+        if(getIntent().getBooleanExtra(ReviewReminders.EXTRA,false)){restored=START+"#review";getIntent().removeExtra(ReviewReminders.EXTRA);}
+        web.loadUrl(restored);
     }
     private static WebResourceResponse blocked(){return new WebResourceResponse("text/plain","UTF-8",new ByteArrayInputStream("Blocked resource".getBytes(StandardCharsets.UTF_8)));}
     private void handle(WebMessageCompat message,Pending base){
@@ -125,6 +139,17 @@ public final class MainActivity extends ComponentActivity {
             String id=q.getString("id"),type=q.getString("type");if(id.length()>100)return;Pending p=new Pending(id,base.reply);request=p;JSONObject body=q.optJSONObject("payload");if(body==null)body=new JSONObject();
             PlayCommerce.Reply reply=(data,error)->respond(p,data,error);
             switch(type){
+                case "speechSpeak": if(speech==null)speech=new JapaneseSpeech(this);speech.speak(body.optString("text",""),body.optDouble("rate",1),(data,error)->respond(p,data,error));break;
+                case "speechStop": if(speech!=null)speech.stop();respond(p,new JSONObject(),null);break;
+                case "speechSettings": try{refreshSpeech=true;startActivity(new Intent("com.android.settings.TTS_SETTINGS"));respond(p,new JSONObject(),null);}catch(Exception e){respond(p,null,"설정 앱에서 텍스트 음성 변환을 찾아 주세요.");}break;
+                case "reviewSync": respond(p,ReviewReminders.sync(this,body),null);break;
+                case "reviewStatus": respond(p,ReviewReminders.status(this),null);break;
+                case "reviewPermission": {
+                    if(notificationPermission!=null){respond(p,ReviewReminders.status(this),null);break;}
+                    boolean asked=ReviewReminders.status(this).optBoolean("permissionRequested",false);
+                    if(Build.VERSION.SDK_INT>=33&&ContextCompat.checkSelfPermission(this,Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED&&!asked){notificationPermission=p;ReviewReminders.requested(this);requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},NOTIFICATIONS);}
+                    else {if(!ReviewReminders.granted(this)){try{Intent settings=Build.VERSION.SDK_INT>=26?new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE,getPackageName()):new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,Uri.parse("package:"+getPackageName()));startActivity(settings);}catch(Exception ignored){}}ReviewReminders.requested(this);ReviewReminders.schedule(this);respond(p,ReviewReminders.status(this),null);}break;
+                }
                 case "commerceStatus": respond(p,commerce.status(),null);break;
                 case "commerceProducts": commerce.getProducts(reply);break;
                 case "commerceBuy": commerce.buy(body.optString("plan",""),reply);break;
@@ -152,7 +177,11 @@ public final class MainActivity extends ComponentActivity {
             else{try(InputStream in=getContentResolver().openInputStream(uri);ByteArrayOutputStream out=new ByteArrayOutputStream()){if(in==null)throw new IllegalStateException();byte[] chunk=new byte[8192];int n;while((n=in.read(chunk))!=-1){if(out.size()+n>MAX_BACKUP)throw new IllegalArgumentException();out.write(chunk,0,n);}respond(p,new JSONObject().put("json",new String(out.toByteArray(),StandardCharsets.UTF_8)),null);}}}
             catch(Exception e){respond(p,null,"백업 파일을 읽거나 저장하지 못했습니다.");}});
     }
-    @Override protected void onPause(){if(web!=null){web.evaluateJavascript("window.dispatchEvent(new Event('kotoba-pause'))",null);web.onPause();}if(ads!=null)ads.pause();super.onPause();}
-    @Override protected void onResume(){super.onResume();if(web!=null)web.onResume();if(commerce!=null)commerce.resume();if(ads!=null)ads.resume();}
-    @Override protected void onDestroy(){destroyed=true;if(ads!=null)ads.destroy();if(commerce!=null)commerce.destroy();if(web!=null)web.destroy();io.shutdown();super.onDestroy();}
+    @Override public void onConfigurationChanged(Configuration configuration){super.onConfigurationChanged(configuration);if(web!=null){web.invalidate();ViewCompat.requestApplyInsets(web);}}
+    @Override protected void onSaveInstanceState(Bundle out){if(web!=null&&web.getUrl()!=null)out.putString("kotoba-url",web.getUrl());super.onSaveInstanceState(out);}
+    @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);if(intent.getBooleanExtra(ReviewReminders.EXTRA,false)&&web!=null){intent.removeExtra(ReviewReminders.EXTRA);web.evaluateJavascript("location.hash='review'",null);}}
+    @Override public void onRequestPermissionsResult(int requestCode,String[] permissions,int[] results){super.onRequestPermissionsResult(requestCode,permissions,results);if(requestCode==NOTIFICATIONS){Pending p=notificationPermission;notificationPermission=null;ReviewReminders.schedule(this);respond(p,ReviewReminders.status(this),null);}}
+    @Override protected void onPause(){ReviewReminders.foreground(false);if(speech!=null)speech.stop();if(web!=null){web.evaluateJavascript("window.dispatchEvent(new Event('kotoba-pause'))",null);web.onPause();}if(ads!=null)ads.pause();super.onPause();}
+    @Override protected void onResume(){super.onResume();if(refreshSpeech&&speech!=null){speech.destroy();speech=new JapaneseSpeech(this);refreshSpeech=false;}ReviewReminders.foreground(true);ReviewReminders.schedule(this);if(web!=null)web.onResume();if(commerce!=null)commerce.resume();if(ads!=null)ads.resume();}
+    @Override protected void onDestroy(){destroyed=true;if(speech!=null)speech.destroy();if(ads!=null)ads.destroy();if(commerce!=null)commerce.destroy();if(web!=null)web.destroy();io.shutdown();super.onDestroy();}
 }

@@ -1,6 +1,6 @@
 /** Offline target-stroke verification for guided handwriting.
  * v0.3.3 intentionally ignores absolute start position and scores stroke SHAPE.
- * A roughly 60% similar stroke with the right direction can snap to the canonical target.
+ * v0.3.7 uses a more forgiving 0.52 shape threshold while retaining direction/bend safety checks.
  */
 export const SNAP_MODE='stroke-snap-v2';
 export const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
@@ -31,26 +31,30 @@ export function shapeSimilarity(input,target){
  const mean=a.reduce((n,p,i)=>n+dist(p,b[i]),0)/a.length,order=frechet(a,b);
  return Math.max(0,Math.min(1,1-(mean*.68+order*.32)/.72));
 }
-export function matchStroke(input,target){
+export function matchStroke(input,target,{character='',index=-1}={}){
  const no=(reason,metrics={})=>({accepted:false,reason,metrics});
  if(!validPath(input)||!validPath(target))return no('한 획을 이어서 그어 주세요.');
  const il=pathLength(input),tl=pathLength(target),ratio=il/Math.max(.001,tl);
- if(il<.018||ratio<.32)return no('획이 너무 짧아요. 조금 더 길게 써 주세요.');
+ if(il<.018||ratio<.28)return no('획이 너무 짧아요. 조금 더 길게 써 주세요.');
  const maxRatio=tl<.06?5.5:tl<.12?4.2:3.1;
  if(ratio>maxRatio)return no('한 번에 한 획만 그어 주세요.');
  const a=resample(input),b=resample(target),direction=directionCos(a,b);
  if(direction<-.25)return no('획 방향을 반대로 쓴 것 같아요.',{direction});
  const inputDirect=dist(a[0],a.at(-1))/Math.max(.001,il),targetDirect=dist(b[0],b.at(-1))/Math.max(.001,tl);
+ // The first stroke of ら is commonly handwritten as a short diagonal without the printed hook.
+ // Limit this alternate to that character and stroke, not every curved stroke.
+ const dx=a.at(-1)[0]-a[0][0],dy=a.at(-1)[1]-a[0][1];
+ if(character==='ら'&&index===0&&inputDirect>.88&&dx>.025&&dy>=-.012&&dy<dx*1.6&&ratio>=.28&&ratio<=3.1)return {accepted:true,reason:'모양이 맞아요.',metrics:{alternate:'ra-short-diagonal',direction,ratio}};
  if(targetDirect<.82&&inputDirect-targetDirect>.28)return no('꺾이는 모양을 조금 더 살려 주세요.',{inputDirect,targetDirect});
  const similarity=shapeSimilarity(input,target);
- if(similarity<.60)return no('모양을 조금 더 비슷하게 써 주세요.',{similarity,direction,ratio});
+ if(similarity<.52)return no('모양을 조금 더 비슷하게 써 주세요.',{similarity,direction,ratio});
  return {accepted:true,reason:'모양이 맞아요. 제자리로 맞췄어요.',metrics:{similarity,direction,ratio,score:1-similarity}};
 }
-export function matchNextStroke(input,strokes,index){
+export function matchNextStroke(input,strokes,index,options={}){
  if(!Number.isInteger(index)||!Array.isArray(strokes)||index<0||index>=strokes.length)return {accepted:false,reason:'이 글자의 모든 획을 이미 썼어요.'};
- return matchStroke(input,strokes[index]);
+ return matchStroke(input,strokes[index],{...options,index});
 }
-export function validPrefix(lines,strokes){
+export function validPrefix(lines,strokes,options={}){
  if(!Array.isArray(lines))return [];
- const accepted=[];for(let i=0;i<Math.min(lines.length,strokes.length);i++){if(!matchNextStroke(lines[i],strokes,i).accepted)break;accepted.push(lines[i].map(p=>p.slice(0,2)));}return accepted;
+ const accepted=[];for(let i=0;i<Math.min(lines.length,strokes.length);i++){if(!matchNextStroke(lines[i],strokes,i,options).accepted)break;accepted.push(lines[i].map(p=>p.slice(0,2)));}return accepted;
 }

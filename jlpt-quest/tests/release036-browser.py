@@ -31,7 +31,7 @@ def draw_fast(page,paths):
   cdp.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]})
  cdp.detach()
 with sync_playwright() as P:
- b=P.chromium.launch(headless=True,args=['--no-sandbox','--disable-dev-shm-usage','--autoplay-policy=no-user-gesture-required'])
+ b=P.chromium.launch(executable_path=os.environ.get('KOTOBA_CHROMIUM') or None,headless=True,args=['--no-sandbox','--disable-dev-shm-usage','--autoplay-policy=no-user-gesture-required'])
  c=b.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2);p=c.new_page();p.on('pageerror',lambda e:errors.append(str(e)))
  try:
   p.goto(BASE);p.wait_for_selector('.level-progress-grid',timeout=15000)

@@ -1,6 +1,6 @@
 import {matchNextStroke,resample,dist} from './stroke-match.js';
 /** Matching is synchronous on pointerup; animation never owns or locks the pointer. */
-export function attachStrokePad(canvas,strokes,accepted,{guide=true,motion=true,width=6,onChange=()=>{},onAttempt=()=>{}}={}) {
+export function attachStrokePad(canvas,strokes,accepted,{guide=true,motion=true,width=6,character='',onChange=()=>{},onAttempt=()=>{}}={}) {
  const ctx=canvas.getContext('2d');let box,active=null,pointer=null,raf=0,dead=false,effect=null,replaying=null;
  const reduce=()=>!motion||globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
  const weight=Math.max(5,width)+2;
@@ -24,7 +24,7 @@ export function attachStrokePad(canvas,strokes,accepted,{guide=true,motion=true,
   if(active)line(active,'#7460de');
  }
  function schedule(){if(!raf)raf=requestAnimationFrame(now=>{raf=0;draw(now);});}
- function resize(){box=canvas.getBoundingClientRect();const dpr=Math.min(devicePixelRatio||1,3);canvas.width=Math.round(box.width*dpr);canvas.height=Math.round(box.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);draw();}
+ function resize(){cancel();box=canvas.getBoundingClientRect();const dpr=Math.min(devicePixelRatio||1,3);canvas.width=Math.round(box.width*dpr);canvas.height=Math.round(box.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);draw();}
  const point=e=>[Math.max(0,Math.min(1,(e.clientX-box.left)/box.width)),Math.max(0,Math.min(1,(e.clientY-box.top)/box.height))];
  function down(e){if(dead||pointer!==null||accepted.length>=strokes.length||e.button>0)return;
   e.preventDefault();effect=null;replaying=null;box=canvas.getBoundingClientRect();pointer=e.pointerId;
@@ -35,7 +35,7 @@ export function attachStrokePad(canvas,strokes,accepted,{guide=true,motion=true,
  }
  function up(e){if(e.pointerId!==pointer||!active)return;e.preventDefault();const p=point(e);if(dist(p,active.at(-1))>.0007)active.push(p);
   const raw=active;active=null;pointer=null;try{canvas.releasePointerCapture(e.pointerId);}catch{}
-  const index=accepted.length,result=matchNextStroke(raw,strokes,index);
+  const index=accepted.length,result=matchNextStroke(raw,strokes,index,{character});
   if(result.accepted){accepted.push(raw);canvas.dataset.accepted=String(accepted.length);onChange(accepted);}
   // Commit accepted count immediately. A new down event can start at any moment.
   if(!reduce()){const from=resample(raw);effect={index,accepted:result.accepted,from,to:result.accepted?resample(strokes[index]):from,start:performance.now()};}

@@ -59,3 +59,8 @@ For vocabulary entries that did not already have a hand-edited Korean gloss, Kot
 - Production release still requires educational/editorial review of generated Korean glosses.
 
 The installed app must not fall back to visible English definitions. Release tests require every installed vocabulary item to have a Korean display meaning (or a language-neutral numeric/symbol meaning) and report zero English display meanings.
+
+
+## 0.3.7 audio replacement and kana extension
+
+New bundled audio: Kokoro-82M v1.0, jf_alpha. Apache-2.0 model/voice license, see data/licenses/Kokoro-NOTICE.md and Kokoro-Apache-2.0.txt. Previous Open JTalk attribution is retained as historical source attribution; old .ogg assets are removed in the 0.3.7 package. Additional 15 kana use the same pinned KanjiVG source, CC BY-SA 3.0, resulting in 2,259 characters / 22,665 strokes. Original examples are newly authored, not copied from a third-party corpus; see release/EXAMPLES-037.md.

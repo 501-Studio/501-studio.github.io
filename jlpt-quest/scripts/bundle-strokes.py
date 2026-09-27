@@ -58,7 +58,7 @@ def download(url):
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--from-pack');args=parser.parse_args()
     # Reuse the exact JavaScript curriculum target rule, including Unicode Han iteration marks.
-    code="import fs from 'node:fs';import {writingChars} from './src/catalog.js';const words=['N5','N4','N3','N2','N1'].flatMap(l=>JSON.parse(fs.readFileSync('data/'+l+'.json')).words);console.log(JSON.stringify([...new Set(words.flatMap(writingChars))].sort()));"
+    code="import fs from 'node:fs';import {writingChars} from './src/catalog.js';import {ALL_KANA} from './src/kana-engine.js';const words=['N5','N4','N3','N2','N1'].flatMap(l=>JSON.parse(fs.readFileSync('data/'+l+'.json')).words);console.log(JSON.stringify([...new Set([...words.flatMap(writingChars),...ALL_KANA.map(x=>x.char)])].sort()));"
     required=json.loads(subprocess.check_output(['node','--input-type=module','-e',code],cwd=ROOT,text=True))
     licenses=ROOT/'data/licenses';licenses.mkdir(exist_ok=True,parents=True)
     if args.from_pack:

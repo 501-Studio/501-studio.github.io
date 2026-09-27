@@ -1,3 +1,4 @@
+import {freshKana,validateKana} from './kana-engine.js';
 import {LEVELS,writingChars,hash} from './catalog.js';
 export const SCHEMA=3,MINUTE=60000,DAY=86400000;
 export const INTERVALS=[10*MINUTE,DAY,3*DAY,7*DAY,14*DAY,30*DAY];
@@ -5,7 +6,7 @@ export const SKILLS=['meaning','listening','writing'];
 export const keyOf=(id,skill)=>`${id}:${skill}`;
 export const nowId=()=>globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`;
 export const dayKey=(time=Date.now())=>{const d=new Date(time);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
-export function fresh(){return {version:SCHEMA,revision:0,settings:{level:'N5',furigana:true,motion:true,haptics:true,penWidth:6,rate:.85,goal:10},memory:{},encountered:{},known:{},learned:{},completed:{},starred:[],daily:{},xp:0,session:null,legacy:null};}
+export function fresh(){return {version:SCHEMA,revision:0,settings:{level:'N5',furigana:true,motion:true,haptics:true,penWidth:8,rate:1,goal:10,kanjiOnlyPractice:false,audioEngine:'bundled',audioRevision:2,reviewNotifications:true},memory:{},encountered:{},known:{},learned:{},completed:{},starred:[],daily:{},xp:0,session:null,legacy:null,kana:freshKana(),uiRoute:'home'};}
 export function schedule(old,correct,sessionId,now=Date.now(),method='auto'){
  const r={stage:-1,due:0,lapses:0,successes:0,lastSession:'',consecutive:0,...old};
  if(!correct)return {...r,stage:0,due:now+INTERVALS[0],lapses:r.lapses+1,consecutive:0,lastAt:now,lastSession:sessionId,method};
@@ -38,7 +39,7 @@ export function classifySurvey(state,taskId,known,words,now=Date.now()){
  if(s.index<s.queue.length)return true;
  if(!s.unknownIds.length){s.finished=true;s.completed=true;finalizeClass(state,s,now);return true;}
  const map=new Map(words.map(w=>[w.id,w])),unknown=s.unknownIds.map(id=>map.get(id)).filter(Boolean);
- const training=unknown.flatMap(w=>[task(w,'learn','audio',words),...Array.from({length:3},(_,i)=>({...task(w,'learn','trace',words),practiceIndex:i+1,practiceTotal:3,guided:i<2}))]);
+ const training=unknown.flatMap(w=>[task(w,'learn','audio',words),...(state.settings.kanjiOnlyPractice&&!/\p{Script=Han}/u.test(w.word)?[]:Array.from({length:3},(_,i)=>({...task(w,'learn','trace',words),practiceIndex:i+1,practiceTotal:3,guided:i<2})))]);
  const quiz=SKILLS.flatMap(skill=>shuffle(unknown).map(w=>task(w,'quiz',skill,words)));
  s.queue.push(...training,...quiz);s.originalQuiz=quiz.length;return true;
 }
@@ -97,6 +98,13 @@ export function validateState(input){
  const s=fresh(),n=(v,max=9e15)=>Number.isFinite(v)&&v>=0&&v<=max;
  s.revision=Number.isSafeInteger(input.revision)&&input.revision>=0?input.revision:0;s.xp=n(input.xp)?input.xp:0;
  s.settings={...s.settings,level:input.settings.level,furigana:input.settings.furigana!==false,motion:input.settings.motion!==false,haptics:input.settings.haptics!==false,goal:[5,10,20,30].includes(input.settings.goal)?input.settings.goal:10,rate:[.7,.85,1].includes(input.settings.rate)?input.settings.rate:.85,penWidth:[3,4,6,8].includes(input.settings.penWidth)?input.settings.penWidth:6};
+ s.settings.kanjiOnlyPractice=input.settings.kanjiOnlyPractice===true;
+ s.settings.audioEngine=input.settings.audioEngine==='device'?'device':'bundled';
+ s.settings.audioRevision=2;
+ if(!input.settings.audioRevision&&s.settings.rate===.85)s.settings.rate=1;
+ s.settings.reviewNotifications=input.settings.reviewNotifications!==false;
+ s.kana=validateKana(input.kana);
+ s.uiRoute=['home','course','review','words','profile','lesson','kana','kana-practice'].includes(input.uiRoute)?input.uiRoute:'home';
  for(const field of ['encountered','known','learned'])for(const [id,time]of Object.entries(input[field]||{})){if(ID.test(id)&&n(time))s[field][id]=time;}
  for(const [key,r]of Object.entries(input.memory||{})){const [id,skill]=key.split(':');if(!ID.test(id)||!SKILLS.includes(skill))continue;
   if(!r||!Number.isInteger(r.stage)||r.stage<0||r.stage>5||!n(r.due)||!n(r.lapses)||!n(r.successes)||!n(r.consecutive))throw new Error('복습 기록이 손상되었습니다.');
