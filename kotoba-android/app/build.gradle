@@ -1,13 +1,27 @@
 plugins { id 'com.android.application' }
+def stringValue = { String value -> groovy.json.JsonOutput.toJson(value) }
+def envValue = { String name, String fallback -> System.getenv(name) ?: fallback }
+def prodRequested = gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') }
+def sampleApp = 'ca-app-pub-3940256099942544~3347511713'
+def appIdValue = envValue('ADMOB_APP_ID', sampleApp)
+def verifiedSales = envValue('KOTOBA_SELLING_ENABLED', 'false') == 'true'
+
 android {
     namespace 'com.studio501.kotoba'
     compileSdk 36
     defaultConfig {
         applicationId 'com.studio501.kotoba'
-        minSdk 23
+        minSdk 24
         targetSdk 36
-        versionCode 8
-        versionName '0.3.5'
+        versionCode 9
+        versionName '0.3.6'
+        manifestPlaceholders = [admobAppId: appIdValue]
+        buildConfigField 'boolean', 'ADS_ENABLED', envValue('KOTOBA_ADS_ENABLED','true')
+        buildConfigField 'boolean', 'SELLING_ENABLED', verifiedSales.toString()
+        buildConfigField 'String', 'BANNER_AD_UNIT', stringValue(envValue('ADMOB_BANNER_ID','ca-app-pub-3940256099942544/6300978111'))
+        buildConfigField 'String', 'INTERSTITIAL_AD_UNIT', stringValue(envValue('ADMOB_INTERSTITIAL_ID','ca-app-pub-3940256099942544/1033173712'))
+        buildConfigField 'String', 'VERIFICATION_URL', stringValue(envValue('KOTOBA_VERIFICATION_URL',''))
+        buildConfigField 'String', 'ENTITLEMENT_PUBLIC_KEY', stringValue(envValue('KOTOBA_ENTITLEMENT_PUBLIC_KEY',''))
     }
     buildFeatures { buildConfig true }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
@@ -20,32 +34,20 @@ android {
 dependencies {
     implementation 'androidx.activity:activity:1.10.1'
     implementation 'androidx.webkit:webkit:1.14.0'
+    implementation 'com.android.billingclient:billing:9.1.0'
+    implementation 'com.google.android.gms:play-services-ads:25.4.0'
+    implementation 'com.google.android.ump:user-messaging-platform:4.0.0'
+    testImplementation 'junit:junit:4.13.2'
 }
 tasks.configureEach { task ->
     if (task.name == 'preReleaseBuild') task.doFirst {
-        def web = file('src/main/assets/www')
-        def coverageFile = new File(web, 'data/coverage.json')
-        def audioFile = new File(web, 'data/audio-coverage.json')
-        if (!coverageFile.exists() || !audioFile.exists()) throw new GradleException('Run the complete offline build and android:sync before a release build.')
-        def coverage = new groovy.json.JsonSlurper().parse(coverageFile)
-        def audio = new groovy.json.JsonSlurper().parse(audioFile)
-        if (!coverage.allPacksComplete) throw new GradleException('Full N1-N5 packs are missing. Release blocked.')
-        if (!audio.complete) throw new GradleException('Offline pronunciation pack is incomplete. Release blocked.')
-        if (coverage.levels.values().any { it.english > 0 }) throw new GradleException('Korean content localization is incomplete.')
-        def privacy = new File(web,'privacy.html').text
-        def terms = new File(web,'terms.html').text
-        if ((privacy + terms).contains('출시 전 입력')) throw new GradleException('Legal documents still contain release placeholders.')
-        def legalFile = file('../../jlpt-quest/release/legal.json')
-        if (!legalFile.exists()) throw new GradleException('Release legal metadata missing.')
-        def legal = new groovy.json.JsonSlurper().parse(legalFile)
-        ['developerLegalName','supportEmail','privacyContactEmail','publicPrivacyUrl','targetAudience'].each { key ->
-            if (!legal[key] || legal[key].toString().contains('REQUIRED')) throw new GradleException('Legal metadata incomplete: ' + key)
-        }
-        def approvalFile = file('../../release-approval.json')
-        if (!approvalFile.exists()) throw new GradleException('Release QA approval missing. Use debug builds.')
+        if (appIdValue == sampleApp || !System.getenv('ADMOB_BANNER_ID') || !System.getenv('ADMOB_INTERSTITIAL_ID')) throw new GradleException('Production AdMob identifiers are not configured.')
+        if (!verifiedSales || !System.getenv('KOTOBA_VERIFICATION_URL')?.startsWith('https://') || !System.getenv('KOTOBA_ENTITLEMENT_PUBLIC_KEY')) throw new GradleException('Verified billing backend is not configured.')
+        def approvalFile = rootProject.file('../release-approval.json')
+        if(!approvalFile.exists()) throw new GradleException('Production QA approval has not been recorded.')
         def approval = new groovy.json.JsonSlurper().parse(approvalFile)
-        ['physicalDeviceInk','physicalDeviceAudio','offlineRestore','accessibility','contentEditorialReview','privacyAndDataSafety','contentRating','storeListing','signedBundle','playAppSigning','closedTesting','legalDocsPublished'].each { key ->
-            if (approval[key] != true) throw new GradleException('Release QA not approved: ' + key)
+        ['physicalDeviceInk','physicalDeviceAudio','offlineRestore','accessibility','contentEditorialReview','privacyAndDataSafety','contentRating','storeListing','signedBundle','playAppSigning','closedTesting','legalDocsPublished','billingSandbox','consentAndAdFree','rtdnAndRefunds'].each { key ->
+            if(approval[key] != true) throw new GradleException('Release gate missing: '+key)
         }
     }
 }

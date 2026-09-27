@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.studio501.kotoba.app-mergeDebugResources-31:/values-v23/values-v23.xml",
+            "map": [
+                {
+                    "source": "/home/runner/.gradle/caches/8.13/transforms/b82ebb42d9034c6936f626b5ee647310/transformed/work-runtime-2.7.0/res/values-v23/values-v23.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,121",
+                        "endColumns": "65,62",
+                        "endOffsets": "116,179"
+                    }
+                }
+            ]
+        }
+    ]
+}

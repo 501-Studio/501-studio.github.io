@@ -16,6 +16,8 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.view.Gravity;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -44,6 +46,8 @@ public final class MainActivity extends ComponentActivity {
     private static final int EXPORT = 201, IMPORT = 202, MAX_BACKUP = 30_000_000;
     private WebView web;
     private boolean destroyed;
+    private PlayCommerce commerce;
+    private PlayAds ads;
     private final ExecutorService io = Executors.newSingleThreadExecutor();
     private Pending picker;
     private String exportData;
@@ -68,7 +72,11 @@ public final class MainActivity extends ComponentActivity {
         // Inset the parent, not the WebView itself: CSS fixed buttons then stay above navigation.
         WindowCompat.setDecorFitsSystemWindows(getWindow(),false);
         FrameLayout frame=new FrameLayout(this);frame.setBackgroundColor(Color.rgb(245,246,249));
-        frame.addView(web,new FrameLayout.LayoutParams(-1,-1));setContentView(frame);
+        LinearLayout body=new LinearLayout(this);body.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout adSlot=new LinearLayout(this);adSlot.setOrientation(LinearLayout.VERTICAL);adSlot.setGravity(Gravity.CENTER);adSlot.setVisibility(View.GONE);
+        int gap=(int)(8*getResources().getDisplayMetrics().density);adSlot.setPadding(gap,gap,gap,gap);
+        body.addView(web,new LinearLayout.LayoutParams(-1,0,1));body.addView(adSlot,new LinearLayout.LayoutParams(-1,-2));
+        frame.addView(body,new FrameLayout.LayoutParams(-1,-1));setContentView(frame);
         WindowCompat.getInsetsController(getWindow(),frame).setAppearanceLightStatusBars(true);
         WindowCompat.getInsetsController(getWindow(),frame).setAppearanceLightNavigationBars(true);
         ViewCompat.setOnApplyWindowInsetsListener(frame,(v,insets)->{
@@ -106,6 +114,8 @@ public final class MainActivity extends ComponentActivity {
             handle(message,new Pending("",proxy));
         });
         getOnBackPressedDispatcher().addCallback(this,new OnBackPressedCallback(true){@Override public void handleOnBackPressed(){web.evaluateJavascript("window.dispatchEvent(new Event('kotoba-back'))",null);}});
+        commerce=new PlayCommerce(this,()->{if(ads!=null)ads.update();if(!destroyed)web.evaluateJavascript("window.dispatchEvent(new Event('kotoba-commerce-changed'))",null);});
+        ads=new PlayAds(this,adSlot,()->commerce!=null&&commerce.adsAllowed());
         web.loadUrl(START);
     }
     private static WebResourceResponse blocked(){return new WebResourceResponse("text/plain","UTF-8",new ByteArrayInputStream("Blocked resource".getBytes(StandardCharsets.UTF_8)));}
@@ -113,7 +123,21 @@ public final class MainActivity extends ComponentActivity {
         Pending request=base;
         try { String raw=message.getData();if(raw==null||raw.length()>MAX_BACKUP+1000)return;JSONObject q=new JSONObject(raw);
             String id=q.getString("id"),type=q.getString("type");if(id.length()>100)return;Pending p=new Pending(id,base.reply);request=p;JSONObject body=q.optJSONObject("payload");if(body==null)body=new JSONObject();
+            PlayCommerce.Reply reply=(data,error)->respond(p,data,error);
             switch(type){
+                case "commerceStatus": respond(p,commerce.status(),null);break;
+                case "commerceProducts": commerce.getProducts(reply);break;
+                case "commerceBuy": commerce.buy(body.optString("plan",""),reply);break;
+                case "commerceRestore": commerce.restore(reply);break;
+                case "commerceManage": commerce.manage(reply);break;
+                case "commerceScreen": {
+                    String screen=body.optString("screen",""),completion=body.optString("completionId","");
+                    if(!java.util.Arrays.asList("home","words","course","profile","review","lesson","completed").contains(screen))screen="lesson";
+                    if(completion.length()>100)completion="";
+                    ads.screen(screen,completion);respond(p,new JSONObject(),null);break;
+                }
+                case "commerceBreak": ads.chapterBreak(()->respond(p,new JSONObject(),null));break;
+                case "adPrivacyOptions": ads.privacy(reply);break;
                 case "exportBackup": if(picker!=null){respond(p,null,"다른 파일 작업이 진행 중입니다.");return;}String data=body.getString("json");if(data.length()>MAX_BACKUP){respond(p,null,"백업이 너무 큽니다.");return;}new JSONObject(data);picker=p;exportData=data;Intent out=new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/json").putExtra(Intent.EXTRA_TITLE,"kotoba-backup.json");startActivityForResult(out,EXPORT);break;
                 case "importBackup": if(picker!=null){respond(p,null,"다른 파일 작업이 진행 중입니다.");return;}picker=p;startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/json"),IMPORT);break;
                 case "requestExit": new AlertDialog.Builder(this).setTitle("코토바를 닫을까요?").setMessage("저장한 학습 기록은 유지됩니다.").setPositiveButton("닫기",(d,w)->finish()).setNegativeButton("계속 학습",(d,w)->respond(p,new JSONObject(),null)).show();break;
@@ -128,7 +152,7 @@ public final class MainActivity extends ComponentActivity {
             else{try(InputStream in=getContentResolver().openInputStream(uri);ByteArrayOutputStream out=new ByteArrayOutputStream()){if(in==null)throw new IllegalStateException();byte[] chunk=new byte[8192];int n;while((n=in.read(chunk))!=-1){if(out.size()+n>MAX_BACKUP)throw new IllegalArgumentException();out.write(chunk,0,n);}respond(p,new JSONObject().put("json",new String(out.toByteArray(),StandardCharsets.UTF_8)),null);}}}
             catch(Exception e){respond(p,null,"백업 파일을 읽거나 저장하지 못했습니다.");}});
     }
-    @Override protected void onPause(){if(web!=null)web.onPause();super.onPause();}
-    @Override protected void onResume(){super.onResume();if(web!=null)web.onResume();}
-    @Override protected void onDestroy(){destroyed=true;if(web!=null)web.destroy();io.shutdown();super.onDestroy();}
+    @Override protected void onPause(){if(web!=null){web.evaluateJavascript("window.dispatchEvent(new Event('kotoba-pause'))",null);web.onPause();}if(ads!=null)ads.pause();super.onPause();}
+    @Override protected void onResume(){super.onResume();if(web!=null)web.onResume();if(commerce!=null)commerce.resume();if(ads!=null)ads.resume();}
+    @Override protected void onDestroy(){destroyed=true;if(ads!=null)ads.destroy();if(commerce!=null)commerce.destroy();if(web!=null)web.destroy();io.shutdown();super.onDestroy();}
 }

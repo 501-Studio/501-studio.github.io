@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "com.studio501.kotoba.app-debug-33:/xml_backup_rules.xml.flat",
+        "source": "com.studio501.kotoba.app-main-35:/xml/backup_rules.xml"
+    },
+    {
+        "merged": "com.studio501.kotoba.app-debug-33:/xml_data_extraction_rules.xml.flat",
+        "source": "com.studio501.kotoba.app-main-35:/xml/data_extraction_rules.xml"
+    },
+    {
+        "merged": "com.studio501.kotoba.app-debug-33:/drawable_ic_launcher.xml.flat",
+        "source": "com.studio501.kotoba.app-main-35:/drawable/ic_launcher.xml"
+    }
+]
