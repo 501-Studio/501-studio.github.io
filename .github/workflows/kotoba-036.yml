@@ -31,9 +31,11 @@ jobs:
             p=Path(name)
             assert not p.is_absolute() and '..' not in p.parts and p.parts[0]=='kotoba-android'
             p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(z.read(name))
+          p=Path('kotoba-android/app/src/main/java/com/studio501/kotoba/PlayAds.java')
+          p.write_text(p.read_text().replace('com.google.android.gms.ads.mediation.admob.AdMobAdapter','com.google.ads.mediation.admob.AdMobAdapter'))
           print('Verified source files:',len(z.namelist()))
           PY
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
