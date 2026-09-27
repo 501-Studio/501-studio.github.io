@@ -1,0 +1,25 @@
+name: Kotoba 037 source inspection
+on:
+  push:
+    branches: [feat/kotoba-037-learning]
+    paths: [.github/workflows/kotoba037-inspect.yml]
+permissions:
+  contents: read
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: |
+          python release/reconstruct037.py
+          python release/postpatch037.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kotoba037-readable-source
+          path: /tmp/kotoba037-qa/executed-source.zip
+          retention-days: 7
