@@ -1,0 +1,41 @@
+name: Kotoba 0.3.8 audio audit pilot
+on:
+  push:
+    branches: [fix/kotoba-038-audio-audit]
+    paths: [.github/workflows/kotoba-audio038-pilot.yml, release/audit-audio038-pilot.py]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      HF_HUB_DISABLE_XET: '1'
+      HF_HUB_DISABLE_TELEMETRY: '1'
+      OMP_NUM_THREADS: '2'
+      MKL_NUM_THREADS: '2'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: kotoba037-neural-audio
+          run-id: 36303442278
+          github-token: ${{ github.token }}
+          path: /tmp/neural037
+      - name: Install pinned synthesis and independent recognition tools
+        run: |
+          python -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install kokoro==0.9.4 'misaki[ja]==0.9.4' 'transformers<4.51' soundfile scipy numpy faster-whisper==1.2.1 pykakasi
+          python -m unidic download
+      - run: python release/audit-audio038-pilot.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kotoba038-audio-pilot
+          path: /tmp/audio038-pilot/
+          retention-days: 14
