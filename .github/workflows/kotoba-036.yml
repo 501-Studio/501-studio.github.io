@@ -2,7 +2,7 @@ name: Kotoba 0.3.6 complete verification
 on:
   push:
     branches: [feat/kotoba-036-release-prep]
-    paths: ['.github/workflows/kotoba-036.yml', 'release/v036-web-*', 'jlpt-quest/**', 'kotoba-android/**', 'billing-server/**']
+    paths: ['.github/workflows/kotoba-036.yml', 'release/v036-web-*', 'release/v036-postpatch.py', 'jlpt-quest/**', 'kotoba-android/**', 'billing-server/**']
   workflow_dispatch:
 permissions:
   contents: write
@@ -37,6 +37,7 @@ jobs:
             p.parent.mkdir(parents=True,exist_ok=True);p.write_text(text,encoding='utf-8')
           print('Verified authored files:',len(files))
           PY
+          python release/v036-postpatch.py
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -54,16 +55,14 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-          import zipfile,json
-          apk=next(Path('/tmp/kotoba035-built').rglob('*.apk'))
-          root=Path('jlpt-quest')
+          import zipfile
+          apk=next(Path('/tmp/kotoba035-built').rglob('*.apk'));root=Path('jlpt-quest')
           with zipfile.ZipFile(apk) as z:
             names=[n for n in z.namelist() if n.startswith('assets/www/data/audio/') and n.endswith('.ogg')]
             assert len(names)==7010,len(names)
             for name in names:
               p=root/name.removeprefix('assets/www/');p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(z.read(name))
-            for name in ['data/audio-manifest.json','data/audio-coverage.json']:
-              (root/name).write_bytes(z.read('assets/www/'+name))
+            for name in ['data/audio-manifest.json','data/audio-coverage.json']:(root/name).write_bytes(z.read('assets/www/'+name))
           print('Restored audio clips:',len(names))
           PY
       - name: Apply verified semantic and comma-format corrections
@@ -118,22 +117,18 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           import json,hashlib,zipfile
-          apk=Path('kotoba-android/app/build/outputs/apk/debug/app-debug.apk')
-          aab=Path('kotoba-android/app/build/outputs/bundle/debug/app-debug.aab')
+          apk=Path('kotoba-android/app/build/outputs/apk/debug/app-debug.apk');aab=Path('kotoba-android/app/build/outputs/bundle/debug/app-debug.aab')
           with zipfile.ZipFile(apk) as z:
             assert z.testzip() is None
             for rel in ['src/app.js','src/stroke-pad.js','src/fit-text.js','src/commerce.js','release.css']:
               assert z.read('assets/www/'+rel)==(Path('jlpt-quest')/rel).read_bytes(),rel
             words=[]
-            for l in ['N5','N4','N3','N2','N1']:
-              words+=json.loads(z.read('assets/www/data/'+l+'.json'))['words']
-            assert len(words)==8451
-            assert all(w['language']=='ko' for w in words)
+            for l in ['N5','N4','N3','N2','N1']:words+=json.loads(z.read('assets/www/data/'+l+'.json'))['words']
+            assert len(words)==8451 and all(w['language']=='ko' for w in words)
             assert next(w for w in words if w['word']=='おまわりさん')['meaning']=='경찰관, 순경'
             assert sum(n.startswith('assets/www/data/audio/') and n.endswith('.ogg') for n in z.namelist())==7010
           result={'version':'0.3.6','buildType':'internal-debug','apkBytes':apk.stat().st_size,'apkSha256':hashlib.sha256(apk.read_bytes()).hexdigest(),'aabBytes':aab.stat().st_size,'aabSha256':hashlib.sha256(aab.read_bytes()).hexdigest(),'words':len(words),'audioClips':7010,'productionReady':False,'consoleWritesCompleted':False,'realBillingTested':False,'realAdMobConfigured':False}
-          Path('/tmp/kotoba036-qa/package-check.json').write_text(json.dumps(result,ensure_ascii=False,indent=2))
-          print(json.dumps(result,ensure_ascii=False,indent=2))
+          Path('/tmp/kotoba036-qa/package-check.json').write_text(json.dumps(result,ensure_ascii=False,indent=2));print(json.dumps(result,ensure_ascii=False,indent=2))
           PY
       - name: Preserve readable verified source in release-prep branch
         run: |
@@ -158,8 +153,7 @@ jobs:
             for directory in ['release','editorial']:
               for p in Path('jlpt-quest',directory).rglob('*'):
                 if p.is_file():z.write(p,str(p.relative_to('jlpt-quest')))
-            for name in ['privacy.html','terms.html','licenses.html','CONTENT-LICENSE.md']:
-              p=Path('jlpt-quest',name);z.write(p,name)
+            for name in ['privacy.html','terms.html','licenses.html','CONTENT-LICENSE.md']:z.write(Path('jlpt-quest',name),name)
           PY
       - uses: actions/upload-artifact@v4
         with:
