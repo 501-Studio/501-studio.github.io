@@ -1,0 +1,32 @@
+name: Kotoba 039 example gap recovery
+on:
+  push:
+    branches: [feat/kotoba-039-examples-study]
+    paths: [release/recover-example-gaps039.py, .github/workflows/kotoba039-example-gaps.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: examples039-extended
+          run-id: 36360271638
+          github-token: ${{ github.token }}
+          path: /tmp/examples039-extended
+      - run: python -m pip install fugashi==1.5.2 unidic-lite==1.0.8
+      - run: python release/recover-example-gaps039.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: examples039-recovered
+          path: /tmp/examples039-recovered/
+          retention-days: 30
