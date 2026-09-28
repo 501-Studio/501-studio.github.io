@@ -1,0 +1,93 @@
+name: Kotoba 039 complete examples and sentence audio
+on:
+  push:
+    branches: [feat/kotoba-039-examples-study]
+    paths: [.github/workflows/kotoba039-examples-audio.yml, release/assemble-examples039.py, release/synthesize-examples039.py]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  synthesize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    env:
+      HF_HUB_DISABLE_XET: '1'
+      HF_HUB_DISABLE_TELEMETRY: '1'
+      OMP_NUM_THREADS: '2'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: examples039-translated-complete
+          run-id: 36361148312
+          github-token: ${{ github.token }}
+          path: /tmp/translated039
+      - uses: actions/download-artifact@v4
+        with:
+          name: examples039-directko-complete
+          run-id: 36366419045
+          github-token: ${{ github.token }}
+          path: /tmp/directko039
+      - run: python release/assemble-examples039.py --refined /tmp/directko039/refined-korean.json
+      - run: |
+          sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+          python -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install kokoro==0.9.4 'misaki[ja]==0.9.4' 'transformers<4.51' soundfile scipy numpy
+          python -m unidic download
+      - run: python release/synthesize-examples039.py --shard ${{ matrix.shard }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: examples039-audio-shard-${{ matrix.shard }}
+          path: /tmp/example-audio039/
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: matrix.shard == 0
+        with:
+          name: examples039-full-text
+          path: /tmp/examples039-final/
+          retention-days: 30
+  merge:
+    needs: synthesize
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: examples039-audio-shard-*
+          path: /tmp/examples039/audio-assets
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: examples039-full-text
+          path: /tmp/examples039
+      - run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json,hashlib
+          p=Path('/tmp/examples039');text=json.loads((p/'examples.json').read_text());records=[]
+          for i in range(8):
+            part=json.loads((p/'audio-assets'/f'part-{i}.json').read_text());assert part['complete'];records+=part['records']
+          expected={e['audioFile'] for e in text['entries']};assert len(records)==len(text['entries'])
+          assert expected=={r['file'] for r in records}=={f.name for f in (p/'audio-assets/audio').glob('*.ogg')}
+          for r in records:
+            b=(p/'audio-assets/audio'/r['file']).read_bytes();assert b[:4]==b'OggS' and hashlib.sha256(b).hexdigest()==r['sha256']
+            assert r['clippedSamples']==0 and r['truePeakDb']<-.5
+          coverage={'version':1,'complete':True,'sentences':len(records),'coveredWordIds':text['coverage']['coveredWordIds'],'files':len(expected),'bytes':sum((p/'audio-assets/audio'/n).stat().st_size for n in expected),'independentNativeReview':False,'records':records}
+          (p/'example-audio-coverage.json').write_text(json.dumps(coverage,ensure_ascii=False))
+          (p/'example-audio-manifest.json').write_text(json.dumps({'version':1,'complete':True,'clips':{e['id']:e['audioFile'] for e in text['entries']},'sentences':len(records)},ensure_ascii=False))
+          print('Verified',len(records),'sentence recordings, word coverage',text['coverage']['coveredWordIds'])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kotoba039-complete-examples-audio
+          path: /tmp/examples039/
+          retention-days: 30
