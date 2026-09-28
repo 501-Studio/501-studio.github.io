@@ -1,0 +1,68 @@
+name: Kotoba 039 Korean sentence translation
+on:
+  push:
+    branches: [feat/kotoba-039-examples-study]
+    paths: [release/translate-examples039.py, .github/workflows/kotoba039-example-translation.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    env:
+      HF_HUB_DISABLE_TELEMETRY: '1'
+      TOKENIZERS_PARALLELISM: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: examples039-recovered
+          run-id: 36360810379
+          github-token: ${{ github.token }}
+          path: /tmp/examples039-recovered
+      - run: |
+          python -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install transformers==4.44.2 sentencepiece==0.2.0 sacremoses==0.1.1
+      - run: python release/translate-examples039.py --shard ${{ matrix.shard }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: example-translations039-${{ matrix.shard }}
+          path: /tmp/example-translations039/
+          retention-days: 30
+  merge:
+    needs: translate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: example-translations039-*
+          path: /tmp/translated
+          merge-multiple: true
+      - run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('/tmp/translated');entries=[]
+          for i in range(8):
+            x=json.loads((p/f'part-{i}.json').read_text());assert x['finished'];entries+=x['entries']
+          assert len(set(e['id'] for e in entries))==len(entries)
+          report={'version':2,'entries':entries,'coverage':{'sentences':len(entries),'wordIds':len(set(w for e in entries for w in e['wordIds'])),'flaggedTranslations':sum(bool(e['translationProblem']) for e in entries),'independentEditorialReview':False}}
+          (p/'translated-examples.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          print(json.dumps(report['coverage'],ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: examples039-translated-complete
+          path: /tmp/translated/translated-examples.json
+          retention-days: 30
