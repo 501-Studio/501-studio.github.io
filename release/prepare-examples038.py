@@ -1,6 +1,6 @@
-"""Use complete OPUS corpus as the base; optionally select valid direct translations.
-The direct run timed out after 4,896 translations; it is NOT reported as complete.
-Selection is a heuristic, not semantic verification. Runtime keeps drafts disclosed.
+"""Complete draft corpus, not a claim of full linguistic approval.
+Direct translation timed out after 4896 records. Use the complete OPUS base and
+only structurally valid direct alternatives; preserve actual per-entry provenance.
 """
 from pathlib import Path
 from collections import Counter
@@ -20,18 +20,18 @@ def score(e,s):
    t=re.sub('(하다|되다|이다|다)$','',t)
    if len(t)>=2 and t not in {'그리고','또는','대한','어떤','있는','않은','모든','없이','같은','보다','위한','위해'}:anchors.add(t)
  return sum(min(len(a),3) for a in anchors if a in s)-(len(re.findall('[A-Za-z]',s))>8)*2
-entries=[]
-patches={}
-if Path('release/examples038/quality-patches.json').exists():patches=json.loads(Path('release/examples038/quality-patches.json').read_text())
+patches=json.loads(Path('release/examples038/quality-patches.json').read_text());entries=[]
 for e in base['entries']:
  d=direct.get(e['id']);chosen=dict(e)
  if d and valid(d['ko']) and (not valid(e['ko']) or score(e,d['ko'])>score(e,e['ko'])):chosen=dict(d)
- chosen.pop('koPivot',None);chosen['selectionMethod']='Target-gloss alignment, OPUS default; not semantic verification'
+ chosen.pop('koPivot',None);chosen['selectionMethod']='Target-gloss heuristic, OPUS default; NOT semantic verification'
  if e['id'] in patches:
-  fix=patches[e['id']];assert fix['ja']==e['ja'];chosen['ko']=fix['ko'];chosen['translationReview']='assistant-edited'
+  fix=patches[e['id']];assert fix['ja']==e['ja'],e['id'];chosen['ko']=fix['ko'];chosen['translationReview']='assistant-edited'
+  if fix.get('replacementJa'):
+   chosen['originalJa']=e['ja'];chosen['ja']=fix['replacementJa'];chosen['reading']=fix['reading'];chosen['readingReview']='assistant-authored';chosen['exampleReview']='assistant-adapted'
  assert valid(chosen['ko']),chosen['id'];entries.append(chosen)
-base['entries']=entries;base['model']='mixed-build-drafts';base['revision']='038-complete-base-plus-4896-direct-checkpoint';base['translation']='Machine drafts with explicit per-entry model and edit status; independent linguistic review pending'
-report={'entries':len(entries),'wordIds':sum(len(e['wordIds']) for e in entries),'invalidIds':[],'model':base['model'],'revision':base['revision'],'selectedModelCounts':dict(Counter(e['translationModel'] for e in entries)),'availableDirectTranslations':len(direct),'directJobCompleted':False,'independentNativeReview':False,'selection':'Target-gloss alignment; OPUS default; this is not a semantic accuracy test'}
+base['entries']=entries;base['model']='mixed-build-drafts';base['revision']='038-complete-base-plus-4896-direct-checkpoint';base['translation']='Machine drafts, hidden by default; independent linguistic review pending'
+report={'entries':len(entries),'wordIds':sum(len(e['wordIds']) for e in entries),'invalidIds':[],'model':base['model'],'revision':base['revision'],'selectedModelCounts':dict(Counter(e['translationModel'] for e in entries)),'availableDirectTranslations':len(direct),'directJobCompleted':False,'independentNativeReview':False,'selection':'Target-gloss heuristic, OPUS default; not semantic verification'}
 (O/'examples-corpus.json').write_text(json.dumps(base,ensure_ascii=False,separators=(',',':')))
 (O/'translation-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
 print(json.dumps(report,ensure_ascii=False,indent=2))
