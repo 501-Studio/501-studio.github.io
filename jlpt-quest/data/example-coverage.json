@@ -32,8 +32,8 @@
   "corpusWordIds": 6992,
   "authoredWordIds": 977,
   "translationReviewCounts": {
-    "assistant-edited": 90,
-    "machine-draft": 5936,
+    "assistant-edited": 91,
+    "machine-draft": 5935,
     "assistant-authored": 824
   },
   "independentNativeReview": false,
