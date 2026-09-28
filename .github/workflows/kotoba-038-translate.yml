@@ -1,0 +1,42 @@
+name: Kotoba 038 Korean examples
+on:
+  push:
+    branches: [feat/kotoba-038-study-flow]
+    paths: [.github/workflows/kotoba-038-translate.yml, release/translate-examples038.py]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: kotoba038-translation
+  cancel-in-progress: true
+env:
+  HF_HUB_DISABLE_XET: '1'
+  TOKENIZERS_PARALLELISM: 'false'
+jobs:
+  translate:
+    if: github.ref == 'refs/heads/feat/kotoba-038-study-flow'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python release/collect038.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kotoba038-example-inputs
+          path: /tmp/kotoba038-content/
+          retention-days: 7
+      - name: Install build-only translation dependencies
+        run: |
+          pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+          pip install ctranslate2==4.6.0 transformers==4.51.3 sentencepiece==0.2.0 sacremoses==0.1.1 pykakasi==2.3.0
+      - name: Translate contextual sentences and preserve attribution
+        run: python release/translate-examples038.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kotoba038-korean-examples
+          path: /tmp/kotoba038-translated/
+          retention-days: 7
