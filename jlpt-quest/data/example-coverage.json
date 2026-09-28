@@ -1,0 +1,57 @@
+{
+  "version": "0.3.8-internal",
+  "totalWords": 8451,
+  "coveredWords": 8451,
+  "missingWordIds": [],
+  "byLevel": {
+    "N5": {
+      "total": 669,
+      "covered": 669
+    },
+    "N4": {
+      "total": 655,
+      "covered": 655
+    },
+    "N3": {
+      "total": 1798,
+      "covered": 1798
+    },
+    "N2": {
+      "total": 1844,
+      "covered": 1844
+    },
+    "N1": {
+      "total": 3485,
+      "covered": 3485
+    }
+  },
+  "existingExampleRecords": 164,
+  "newCorpusExampleRecords": 6026,
+  "newAuthoredExampleRecords": 824,
+  "totalExampleRecords": 7014,
+  "corpusWordIds": 6992,
+  "authoredWordIds": 977,
+  "translationReviewCounts": {
+    "assistant-edited": 91,
+    "machine-draft": 5935,
+    "assistant-authored": 824
+  },
+  "independentNativeReview": false,
+  "machineTranslationHiddenByDefault": true,
+  "readingReview": "New automatic readings may have contextual ambiguity",
+  "productionReleased": false,
+  "model": "mixed-build-drafts",
+  "revision": "038-complete-base-plus-4896-direct-checkpoint",
+  "selectedModelCounts": {
+    "facebook/m2m100_1.2B": 637,
+    "OPUS-MT eng-kor original Marian": 5389
+  },
+  "directJobCompleted": false,
+  "unusedAuthoredRows": [],
+  "explicitHomographCorrections": [
+    "N1-1vyy6j9",
+    "N1-1q4fjw6",
+    "N1-3cibxg",
+    "N1-owuhwh"
+  ]
+}

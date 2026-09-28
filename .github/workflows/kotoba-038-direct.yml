@@ -1,0 +1,41 @@
+name: Kotoba 038 direct Japanese Korean
+on:
+  push:
+    branches: [feat/kotoba-038-study-flow]
+    paths: [.github/workflows/kotoba-038-direct.yml, release/direct-ja-ko038.py]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: kotoba038-direct
+  cancel-in-progress: true
+env:
+  HF_HUB_DISABLE_XET: '1'
+  TOKENIZERS_PARALLELISM: 'false'
+jobs:
+  translate:
+    if: github.ref == 'refs/heads/feat/kotoba-038-study-flow'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: kotoba038-korean-examples
+          run-id: 36417868276
+          github-token: ${{ github.token }}
+          path: /tmp/kotoba038-pivot
+      - run: |
+          pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+          pip install ctranslate2==4.6.0 transformers==4.51.3 sentencepiece==0.2.0 accelerate==1.6.0
+      - run: python release/direct-ja-ko038.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kotoba038-direct-korean
+          path: /tmp/kotoba038-direct/
+          retention-days: 14

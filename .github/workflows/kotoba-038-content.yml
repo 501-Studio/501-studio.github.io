@@ -1,0 +1,29 @@
+name: Kotoba 038 example candidates
+on:
+  push:
+    branches: [feat/kotoba-038-study-flow]
+    paths: [.github/workflows/kotoba-038-content.yml, release/collect038.py]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: kotoba038-content
+  cancel-in-progress: true
+jobs:
+  candidates:
+    if: github.ref == 'refs/heads/feat/kotoba-038-study-flow'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Collect indexed examples without changing application data
+        run: python release/collect038.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kotoba038-example-candidates
+          path: /tmp/kotoba038-content/
+          retention-days: 7

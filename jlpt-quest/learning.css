@@ -1,0 +1,84 @@
+/* 0.3.8: a single card, a persistent action, and optional overflow for accessibility. */
+:root{--lesson-foot:104px}
+html[data-lesson="true"]{scroll-padding-bottom:calc(var(--lesson-foot) + 16px)}
+html[data-lesson="true"] .focus-shell{padding-bottom:calc(var(--lesson-foot) + 16px);min-height:100dvh}
+html[data-lesson="true"] .focus-top{margin-bottom:12px!important}
+html[data-lesson="true"] .session-label{margin-bottom:14px;line-height:1.45}
+html[data-lesson="true"] .question .heading{margin-bottom:12px}
+html[data-lesson="true"] .question .heading h1{font-size:clamp(20px,4.6vw,26px)}
+html[data-lesson="true"] .lesson-footer{padding-bottom:max(12px,env(safe-area-inset-bottom))}
+html[data-lesson="true"] .lesson-footer-inner{min-height:54px}
+.feedback-card{border:1px solid var(--line,#e8e7f0);border-radius:24px;background:#fff;padding:18px!important;margin:0!important;text-align:center;display:flex;flex-direction:column;gap:9px}
+.feedback-card>.big-japanese{margin:0}
+.feedback-card .big-japanese>strong{font-size:38px!important;line-height:1.3}
+.feedback-card .word-meaning{font-size:19px;margin:0;line-height:1.45;overflow-wrap:anywhere}
+.feedback-card>.label{align-self:center;font-size:11px}
+.feedback-card .reading{font-size:15px}
+.feedback-card .example-pane{text-align:left;width:100%;margin-top:5px}
+.example-pane{min-width:0}
+.example-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:3px 0 8px;font-size:12px}
+.example-nav>span{white-space:nowrap;color:#7a728d}
+.example-card{padding:15px 14px!important;margin:0!important;background:#f6f5fc;border-radius:17px;box-shadow:none}
+.example-ja{font-size:clamp(17px,4.5vw,21px)!important;line-height:1.6!important;margin:0!important;overflow-wrap:anywhere;word-break:normal}
+.example-reading{font-size:12px!important;line-height:1.55!important;color:#827794;margin:6px 0 0!important;overflow-wrap:anywhere}
+.example-ko{font-size:14px!important;line-height:1.5!important;margin:9px 0 0!important;overflow-wrap:anywhere}
+.example-controls{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.example-controls .btn{min-height:42px;padding:9px 12px;font-size:12px;border-radius:13px}
+.example-controls .btn:first-child{flex:1}
+.example-controls .icon{width:17px;height:17px}
+.example-controls [aria-busy="true"]{box-shadow:inset 0 0 0 2px #7862de}
+.example-audio-status{font-size:12px;line-height:1.4;margin:5px 0 0;color:#675d78;overflow-wrap:anywhere}
+.example-audio-status:empty{display:none}
+.example-pages{display:flex;justify-content:space-between;gap:6px;margin-top:3px}
+.example-pages .btn{font-size:12px;padding:7px 8px;min-height:36px}
+.example-source{font-size:10px;line-height:1.35;margin:5px 0 0;color:#888194}
+.example-source a{color:inherit;text-decoration:underline}
+.example-headword{font-size:25px;margin-bottom:16px;overflow-wrap:anywhere}
+.example-headword>small{display:block;font-size:14px;margin-top:4px}
+.writing-help{display:flex;justify-content:center;gap:10px;margin:2px 0 0}
+.writing-help .btn{min-height:38px;font-size:12px;padding:8px 13px}
+.resume-actions{display:flex;flex-direction:column;align-items:stretch;gap:4px;flex-shrink:0}
+.resume-actions .btn{white-space:nowrap;font-size:12px}
+.pause-actions{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+html[data-snap="true"][data-feedback="false"] .ink-pad{width:min(100%,300px,calc(100dvh - var(--lesson-foot) - 285px));min-width:155px;margin-top:8px;margin-bottom:8px}
+html[data-snap="true"] .ink-toolbar{margin-top:4px;gap:5px}
+html[data-snap="true"] .ink-toolbar .btn{padding:6px 8px;min-height:34px;font-size:11px}
+html[data-snap="true"] .grader-status{font-size:11px;line-height:1.4;min-height:16px;margin:5px 0}
+html[data-snap="true"] .ink-prompt{margin-top:0}
+html[data-snap="true"] .character-tabs{margin-top:9px;margin-bottom:6px}
+@media(max-width:700px){
+ html[data-lesson="true"] .focus-shell{padding-top:max(12px,env(safe-area-inset-top));padding-left:16px;padding-right:16px}
+ html[data-lesson="true"] .session-label{font-size:10px;margin-bottom:10px}
+ html[data-lesson="true"] .focus-top{margin-bottom:8px!important}
+ html[data-lesson="true"] .lesson-footer-inner{gap:10px}
+ .feedback-card{padding:14px!important;border-radius:21px;gap:5px}
+ .feedback-card .big-japanese>strong{font-size:33px!important}
+ .feedback-card .word-meaning{font-size:17px}
+ .example-card{padding:12px!important}
+ .resume{gap:12px;align-items:center}
+ .resume b{font-size:13px}.resume p{font-size:11px}
+}
+@media(max-height:650px) and (orientation:portrait){
+ .feedback-card{padding:11px!important;gap:4px}
+ .feedback-card>.big-japanese>strong{font-size:29px!important}
+ .feedback-card .reading{font-size:12px}
+ .feedback-card .word-meaning{font-size:15px}
+ .example-ja{font-size:17px!important;line-height:1.4!important}
+ .example-reading{font-size:11px!important;line-height:1.4!important;margin-top:4px!important}
+ .example-ko{font-size:12px!important;line-height:1.4!important;margin-top:6px!important}
+ .example-controls{margin-top:7px;gap:5px}
+ .example-controls .btn{padding:7px 9px;min-height:37px}
+ .example-pages .btn{padding:5px 6px;min-height:30px}
+ html[data-lesson="true"] .focus-top{min-height:36px}
+ html[data-lesson="true"] .session-label{margin-bottom:7px}
+ html[data-snap="true"] .question .heading p{display:none}
+ html[data-snap="true"] .ink-prompt strong{font-size:17px}
+ html[data-snap="true"] .ink-prompt p{font-size:15px;margin:3px 0}
+ html[data-snap="true"] .character-tabs{margin-top:6px}
+}
+/* Landscape and text zoom can need scrolling. Do not clip examples to meet a pixel target. */
+@media(orientation:landscape) and (max-height:520px){
+ html[data-snap="true"][data-feedback="false"] .ink-pad{width:190px}
+ html[data-lesson="true"] .focus-shell{max-width:720px}
+ html[data-feedback="true"] .feedback-card{max-width:650px;margin-inline:auto!important}
+}
