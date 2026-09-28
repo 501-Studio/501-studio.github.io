@@ -1,0 +1,82 @@
+name: Kotoba 038 study flow verification
+on:
+  push:
+    branches: [feat/kotoba-038-study-flow]
+    paths: [.github/workflows/kotoba-038.yml, release/reconstruct038.py, release/study038.part1, release/study038.part2, release/fix038.py]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: kotoba038-verification
+  cancel-in-progress: true
+env:
+  KOTOBA_EVIDENCE_DIR: /tmp/kotoba038-qa
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/feat/kotoba-038-study-flow'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify and materialize source
+        run: |
+          mkdir -p /tmp/kotoba038-qa
+          python release/reconstruct038.py
+          if test -f release/fix038.py; then python release/fix038.py; fi
+          python - <<'PY'
+          import json,subprocess
+          paths=json.load(open('/tmp/kotoba038-source-paths.json'))
+          subprocess.run(['git','add','--']+paths,check=True)
+          PY
+          git config user.name '501-Studio'
+          git config user.email '501.dingerlab@gmail.com'
+          if ! git diff --cached --quiet; then
+            git commit -m 'feat(kotoba): preserve verified 038 source for review [skip ci]'
+            git push origin HEAD:feat/kotoba-038-study-flow
+          fi
+      - uses: actions/download-artifact@v4
+        with:
+          name: kotoba037-neural-audio
+          run-id: 36303442278
+          github-token: ${{ github.token }}
+          path: /tmp/neural037
+      - name: Restore checksummed bundled word audio
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json,shutil,hashlib
+          src=Path('/tmp/neural037');dst=Path('jlpt-quest/data/audio');dst.mkdir(exist_ok=True)
+          for r in json.loads((src/'audio-coverage.json').read_text())['records']:
+            f=src/r['file'];assert hashlib.sha256(f.read_bytes()).hexdigest()==r['sha256'];shutil.copyfile(f,dst/f.name)
+          PY
+      - name: Node regression tests
+        working-directory: jlpt-quest
+        run: npm test 2>&1 | tee /tmp/kotoba038-qa/node.txt
+      - name: Install browser test dependencies
+        run: |
+          pip install playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Actual Chromium study flow, storage and mobile layout
+        working-directory: jlpt-quest
+        run: |
+          python -m http.server 4173 --bind 127.0.0.1 > /tmp/kotoba038-qa/http.txt 2>&1 &
+          SERVER=$!
+          trap 'kill $SERVER || true' EXIT
+          python tests/release038-browser.py
+          python tests/release037-browser.py
+          python tests/release036-browser.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kotoba038-study-flow-qa
+          path: /tmp/kotoba038-qa/
+          retention-days: 14
