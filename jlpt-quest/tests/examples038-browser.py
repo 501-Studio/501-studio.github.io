@@ -1,5 +1,6 @@
-"""Validate final corpus cards in the real graded lesson UI, including long text.
-Long text/accessibility may scroll; the fixed Next action must remain reachable.
+"""Real mobile feedback, full corpus samples, and honest draft disclosure.
+Browser plugin absent; Playwright Chromium exercises real DOM and IndexedDB.
+Long text may scroll; the fixed Next action must remain reachable.
 """
 from pathlib import Path
 import os,json,traceback
@@ -17,15 +18,19 @@ with sync_playwright() as P:
   for ix,wid in enumerate(targets):
    p.evaluate('''async id=>{const E=await import('./src/course-engine.js'),C=await import('./src/catalog.js'),S=await import('./src/storage.js');await S.openStore();const old=await S.loadState(),s=E.fresh(),all=(await Promise.all(['N5','N4','N3','N2','N1'].map(l=>fetch('./data/'+l+'.json').then(r=>r.json())))).flatMap(p=>p.words),w=all.find(w=>w.id===id),course=C.courses(all,w.level).find(c=>c.wordIds.includes(id));s.uiRoute='lesson';s.session=E.createClass(s,course,all);while(E.current(s.session)?.phase==='survey'){const t=E.current(s.session);E.classifySurvey(s,t.id,t.wordId!==id,all);}s.session.index=s.session.queue.findIndex(t=>t.wordId===id&&t.skill==='meaning'&&t.phase==='quiz');if(s.session.index<0)throw Error('No meaning question for '+id);await S.commit(s,old.revision);}''',wid)
    p.goto(BASE+'#lesson',wait_until='domcontentloaded');p.reload(wait_until='domcontentloaded');p.wait_for_selector('.answer-option');p.locator('.answer-option').first.click();p.locator('[data-action="answer"]').click();p.wait_for_selector('.example-card');p.wait_for_timeout(300)
+   draft=p.locator('.example-translation-draft')
+   if draft.count():
+    check('machine draft closed and disclosed '+wid,not draft.get_attribute('open') and '오역 주의' in draft.locator('summary').inner_text() and not p.locator('.example-ko').is_visible())
+    draft.locator('summary').click();check('translation revealed on explicit tap '+wid,p.locator('.example-ko').is_visible())
    check('Japanese Korean audio feedback '+wid,p.locator('.example-ja').inner_text().strip() and p.locator('.example-ko').inner_text().strip() and p.locator('[data-action="example-audio"]').count()==2)
+   p.evaluate('scrollTo(0,0)');p.wait_for_timeout(100)
    check('no horizontal clipping '+wid,p.evaluate('document.documentElement.scrollWidth<=innerWidth+1'))
    nextbox=p.locator('.lesson-footer').bounding_box();check('fixed next footer reachable '+wid,nextbox['y']>=0 and nextbox['y']+nextbox['height']<=780+1)
    a=p.locator('.example-controls').bounding_box();no_scroll=a['y']+a['height']<=nextbox['y']+1
-   measurements.append({'wordId':wid,'sample':'longest' if ix%2==0 else 'typical','exampleAndAudioAboveFooter':no_scroll})
+   measurements.append({'wordId':wid,'sample':'longest' if ix%2==0 else 'typical','exampleAndAudioAboveFooter':no_scroll,'draftRevealed':bool(draft.count())})
    if ix%2:check('typical example one screen '+wid,no_scroll)
    if ix in [0,1,8,9]:p.screenshot(path=str(OUT/f'feedback-{wid}.png'),full_page=True)
-   if ix%2==0:
-    p.locator('[data-action="example-stop"]').scroll_into_view_if_needed();check('long example controls reachable '+wid,p.locator('[data-action="example-stop"]').is_visible())
+   p.locator('[data-action="example-stop"]').scroll_into_view_if_needed();p.locator('[data-action="example-stop"]').click();check('example stop reachable '+wid,p.locator('[data-action="example-stop"]').is_visible())
   p.goto(BASE+'#home');p.wait_for_timeout(500);check('no runtime JavaScript errors',not errors)
  except Exception:
   (OUT/'failure.txt').write_text(traceback.format_exc());p.screenshot(path=str(OUT/'failure.png'),full_page=True);raise
