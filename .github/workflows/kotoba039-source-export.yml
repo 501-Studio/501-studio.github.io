@@ -1,0 +1,23 @@
+name: Kotoba 039 source export
+on:
+  push:
+    branches: [feat/kotoba-039-examples-study]
+    paths: [.github/workflows/kotoba039-source-export.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kotoba039-current-source
+          path: |
+            jlpt-quest/
+            kotoba-android/
+            billing-server/
+            release/
+            .github/workflows/
+          retention-days: 14
