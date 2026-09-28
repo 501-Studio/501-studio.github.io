@@ -1,0 +1,67 @@
+name: Kotoba 039 direct Japanese Korean examples
+on:
+  push:
+    branches: [feat/kotoba-039-examples-study]
+    paths: [.github/workflows/kotoba039-refine-korean.yml, release/refine-korean-examples039.py]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    env:
+      HF_HUB_DISABLE_XET: '1'
+      HF_HUB_DISABLE_TELEMETRY: '1'
+      TOKENIZERS_PARALLELISM: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: examples039-translated-complete
+          run-id: 36361148312
+          github-token: ${{ github.token }}
+          path: /tmp/translated039
+      - run: python -m pip install ctranslate2==4.6.0 transformers==4.44.2 sentencepiece==0.2.0 huggingface-hub==0.29.3
+      - run: python release/refine-korean-examples039.py --shard ${{ matrix.shard }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: examples039-directko-${{ matrix.shard }}
+          path: /tmp/refined039/
+          retention-days: 30
+  merge:
+    needs: translate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: examples039-directko-*
+          path: /tmp/refined039
+          merge-multiple: true
+      - run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('/tmp/refined039');translations={};issues=[]
+          for i in range(8):
+            part=json.loads((p/f'part-{i}.json').read_text());assert part['finished'];assert not set(translations)&set(part['translations'])
+            translations.update(part['translations']);issues+=part['issues']
+          assert len(translations)==7052
+          (p/'refined-korean.json').write_text(json.dumps({'translations':translations,'issues':issues,'complete':True,'independentNativeReview':False},ensure_ascii=False))
+          print('Direct JA-KO:',len(translations),'flagged:',len(issues))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: examples039-directko-complete
+          path: /tmp/refined039/refined-korean.json
+          retention-days: 30
