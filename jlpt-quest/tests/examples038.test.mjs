@@ -22,9 +22,16 @@ test('all examples render a single card with normal slow and stop controls',()=>
 test('expanded example sources are attributable and draft status is not hidden',()=>{
  assert.equal(expanded.entries.length,coverage.newCorpusExampleRecords+coverage.newAuthoredExampleRecords);
  const ids=new Set();for(const e of expanded.entries){assert.ok(!ids.has(e.id));ids.add(e.id);assert.equal(e.independentNativeReview,false);assert.ok(e.wordIds.length);assert.deepEqual(e.targets,[]);assert.ok(e.source&&e.license&&e.translationReview);if(e.sourceId)assert.match(e.sourceId,/^\d+$/);}
- const e=expanded.entries.find(x=>x.translationReview==='machine-draft');assert.ok(e);const w=words.find(w=>w.id===e.wordIds[0]);assert.match(exampleBody(w),/한국어 자동번역 초안/);
+ const e=expanded.entries.find(x=>x.translationReview==='machine-draft');assert.ok(e);const w=words.find(w=>w.id===e.wordIds[0]);const html=exampleBody(w);assert.match(html,/한국어 자동번역 초안/);assert.match(html,/<details class="example-translation-draft">/);assert.ok(!html.includes('<details open'));
  assert.equal(coverage.independentNativeReview,false);assert.equal(coverage.productionReleased,false);
 });
 test('kana toggle removes only reading text while retaining example listening',()=>{
  for(const w of words.slice(0,30)){const html=exampleBody(w,false);assert.ok(!html.includes('class="example-reading"'));assert.match(html,/data-action="example-audio"/);}
+});
+test('inspected telephone dialogue preserves greeting and does not invent gender',()=>{
+ const e=expanded.entries.find(e=>e.id==='tatoeba-236422');assert.ok(e);
+ assert.equal(e.ja,'「もしもし、ブラウンさんですか」「はい、そうです」');
+ assert.equal(e.ko,'“여보세요, 브라운 씨인가요?” “네, 맞습니다.”');
+ assert.equal(e.translationReview,'assistant-edited');
+ for(const id of ['N5-13zaazx','N3-13zaazx'])assert.ok(examplesFor(words.find(w=>w.id===id)).some(x=>x.id===e.id));
 });
