@@ -2,7 +2,7 @@ name: Kotoba 038 final internal verification
 on:
   push:
     branches: [feat/kotoba-038-study-flow]
-    paths: [.github/workflows/kotoba-038-final.yml, release/finalize038.py, release/examples038/corrections.json, jlpt-quest/tests/examples038.test.mjs, jlpt-quest/tests/examples038-browser.py]
+    paths: [.github/workflows/kotoba-038-final.yml, release/finalize038.py, release/correct-context038.py, release/package038.py, release/examples038/corrections.json, jlpt-quest/tests/examples038.test.mjs, jlpt-quest/tests/examples038-browser.py]
   workflow_dispatch:
 permissions:
   contents: write
@@ -55,8 +55,10 @@ jobs:
           run-id: 36418951093
           github-token: ${{ github.token }}
           path: /tmp/kotoba038-direct
-      - name: Assemble and verify all vocabulary examples
-        run: python release/finalize038.py
+      - name: Assemble all vocabulary examples and correct homographs
+        run: |
+          python release/finalize038.py
+          python release/correct-context038.py
       - uses: actions/download-artifact@v4
         with:
           name: kotoba037-neural-audio
@@ -98,6 +100,23 @@ jobs:
           cat /tmp/kotoba038-final-qa/release-gate.txt
           test "$STATUS" -ne 0
           grep -q 'RELEASE BLOCKED' /tmp/kotoba038-final-qa/release-gate.txt
+      - name: Preserve exact verified web corpus on feature branch only
+        run: |
+          git fetch origin feat/kotoba-038-study-flow
+          test -z "$(git diff --name-only HEAD origin/feat/kotoba-038-study-flow -- jlpt-quest kotoba-android)"
+          python - <<'PY'
+          from pathlib import Path
+          import json,subprocess
+          paths=json.loads(Path('/tmp/kotoba038-final-paths.json').read_text())
+          subprocess.run(['git','add','--']+paths,check=True)
+          PY
+          git config user.name '501-Studio'
+          git config user.email '501.dingerlab@gmail.com'
+          if ! git diff --cached --quiet; then
+            git commit -m 'feat(kotoba): preserve tested all-word examples for internal 038 [skip ci]'
+            git pull --rebase origin feat/kotoba-038-study-flow
+            git push origin HEAD:feat/kotoba-038-study-flow
+          fi
       - name: Sync exact tested assets
         working-directory: jlpt-quest
         run: npm run android:sync
@@ -134,46 +153,14 @@ jobs:
             adb exec-out screencap -p > /tmp/kotoba038-final-qa/android-device.png
       - name: Inspect APK asset identity and package tested source
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          import json,zipfile,hashlib,shutil
-          w=Path('jlpt-quest');out=Path('/tmp/kotoba038-build');out.mkdir(exist_ok=True)
-          apk=Path('kotoba-android/app/build/outputs/apk/debug/app-debug.apk');aab=Path('kotoba-android/app/build/outputs/bundle/debug/app-debug.aab');checked=[]
-          with zipfile.ZipFile(apk) as z:
-            for n in z.namelist():
-              if n.startswith('assets/www/') and not n.endswith('/'):
-                p=w/n.removeprefix('assets/www/');assert p.is_file() and z.read(n)==p.read_bytes(),n;checked.append(n)
-          coverage=json.loads((w/'data/example-coverage.json').read_text())
-          report={'version':'0.3.8-internal','versionCode':11,'apkBytes':apk.stat().st_size,'apkSha256':hashlib.sha256(apk.read_bytes()).hexdigest(),'aabBytes':aab.stat().st_size,'aabSha256':hashlib.sha256(aab.read_bytes()).hexdigest(),'byteIdenticalWebAssets':len(checked),'audioClips':len(list((w/'data/audio').glob('*.ogg'))),'examples':coverage,'productionReleased':False,'physicalDeviceAudioVerified':False,'signing':'Ephemeral internal debug key; back up records before attempting an update'}
-          Path('/tmp/kotoba038-final-qa/package-check.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
-          shutil.copyfile(apk,out/'kotoba-v0.3.8-internal.apk');shutil.copyfile(aab,out/'kotoba-v0.3.8-internal.aab')
-          with zipfile.ZipFile(out/'kotoba-v0.3.8-source.zip','w',zipfile.ZIP_DEFLATED) as z:
-            for base in ['jlpt-quest','kotoba-android','billing-server','release','.github/workflows']:
-              for p in Path(base).rglob('*'):
-                if not p.is_file() or any(x in p.parts for x in ['.git','.gradle','build','__pycache__','node_modules']):continue
-                if p.suffix in ['.b64','.pyc','.pem','.key','.jks','.keystore','.ttf','.otf','.woff','.woff2'] or p.name in ['local.properties','.env'] or 'assets/www' in str(p):continue
-                z.write(p,Path('kotoba-0.3.8')/p)
-          print(json.dumps(report,ensure_ascii=False,indent=2))
-          PY
+          python release/package038.py
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs /tmp/kotoba038-build/kotoba-v0.3.8-internal.apk > /tmp/kotoba038-final-qa/apk-signature.txt
-      - name: Preserve exact verified corpus on feature branch only
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import json,subprocess
-          paths=json.loads(Path('/tmp/kotoba038-final-paths.json').read_text())
-          subprocess.run(['git','add','--']+paths,check=True)
-          PY
-          git config user.name '501-Studio'
-          git config user.email '501.dingerlab@gmail.com'
-          if ! git diff --cached --quiet; then
-            git commit -m 'feat(kotoba): preserve tested all-word examples and internal 038 assets [skip ci]'
-            git push origin HEAD:feat/kotoba-038-study-flow
-          fi
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: kotoba038-verified-build
           path: /tmp/kotoba038-build/
+          if-no-files-found: warn
           retention-days: 30
       - uses: actions/upload-artifact@v4
         if: always()
