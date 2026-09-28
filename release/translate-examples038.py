@@ -1,9 +1,7 @@
-"""Build-only Korean drafts using the original Marian model and vocabulary IDs.
-Every output remains labeled a draft. No user data or runtime network translation.
-"""
+"""Build-only Korean drafts using original Marian weights and vocabulary indices."""
 from pathlib import Path
 from io import BytesIO
-import json,re,time,zipfile,urllib.request,hashlib,yaml
+import json,re,time,zipfile,urllib.request,hashlib
 import sentencepiece as spm
 from ctranslate2.converters import OpusMTConverter
 from ctranslate2 import Translator
@@ -18,11 +16,9 @@ with zipfile.ZipFile(BytesIO(raw)) as z:
  for name in z.namelist():assert not name.startswith('/') and '..' not in Path(name).parts
  z.extractall(base)
 for vocab in base.glob('*.vocab'):
- text=vocab.read_text();print('Vocabulary format',vocab.name,repr(text[:160]),flush=True)
- data=yaml.safe_load(text)
- assert isinstance(data,dict) and all(isinstance(k,str) and isinstance(v,int) for k,v in data.items())
- assert sorted(data.values())==list(range(len(data)))
- vocab.write_text(yaml.safe_dump(data,allow_unicode=True,sort_keys=False,default_flow_style=False,width=100000))
+ tokens=vocab.read_text().splitlines();assert tokens[:3]==['<unk>','<s>','</s>'] and len(tokens)==len(set(tokens))
+ vocab.write_text(''.join("'"+token.replace("'","''")+"': "+str(i)+'\n' for i,token in enumerate(tokens)))
+ print('Preserved',len(tokens),'indices in',vocab.name,flush=True)
 npz=next(base.rglob('*.npz'));model_dir='/tmp/kotoba038-ct2'
 OpusMTConverter(str(npz.parent)).convert(model_dir,quantization='int8',force=True)
 source=spm.SentencePieceProcessor(model_file=str(next(base.rglob('source.spm'))));target=spm.SentencePieceProcessor(model_file=str(next(base.rglob('target.spm'))))
