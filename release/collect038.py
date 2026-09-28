@@ -10,7 +10,7 @@ lookup={}
 for w in words:lookup.setdefault(w['word'],[]).append(w)
 original=json.loads(Path('jlpt-quest/data/examples.json').read_text())
 covered={t for e in original['entries'] for t in e['targets']}
-url='https://ftp.edrdg.org/pub/Nihongo/JMdict_e_examp.gz'
+url='https://www.edrdg.org/pub/Nihongo/JMdict_e_examp.gz'
 req=urllib.request.Request(url,headers={'User-Agent':'Kotoba-content-editorial/0.3.8 (open-source vocabulary app)'})
 raw=urllib.request.urlopen(req,timeout=120).read()
 assert raw[:2]==b'\x1f\x8b', 'Expected compressed JMdict example edition'
@@ -34,7 +34,6 @@ for event,entry in ET.iterparse(BytesIO(xml),events=['end']):
     if re.search(r'\b(fuck|rape|sex|suicide|nigger|bitch|porn)\b',en,re.I):continue
     e={'id':'tatoeba-'+sid,'ja':ja,'en':en,'surface':surface,'sourceId':sid,'source':'Tatoeba via EDRDG JMdict examples','license':'CC BY 2.0 FR (sentences); CC BY-SA 4.0 (dictionary linkage)','dictionaryEntry':entry.findtext('ent_seq'),'gloss':gloss,'review':'indexed usage; Korean translation not yet prepared'}
     for w in matched:
-     # Prefer exact dictionary spelling, short but complete context, and overlapping gloss.
      wanted=set(re.findall(r'[a-z]{3,}', ' '.join(w.get('sourceMeanings',[])).lower()))
      available=set(re.findall(r'[a-z]{3,}', ' '.join(gloss).lower()))
      score=(0 if not wanted or wanted&available else 60)+(0 if w['word'] in ja else 8)+abs(len(ja)-26)+len(en)/30
