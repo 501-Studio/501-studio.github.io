@@ -2,7 +2,7 @@ name: Kotoba 038 final internal verification
 on:
   push:
     branches: [feat/kotoba-038-study-flow]
-    paths: [.github/workflows/kotoba-038-final.yml, release/finalize038.py, release/correct-context038.py, release/package038.py, release/examples038/corrections.json, jlpt-quest/tests/examples038.test.mjs, jlpt-quest/tests/examples038-browser.py]
+    paths: [.github/workflows/kotoba-038-final.yml, release/finalize038.py, release/prepare-examples038.py, release/correct-context038.py, release/package038.py, 'release/examples038/**', jlpt-quest/tests/examples038.test.mjs, jlpt-quest/tests/examples038-browser.py]
   workflow_dispatch:
 permissions:
   contents: write
@@ -19,7 +19,7 @@ jobs:
   verify:
     if: github.ref == 'refs/heads/feat/kotoba-038-study-flow'
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
         with:
@@ -34,29 +34,21 @@ jobs:
         run: |
           mkdir -p /tmp/kotoba038-final-qa
           pip install pykakasi==2.3.0 playwright==1.57.0
-          python -m playwright install --with-deps chromium
-      - name: Wait for the fixed direct-translation input run
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          for i in $(seq 1 90); do
-            STATUS=$(gh api repos/501-Studio/501-studio.github.io/actions/runs/36418951093 --jq .status)
-            if [ "$STATUS" = completed ]; then
-              test "$(gh api repos/501-Studio/501-studio.github.io/actions/runs/36418951093 --jq .conclusion)" = success
-              exit 0
-            fi
-            sleep 10
-          done
-          echo 'Input run did not finish; no incomplete corpus will be published.'
-          exit 1
+      - uses: actions/download-artifact@v4
+        with:
+          name: kotoba038-korean-examples
+          run-id: 36417868276
+          github-token: ${{ github.token }}
+          path: /tmp/kotoba038-pivot
       - uses: actions/download-artifact@v4
         with:
           name: kotoba038-direct-korean
           run-id: 36418951093
           github-token: ${{ github.token }}
-          path: /tmp/kotoba038-direct
-      - name: Assemble all vocabulary examples and correct homographs
+          path: /tmp/kotoba038-partial
+      - name: Assemble complete input with actual per-entry provenance
         run: |
+          python release/prepare-examples038.py
           python release/finalize038.py
           python release/correct-context038.py
       - uses: actions/download-artifact@v4
@@ -80,6 +72,8 @@ jobs:
           npm test 2>&1 | tee /tmp/kotoba038-final-qa/node.txt
           node --test tests/examples038.test.mjs 2>&1 | tee /tmp/kotoba038-final-qa/coverage-tests.txt
           node scripts/verify-bundled-assets.mjs 2>&1 | tee /tmp/kotoba038-final-qa/assets.txt
+      - name: Install test browser
+        run: python -m playwright install --with-deps chromium
       - name: Actual Chromium interaction and mobile layout verification
         working-directory: jlpt-quest
         run: |
@@ -97,7 +91,6 @@ jobs:
           npm run release:check > /tmp/kotoba038-final-qa/release-gate.txt 2>&1
           STATUS=$?
           set -e
-          cat /tmp/kotoba038-final-qa/release-gate.txt
           test "$STATUS" -ne 0
           grep -q 'RELEASE BLOCKED' /tmp/kotoba038-final-qa/release-gate.txt
       - name: Preserve exact verified web corpus on feature branch only
@@ -131,7 +124,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.13'
-      - name: Build internal APK and AAB and run Android tests and lint
+      - name: Build internal APK AAB and Android unit tests and lint
         working-directory: kotoba-android
         run: gradle --no-daemon assembleDebug bundleDebug assembleDebugAndroidTest testDebugUnitTest lintDebug 2>&1 | tee /tmp/kotoba038-final-qa/gradle-build.txt
       - name: Enable KVM for rotation test
@@ -155,6 +148,25 @@ jobs:
         run: |
           python release/package038.py
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs /tmp/kotoba038-build/kotoba-v0.3.8-internal.apk > /tmp/kotoba038-final-qa/apk-signature.txt
+      - name: Preserve source checkpoint for reproducible inspection
+        if: always()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import zipfile
+          with zipfile.ZipFile('/tmp/kotoba038-inspection.zip','w',zipfile.ZIP_DEFLATED) as z:
+            for base in ['jlpt-quest','kotoba-android','release','.github/workflows']:
+              for p in Path(base).rglob('*'):
+                if not p.is_file() or any(x in p.parts for x in ['.git','.gradle','build','__pycache__','node_modules','audio','www']):continue
+                if p.suffix in ['.b64','.part1','.part2','.pyc','.pem','.key','.jks','.keystore','.ttf','.otf','.woff','.woff2'] or p.name in ['local.properties','.env']:continue
+                z.write(p,p)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kotoba038-inspection-source
+          path: /tmp/kotoba038-inspection.zip
+          retention-days: 14
       - uses: actions/upload-artifact@v4
         if: always()
         with:
