@@ -20,7 +20,9 @@ test('core audio stays bundled while Ads and Billing use explicit network permis
 });
 test('web audio defaults to bundled files, with explicit offline-only native TTS option',()=>{
  const audio=fs.readFileSync(new URL('../src/audio.js',import.meta.url),'utf8');
- assert.doesNotMatch(audio,/speechSynthesis|SpeechSynthesisUtterance|callNative\(['"]speak/);
+ const wordPlayback=audio.slice(audio.indexOf('export async function speak('),audio.indexOf('export async function speakSentence('));
+ assert.doesNotMatch(wordPlayback,/speechSynthesis|SpeechSynthesisUtterance|callNative\(['"]speak/);
+ assert.match(audio,/localService===true/); // sentences may use explicitly installed offline Japanese voices
  assert.match(audio,/audio-manifest\.json/);assert.match(audio,/data\/audio/);
 });
 test('audio attribution is recorded for commercial redistribution',()=>{

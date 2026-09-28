@@ -1,10 +1,10 @@
-const NAME='kotoba-course-0.3.7';
+const NAME='kotoba-course-0.3.8';
 const CORE=[
- './','./index.html','./styles.css','./typography.css','./course.css','./snap.css','./release.css',
+ './','./index.html','./styles.css','./typography.css','./course.css','./snap.css','./release.css','./learning.css',
  './icon.svg','./icon-192.png','./icon-512.png','./manifest.webmanifest',
  './privacy.html','./terms.html','./licenses.html','./CONTENT-LICENSE.md',
- './src/kana-engine.js','./src/kana-ui.js','./src/examples.js','./src/reminders.js','./data/examples.json',
- './src/app.js','./src/fit-text.js','./src/commerce.js','./src/catalog.js','./src/course-engine.js','./src/storage.js','./src/packs.js',
+ './src/kana-engine.js','./src/kana-ui.js','./src/examples.js','./src/reminders.js','./data/examples.json','./data/examples-expanded.json',
+ './src/session-controls.js','./src/app.js','./src/fit-text.js','./src/commerce.js','./src/catalog.js','./src/course-engine.js','./src/storage.js','./src/packs.js',
  './src/native.js','./src/shape-grader.js','./src/audio.js','./src/ink.js','./src/view.js',
  './src/ui.js','./src/motion.js','./src/stroke-match.js','./src/stroke-bank.js','./src/stroke-pad.js',
  './data/starter.js','./data/strokes.json','./data/coverage.json','./data/audio-manifest.json',

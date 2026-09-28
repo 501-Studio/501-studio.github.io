@@ -1,6 +1,6 @@
 /** Offline target-stroke verification for guided handwriting.
  * v0.3.3 intentionally ignores absolute start position and scores stroke SHAPE.
- * v0.3.7 uses a more forgiving 0.52 shape threshold while retaining direction/bend safety checks.
+ * v0.3.8 uses a more forgiving 0.45 shape threshold while retaining direction/bend safety checks.
  */
 export const SNAP_MODE='stroke-snap-v2';
 export const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
@@ -47,7 +47,7 @@ export function matchStroke(input,target,{character='',index=-1}={}){
  if(character==='ら'&&index===0&&inputDirect>.88&&dx>.025&&dy>=-.012&&dy<dx*1.6&&ratio>=.28&&ratio<=3.1)return {accepted:true,reason:'모양이 맞아요.',metrics:{alternate:'ra-short-diagonal',direction,ratio}};
  if(targetDirect<.82&&inputDirect-targetDirect>.28)return no('꺾이는 모양을 조금 더 살려 주세요.',{inputDirect,targetDirect});
  const similarity=shapeSimilarity(input,target);
- if(similarity<.52)return no('모양을 조금 더 비슷하게 써 주세요.',{similarity,direction,ratio});
+ if(similarity<.45)return no('모양을 조금 더 비슷하게 써 주세요.',{similarity,direction,ratio});
  return {accepted:true,reason:'모양이 맞아요. 제자리로 맞췄어요.',metrics:{similarity,direction,ratio,score:1-similarity}};
 }
 export function matchNextStroke(input,strokes,index,options={}){
