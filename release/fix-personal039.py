@@ -29,3 +29,18 @@ paths=Path('/tmp/kotoba039-source-paths.json')
 if paths.exists():
  files=json.loads(paths.read_text());files.extend(str(p) for p in [root/'tests/release036-browser.py',root/'personal.css',root/'tests/personal039-browser.py']);paths.write_text(json.dumps(list(dict.fromkeys(files))))
 print('Applied offline TTS test adapter, compact practice layout, and settled screenshot checks.')
+p=root/'tests/personal039-browser.py';s=p.read_text()
+if 'console health capture' not in s:
+ s=s.replace('checks=[];errors=[];requests=[]', 'checks=[];errors=[];requests=[];console_messages=[] # console health capture')
+ s=s.replace("p.on('request',lambda r:requests.append(r.url))", "p.on('request',lambda r:requests.append(r.url));p.on('console',lambda m:console_messages.append({'type':m.type,'text':m.text}) if m.type in ['error','warning'] else None)")
+ s=s.replace("check('no JavaScript errors',not errors)", "check('no JavaScript errors',not errors);check('no console errors',not any(m['type']=='error' for m in console_messages))")
+ s=s.replace("'checks':checks,'errors':errors,'voiceTest'", "'checks':checks,'errors':errors,'console':console_messages,'voiceTest'")
+ old="  p.locator('[data-action=\"close-modal\"]').click()\n  ids=p.evaluate"
+ new="""  p.evaluate("window.speechSynthesis.getVoices=()=>[{lang:'en-US',localService:true}]")
+  p.locator('[data-action="speech-test"]').click();p.wait_for_function("document.querySelector('#toast').textContent.includes('일본어 오프라인 음성이 없습니다')")
+  check('missing Japanese voice produces visible settings guidance','설치' in p.locator('#toast').inner_text())
+  p.evaluate("window.speechSynthesis.getVoices=()=>[{lang:'ja-JP',localService:true}]")
+  p.locator('[data-action="close-modal"]').click()
+  ids=p.evaluate"""
+ assert old in s;s=s.replace(old,new)
+p.write_text(s)
