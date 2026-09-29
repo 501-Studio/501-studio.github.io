@@ -2,7 +2,7 @@ name: Kotoba 040 learning suite
 on:
   push:
     branches: [feat/kotoba-040-learning-suite]
-    paths: [jlpt-quest/**, kotoba-android/**, release/v040/**, release/apply040.py, release/finish040.py, release/package040.py, .github/workflows/kotoba-040.yml]
+    paths: [jlpt-quest/**, kotoba-android/**, release/v040/**, release/apply040.py, release/finish040.py, release/polish040.py, release/package040.py, .github/workflows/kotoba-040.yml]
   workflow_dispatch:
 permissions:
   contents: write
@@ -34,6 +34,7 @@ jobs:
           mkdir -p /tmp/kotoba040-qa
           python release/apply040.py
           python release/finish040.py
+          python release/polish040.py
           node jlpt-quest/scripts/build-study040.mjs
       - name: Unit tests and static asset checks
         working-directory: jlpt-quest
@@ -107,7 +108,7 @@ jobs:
       - name: Preserve tested source on this feature branch only
         run: |
           test "$(git ls-remote origin refs/heads/feat/kotoba-040-learning-suite | cut -f1)" = "${GITHUB_SHA}"
-          git add -- jlpt-quest/src jlpt-quest/tests jlpt-quest/index.html jlpt-quest/package.json jlpt-quest/sw.js jlpt-quest/scripts/sync-android.mjs kotoba-android/app/build.gradle kotoba-android/app/src/main/AndroidManifest.xml kotoba-android/app/src/main/java release/v040/source-applied.json
+          git add -- jlpt-quest/src jlpt-quest/tests jlpt-quest/advanced.css jlpt-quest/index.html jlpt-quest/package.json jlpt-quest/sw.js jlpt-quest/scripts/sync-android.mjs kotoba-android/app/build.gradle kotoba-android/app/src/main/AndroidManifest.xml kotoba-android/app/src/main/java kotoba-android/app/src/androidTest release/v040/source-applied.json
           git add -f -- jlpt-quest/data/study040-seed.js
           git config user.name '501-Studio'
           git config user.email '501.dingerlab@gmail.com'
