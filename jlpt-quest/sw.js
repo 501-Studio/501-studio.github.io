@@ -1,6 +1,7 @@
-const NAME='kotoba-course-0.3.9';
+const NAME='kotoba-course-0.4.0';
 const CORE=[
- './','./index.html','./styles.css','./typography.css','./course.css','./snap.css','./release.css','./learning.css','./personal.css',
+ './src/advanced-ui.js','./src/learning-policy.js','./src/study-data.js','./src/example-quality.js','./src/exam-engine.js','./src/playlist.js','./data/context040.js','./data/study040-seed.js',
+ './','./index.html','./styles.css','./typography.css','./course.css','./snap.css','./release.css','./learning.css','./personal.css','./advanced.css',
  './icon.svg','./icon-192.png','./icon-512.png','./manifest.webmanifest',
  './privacy.html','./terms.html','./licenses.html','./CONTENT-LICENSE.md',
  './src/kana-engine.js','./src/kana-ui.js','./src/examples.js','./src/reminders.js','./data/examples.json','./data/examples-expanded.json',

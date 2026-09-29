@@ -29,7 +29,7 @@ export async function hasSpeech(){
 }
 async function playText(text,rate,onStart=()=>{}){
  if(typeof text!=='string'||!text.trim()||text.length>500)throw new Error('읽을 일본어 문장이 없습니다.');
- stopAudio();const mine=generation;rate=Math.max(.5,Math.min(1.2,Number(rate)||1));
+ globalThis.document?.dispatchEvent?.(new Event('kotoba-single-speech'));stopAudio();const mine=generation;rate=Math.max(.5,Math.min(1.2,Number(rate)||1));
  if(isNative()){
   nativeSpeaking=true;
   try{await callNative('speechSpeak',{text,rate},95000);if(mine!==generation)throw cancelled();return true;}

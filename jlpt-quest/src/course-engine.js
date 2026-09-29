@@ -1,3 +1,5 @@
+import {intensity,intensityKey,adaptiveInterval} from './learning-policy.js';
+import {freshStudy,validateStudy,recordAnswer} from './study-data.js';
 import {validateWordPractice,validatePracticeLog} from './word-practice.js';
 import {freshKana,validateKana} from './kana-engine.js';
 import {LEVELS,writingChars,hash} from './catalog.js';
@@ -7,16 +9,21 @@ export const SKILLS=['meaning','listening','writing'];
 export const keyOf=(id,skill)=>`${id}:${skill}`;
 export const nowId=()=>globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`;
 export const dayKey=(time=Date.now())=>{const d=new Date(time);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
-export function fresh(){return {version:SCHEMA,revision:0,settings:{level:'N5',furigana:true,motion:true,haptics:true,penWidth:8,rate:1,kanjiOnlyPractice:false,audioEngine:'device',audioRevision:3,reviewNotifications:true},memory:{},encountered:{},known:{},learned:{},completed:{},starred:[],daily:{},xp:0,session:null,suspendedSession:null,wordPractice:null,practiceLog:{},legacy:null,kana:freshKana(),uiRoute:'home'};}
-export function schedule(old,correct,sessionId,now=Date.now(),method='auto'){
+export function fresh(){return {version:SCHEMA,revision:0,settings:{level:'N5',furigana:true,motion:true,haptics:true,penWidth:8,rate:1,kanjiOnlyPractice:false,audioEngine:'device',audioRevision:3,reviewNotifications:true,intensity:'medium',adaptiveSRS:true},study:freshStudy(),parkedSessions:[],memory:{},encountered:{},known:{},learned:{},completed:{},starred:[],daily:{},xp:0,session:null,suspendedSession:null,wordPractice:null,practiceLog:{},legacy:null,kana:freshKana(),uiRoute:'home'};}
+function fixedSchedule(old,correct,sessionId,now=Date.now(),method='auto'){
  const r={stage:-1,due:0,lapses:0,successes:0,lastSession:'',consecutive:0,...old};
  if(!correct)return {...r,stage:0,due:now+INTERVALS[0],lapses:r.lapses+1,consecutive:0,lastAt:now,lastSession:sessionId,method};
  if(r.lastSession===sessionId||(r.stage>=0&&r.due>now))return {...r,successes:r.successes+1,method};
  const stage=Math.min(5,r.stage+1);return {...r,stage,due:now+INTERVALS[stage],successes:r.successes+1,consecutive:r.consecutive+1,lastAt:now,lastSession:sessionId,method};
 }
+export function schedule(old,correct,sessionId,now=Date.now(),method='auto',options={}){
+ const base=fixedSchedule(old,correct,sessionId,now,method);
+ if(options.adaptive===undefined)return base;
+ return adaptiveInterval(old,base,{correct,sessionId,now,latencyMs:options.latencyMs||0,enabled:options.adaptive===true});
+}
 export function shuffle(list,rng=Math.random){const out=[...list];for(let i=out.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[out[i],out[j]]=[out[j],out[i]];}return out;}
 export function optionsFor(word,words,skill){const field=skill==='listening'?'word':'meaning',other=[...new Set(words.filter(w=>w.level===word.level&&w.language===word.language&&w[field]!==word[field]).map(w=>w[field]))];return shuffle([word[field],...shuffle(other).slice(0,3)]);}
-const task=(word,phase,skill,words)=>({id:nowId(),wordId:word.id,phase,skill,attempt:0,options:['meaning','listening'].includes(skill)&&phase==='quiz'?optionsFor(word,words,skill):[]});
+const task=(word,phase,skill,words)=>({id:nowId(),wordId:word.id,phase,skill,attempt:0,autoSpeech:0,options:['meaning','listening'].includes(skill)&&phase==='quiz'?optionsFor(word,words,skill):[]});
 function priorLaps(state,id){const p=state.completed[id];return Number.isSafeInteger(p?.laps)?p.laps:(p?.at?1:0);}
 function finalizeClass(state,s,now=Date.now()){
  if(s.kind!=='class'||s.finalized)return;
@@ -29,7 +36,7 @@ export function courseLaps(state,courseId){return priorLaps(state,courseId);}
 export function createClass(state,course,words){
  const map=new Map(words.map(w=>[w.id,w]));const selected=course.wordIds.map(id=>map.get(id));if(!selected.length||selected.length>30||selected.some(w=>!w||!writingChars(w).length))throw new Error('이 챕터의 단어 또는 쓰기 표기를 확인해야 합니다.');
  const survey=selected.map(w=>task(w,'survey','survey',words));
- return {id:nowId(),kind:'class',course:{...course},wordIds:[...course.wordIds],queue:survey,index:0,originalQuiz:0,firstCorrect:0,firstAnswered:0,passed:{},feedback:null,finished:false,completed:false,finalized:false,ink:null,heard:false,selection:null,startedAt:Date.now(),earned:0,attempts:0,firstMisses:[],knownIds:[],unknownIds:[],surveyReading:false,surveyMeaning:false,autoPlayedTask:null,wordSnapshots:selected};
+ return {id:nowId(),kind:'class',intensity:intensityKey(state.settings.intensity),course:{...course},wordIds:[...course.wordIds],queue:survey,index:0,originalQuiz:0,firstCorrect:0,firstAnswered:0,passed:{},feedback:null,finished:false,completed:false,finalized:false,ink:null,heard:false,selection:null,startedAt:Date.now(),earned:0,attempts:0,firstMisses:[],knownIds:[],unknownIds:[],surveyReading:false,surveyMeaning:false,autoPlayedTask:null,wordSnapshots:selected};
 }
 export function classifySurvey(state,taskId,known,words,now=Date.now()){
  const s=state.session,t=current(s);if(!s||s.kind!=='class'||s.finished||t?.id!==taskId||t.phase!=='survey'||t.skill!=='survey')return false;
@@ -40,8 +47,13 @@ export function classifySurvey(state,taskId,known,words,now=Date.now()){
  if(s.index<s.queue.length)return true;
  if(!s.unknownIds.length){s.finished=true;s.completed=true;finalizeClass(state,s,now);return true;}
  const map=new Map(words.map(w=>[w.id,w])),unknown=s.unknownIds.map(id=>map.get(id)).filter(Boolean);
- const training=unknown.flatMap(w=>[task(w,'learn','audio',words),...(state.settings.kanjiOnlyPractice&&!/\p{Script=Han}/u.test(w.word)?[]:Array.from({length:3},(_,i)=>({...task(w,'learn','trace',words),practiceIndex:i+1,practiceTotal:3,guided:i<2})))]);
- const quiz=SKILLS.flatMap(skill=>shuffle(unknown).map(w=>task(w,'quiz',skill,words)));
+ const policy=intensity(s.intensity);
+ const training=unknown.flatMap(w=>[
+  ...Array.from({length:policy.study},()=>task(w,'learn','study',words)),
+  ...Array.from({length:policy.audio},()=>task(w,'learn','audio',words)),
+  ...(state.settings.kanjiOnlyPractice&&!/\p{Script=Han}/u.test(w.word)?[]:Array.from({length:policy.trace},(_,i)=>({...task(w,'learn','trace',words),practiceIndex:i+1,practiceTotal:policy.trace,guided:i<Math.max(1,policy.trace-1)})))
+ ]);
+ const quiz=SKILLS.flatMap(skill=>Array.from({length:policy[skill]},()=>shuffle(unknown).map(w=>task(w,'quiz',skill,words))).flat());
  s.queue.push(...training,...quiz);s.originalQuiz=quiz.length;return true;
 }
 export function createReview(state,words,filter='due',now=Date.now()){
@@ -53,13 +65,13 @@ export const current=s=>s?.queue?.[s.index]||null;
 export function dueItems(state,words,now=Date.now(),filter='due'){
  const ids=new Set(words.filter(w=>w.level===state.settings.level).map(w=>w.id));
  const rows=Object.entries(state.memory).flatMap(([key,r])=>{
-  const [wordId,skill]=key.split(':');if(!ids.has(wordId)||!SKILLS.includes(skill))return [];
+  const [wordId,skill]=key.split(':');if(!ids.has(wordId)||!SKILLS.includes(skill)||intensity(state.settings.intensity)[skill]===0)return [];
   if(filter==='due'&&r.due>now)return [];if(filter==='preview'&&r.due<=now)return [];
   if(filter==='weak'&&!(r.lapses>0&&r.consecutive<2))return [];
   return [{...r,wordId,skill}];
  });
  // A self-reported known word has no fabricated test result, but can be tested now.
- if(filter==='preview')for(const wordId of ids)if(state.known[wordId])for(const skill of SKILLS)if(!state.memory[keyOf(wordId,skill)])rows.push({wordId,skill,due:now,stage:-1,knownPreview:true});
+ if(filter==='preview')for(const wordId of ids)if(state.known[wordId])for(const skill of SKILLS)if(intensity(state.settings.intensity)[skill]>0&&!state.memory[keyOf(wordId,skill)])rows.push({wordId,skill,due:now,stage:-1,knownPreview:true});
  return rows.sort((a,b)=>a.due-b.due);
 }
 function award(state,t,correct,now){const day=dayKey(now),d=state.daily[day]||{keys:[],words:[],xp:0};const k=keyOf(t.wordId,t.skill);if(d.keys.includes(k))return 0;const n=t.phase==='quiz'?(correct?10:2):0;if(!n)return 0;d.keys.push(k);if(!d.words.includes(t.wordId))d.words.push(t.wordId);d.xp+=n;state.daily[day]=d;state.xp+=n;return n;}
@@ -75,14 +87,16 @@ export function submit(state,taskId,result,now=Date.now()){
  }
  const correct=result.correct===true&&!result.assisted;
  const key=keyOf(t.wordId,t.skill);state.encountered[t.wordId]=state.encountered[t.wordId]||now;
- state.memory[key]=schedule(state.memory[key],correct,s.id,now,result.method||'choice');
+ const previous=state.memory[key];
+ state.memory[key]=schedule(previous,correct,s.id,now,result.method||'choice',{adaptive:state.settings.adaptiveSRS,latencyMs:result.latencyMs});
+ recordAnswer(state,t,result,previous,now,result.latencyMs||0);
  s.attempts++;if(t.attempt===0){s.firstAnswered++;if(correct)s.firstCorrect++;else if(!s.firstMisses.includes(key))s.firstMisses.push(key);}
  s.passed[key]=correct;
  const gained=award(state,t,correct,now);s.earned+=gained;
- if(!correct&&t.attempt<2){const retry={...t,id:nowId(),attempt:t.attempt+1};s.queue.splice(Math.min(s.index+4,s.queue.length),0,retry);}
+ if(!correct&&t.attempt<2){const retry={...t,id:nowId(),attempt:t.attempt+1,autoSpeech:0};s.queue.splice(Math.min(s.index+4,s.queue.length),0,retry);}
  s.feedback={correct,method:result.method||'choice',recognized:result.recognized||'',gained,reason:result.reason||'',assisted:!!result.assisted};return true;
 }
-export function unresolved(s){const required=s.kind==='class'?(s.unknownIds||s.wordIds).flatMap(id=>SKILLS.map(skill=>keyOf(id,skill))):[...new Set(s.queue.filter(t=>t.phase==='quiz').map(t=>keyOf(t.wordId,t.skill)))];return required.filter(key=>s.passed[key]!==true);}
+export function unresolved(s){const required=[...new Set(s.queue.filter(t=>t.phase==='quiz').map(t=>keyOf(t.wordId,t.skill)))];return required.filter(key=>s.passed[key]!==true);}
 export function next(state,now=Date.now()){
  const s=state.session;if(!s||!s.feedback||s.finished)return false;s.index++;s.feedback=null;s.ink=null;s.heard=false;s.selection=null;s.assisted=false;s.showExample=false;s.exampleIndex=0;
  if(s.index<s.queue.length)return true;s.finished=true;s.completed=unresolved(s).length===0;
@@ -90,7 +104,7 @@ export function next(state,now=Date.now()){
  return true;
 }
 export function remediate(state){const old=state.session;if(!old?.finished)return false;const missing=unresolved(old);if(!missing.length)return false;
- const queue=missing.map(key=>{const [id,skill]=key.split(':');const t=old.queue.find(t=>t.wordId===id&&t.skill===skill&&t.phase==='quiz');return {...t,id:nowId(),attempt:0};});
+ const queue=missing.map(key=>{const [id,skill]=key.split(':');const t=old.queue.find(t=>t.wordId===id&&t.skill===skill&&t.phase==='quiz');return {...t,id:nowId(),attempt:0,autoSpeech:0};});
  state.session={...old,id:nowId(),queue,index:0,feedback:null,finished:false,completed:false,finalized:false,ink:null,heard:false,selection:null,assisted:false,earned:0,firstCorrect:0,firstAnswered:0,originalQuiz:queue.length,attempts:0,firstMisses:[],startedAt:Date.now()};return true;
 }
 export function levelStats(state,words,level,now=Date.now()){
@@ -113,13 +127,16 @@ export function validateState(input){
  s.settings.audioRevision=3;
  if(!input.settings.audioRevision&&s.settings.rate===.85)s.settings.rate=1;
  s.settings.reviewNotifications=input.settings.reviewNotifications!==false;
+ s.settings.intensity=intensityKey(input.settings.intensity);s.settings.adaptiveSRS=input.settings.adaptiveSRS!==false;
+ s.study=validateStudy(input.study);
+ s.parkedSessions=(Array.isArray(input.parkedSessions)?input.parkedSessions:[]).slice(0,8).map(validateSession).filter(q=>!q.finished);
  s.kana=validateKana(input.kana);
  s.wordPractice=validateWordPractice(input.wordPractice);s.practiceLog=validatePracticeLog(input.practiceLog);
- s.uiRoute=['home','course','review','words','profile','lesson','kana','kana-practice','word-practice'].includes(input.uiRoute)?input.uiRoute:'home';
+ s.uiRoute=['home','course','review','words','profile','lesson','kana','kana-practice','word-practice','study-hub','exam','commute'].includes(input.uiRoute)?input.uiRoute:'home';
  for(const field of ['encountered','known','learned'])for(const [id,time]of Object.entries(input[field]||{})){if(ID.test(id)&&n(time))s[field][id]=time;}
  for(const [key,r]of Object.entries(input.memory||{})){const [id,skill]=key.split(':');if(!ID.test(id)||!SKILLS.includes(skill))continue;
   if(!r||!Number.isInteger(r.stage)||r.stage<0||r.stage>5||!n(r.due)||!n(r.lapses)||!n(r.successes)||!n(r.consecutive))throw new Error('복습 기록이 손상되었습니다.');
-  s.memory[key]={stage:r.stage,due:r.due,lapses:r.lapses,successes:r.successes,consecutive:r.consecutive,lastAt:n(r.lastAt)?r.lastAt:0,lastSession:String(r.lastSession||'').slice(0,80),method:['mlkit','shape-template','stroke-snap','choice'].includes(r.method)?r.method:'choice'};
+  s.memory[key]={recent:(Array.isArray(r.recent)?r.recent:[]).filter(x=>x===0||x===1).slice(-12),independentFailures:n(r.independentFailures)?r.independentFailures:r.lapses,averageMs:n(r.averageMs,120000)?r.averageMs:0,latencySamples:n(r.latencySamples,1000)?r.latencySamples:0,intervalMs:n(r.intervalMs)?r.intervalMs:0,policy:r.policy==='adaptive-v1'?'adaptive-v1':'fixed',factor:n(r.factor,1.4)?r.factor:1,stage:r.stage,due:r.due,lapses:r.lapses,successes:r.successes,consecutive:r.consecutive,lastAt:n(r.lastAt)?r.lastAt:0,lastSession:String(r.lastSession||'').slice(0,80),method:['mlkit','shape-template','stroke-snap','choice'].includes(r.method)?r.method:'choice'};
  }
  s.starred=[...new Set((input.starred||[]).filter(id=>typeof id==='string'&&ID.test(id)))];
  for(const [id,c]of Object.entries(input.completed||{}))if(COURSE.test(id)&&n(c?.at)&&Array.isArray(c.wordIds)&&c.wordIds.every(id=>ID.test(id)))s.completed[id]={at:c.at,wordIds:c.wordIds,attempts:n(c.attempts)?c.attempts:0,firstCorrect:n(c.firstCorrect)?c.firstCorrect:0,laps:Number.isSafeInteger(c.laps)&&c.laps>=1?c.laps:1,known:n(c.known)?c.known:0,unknown:n(c.unknown)?c.unknown:0};
@@ -130,16 +147,17 @@ export function validateState(input){
   if(s.suspendedSession.finished)s.suspendedSession=null;
   if(s.suspendedSession&&s.suspendedSession.id===s.session?.id)throw new Error('수업 보관 기록이 중복되었습니다.');
  }
+ const sessionIds=[s.session,s.suspendedSession,...s.parkedSessions].filter(Boolean).map(q=>q.id);if(new Set(sessionIds).size!==sessionIds.length)throw new Error('수업 보관 기록이 중복되었습니다.');
  s.legacy=input.legacy?{version:Number(input.legacy.version)||1,xp:n(input.legacy.xp)?input.legacy.xp:0,note:'이전 자가평가 기록은 자동 채점 숙련도에 합산하지 않음'}:null;
  return s;
 }
-function validateSession(q){
+export function validateSession(q){
  const phase=['survey','learn','quiz'],skills=['survey','study','audio','trace',...SKILLS];
- if(!q||!['class','review'].includes(q.kind)||typeof q.id!=='string'||!Array.isArray(q.wordIds)||q.wordIds.length>30||!q.wordIds.every(id=>ID.test(id))||!Array.isArray(q.queue)||!q.queue.length||q.queue.length>600||!Number.isInteger(q.index)||q.index<0||q.index>q.queue.length||(!q.finished&&q.index===q.queue.length))throw new Error('진행 중인 수업 데이터가 손상되었습니다.');
+ if(!q||!['class','review'].includes(q.kind)||typeof q.id!=='string'||!Array.isArray(q.wordIds)||q.wordIds.length>100||!q.wordIds.every(id=>ID.test(id))||!Array.isArray(q.queue)||!q.queue.length||q.queue.length>1800||!Number.isInteger(q.index)||q.index<0||q.index>q.queue.length||(!q.finished&&q.index===q.queue.length))throw new Error('진행 중인 수업 데이터가 손상되었습니다.');
  if(q.kind==='class'&&(!q.course||!COURSE.test(q.course.id)||!LEVELS.includes(q.course.level)))throw new Error('수업 정보가 손상되었습니다.');
  if(q.queue.some(t=>!t||typeof t.id!=='string'||!q.wordIds.includes(t.wordId)||!phase.includes(t.phase)||!skills.includes(t.skill)||(t.phase==='quiz'&&!SKILLS.includes(t.skill))||(t.phase==='survey'&&t.skill!=='survey')||(t.phase==='learn'&&!['study','audio','trace'].includes(t.skill))||!Array.isArray(t.options)||t.options.some(x=>typeof x!=='string'||x.length>4000)||!Number.isInteger(t.attempt)||t.attempt<0||t.attempt>2))throw new Error('수업 문항이 손상되었습니다.');
  const cleanIds=a=>[...new Set((Array.isArray(a)?a:[]).filter(id=>q.wordIds.includes(id)))];
- const s={id:q.id.slice(0,80),kind:q.kind,reviewMode:['due','weak','all','preview'].includes(q.reviewMode)?q.reviewMode:'due',course:q.course?{id:String(q.course.id).slice(0,100),level:q.course.level,title:String(q.course.title||'').slice(0,100),index:q.course.index,startNo:q.course.startNo,endNo:q.course.endNo,wordIds:[...q.wordIds]}:null,wordIds:[...q.wordIds],queue:q.queue.map(t=>({id:t.id.slice(0,80),wordId:t.wordId,phase:t.phase,skill:t.skill,attempt:t.attempt,options:t.options,practiceIndex:[1,2,3].includes(t.practiceIndex)?t.practiceIndex:1,practiceTotal:3,guided:t.guided!==false})),index:q.index,passed:{},feedback:null,finished:q.finished===true,completed:false,finalized:q.finalized===true,ink:null,heard:q.heard===true,selection:typeof q.selection==='string'?q.selection:null,assisted:q.assisted===true,showExample:q.showExample===true,exampleIndex:Number.isSafeInteger(q.exampleIndex)&&q.exampleIndex>=0&&q.exampleIndex<100?q.exampleIndex:0,knownIds:cleanIds(q.knownIds),unknownIds:cleanIds(q.unknownIds),contentRevision:typeof q.contentRevision==='string'?q.contentRevision:null,surveyReading:q.surveyReading===true,surveyMeaning:q.surveyMeaning===true,autoPlayedTask:typeof q.autoPlayedTask==='string'?q.autoPlayedTask.slice(0,80):null,wordSnapshots:[]};
+ const s={id:q.id.slice(0,80),kind:q.kind,intensity:intensityKey(q.intensity),label:typeof q.label==='string'?q.label.slice(0,60):'',budgetMs:Number.isFinite(q.budgetMs)?Math.max(0,Math.min(7200000,q.budgetMs)):0,elapsedMs:Number.isFinite(q.elapsedMs)?Math.max(0,Math.min(86400000,q.elapsedMs)):0,reviewMode:['due','weak','all','preview','custom'].includes(q.reviewMode)?q.reviewMode:'due',course:q.course?{id:String(q.course.id).slice(0,100),level:q.course.level,title:String(q.course.title||'').slice(0,100),index:q.course.index,startNo:q.course.startNo,endNo:q.course.endNo,wordIds:[...q.wordIds]}:null,wordIds:[...q.wordIds],queue:q.queue.map(t=>({id:t.id.slice(0,80),wordId:t.wordId,phase:t.phase,skill:t.skill,attempt:t.attempt,autoSpeech:Number.isInteger(t.autoSpeech)&&t.autoSpeech>=0&&t.autoSpeech<=7?t.autoSpeech:(q.autoPlayedTask===t.id?1:0),options:t.options,practiceIndex:[1,2,3,4,5].includes(t.practiceIndex)?t.practiceIndex:1,practiceTotal:[1,2,3,4,5].includes(t.practiceTotal)?t.practiceTotal:3,guided:t.guided!==false})),index:q.index,passed:{},feedback:null,finished:q.finished===true,completed:false,finalized:q.finalized===true,ink:null,heard:q.heard===true,selection:typeof q.selection==='string'?q.selection:null,assisted:q.assisted===true,showExample:q.showExample===true,exampleIndex:Number.isSafeInteger(q.exampleIndex)&&q.exampleIndex>=0&&q.exampleIndex<100?q.exampleIndex:0,knownIds:cleanIds(q.knownIds),unknownIds:cleanIds(q.unknownIds),contentRevision:typeof q.contentRevision==='string'?q.contentRevision:null,surveyReading:q.surveyReading===true,surveyMeaning:q.surveyMeaning===true,autoPlayedTask:typeof q.autoPlayedTask==='string'?q.autoPlayedTask.slice(0,80):null,wordSnapshots:[]};
  for(const key of ['originalQuiz','firstCorrect','firstAnswered','earned','attempts','startedAt'])s[key]=Number.isFinite(q[key])&&q[key]>=0?q[key]:0;
  for(const [key,val]of Object.entries(q.passed||{})){const [id,skill]=key.split(':');if(q.wordIds.includes(id)&&SKILLS.includes(skill)&&typeof val==='boolean')s.passed[key]=val;}
  s.firstMisses=Array.isArray(q.firstMisses)?q.firstMisses.filter(x=>typeof x==='string'&&x.length<60):[];
@@ -147,4 +165,13 @@ function validateSession(q){
  if(q.ink&&Array.isArray(q.ink.characters)&&q.ink.characters.length<=24){s.ink={...(['stroke-snap-v1','stroke-snap-v2'].includes(q.ink.mode)?{mode:q.ink.mode,hadError:q.ink.hadError===true,misses:Number.isSafeInteger(q.ink.misses)&&q.ink.misses>=0?q.ink.misses:0}:{}),characters:q.ink.characters.map(lines=>Array.isArray(lines)?lines.slice(0,60).filter(line=>Array.isArray(line)&&line.length<=2000&&line.every(p=>Array.isArray(p)&&p.length>=2&&p.slice(0,2).every(n=>Number.isFinite(n)&&n>=0&&n<=1))).map(line=>line.map(p=>p.slice(0,2))):[]),active:Number.isInteger(q.ink.active)?Math.max(0,Math.min(q.ink.characters.length-1,q.ink.active)):0,results:q.ink.characters.map((_,i)=>q.ink.results?.[i]===true),...(['mlkit','shape-template','stroke-snap'].includes(q.ink.method)?{method:q.ink.method}:{})};}
  if(Array.isArray(q.wordSnapshots))s.wordSnapshots=q.wordSnapshots.filter(w=>w&&ID.test(w.id)&&q.wordIds.includes(w.id)&&typeof w.word==='string'&&typeof w.reading==='string'&&typeof w.meaning==='string').map(w=>({id:w.id,level:w.level,word:w.word.slice(0,60),reading:w.reading.slice(0,100),meaning:w.meaning.slice(0,4000),language:w.language==='ko'?'ko':'en'}));
  s.completed=s.finished&&unresolved(s).length===0;return s;
+}
+
+/** Explicit targeted tests reuse the same grading, retry and SRS pipeline. */
+export function createTargetReview(state,words,items,{label='선택 단어 테스트',minutes=0}={}){
+ const map=new Map(words.map(w=>[w.id,w])),seen=new Set();
+ const rows=items.filter(r=>{const key=keyOf(r.wordId,r.skill);if(!map.has(r.wordId)||!SKILLS.includes(r.skill)||seen.has(key))return false;seen.add(key);return true;}).slice(0,300);
+ const wordIds=[...new Set(rows.map(r=>r.wordId))];if(!rows.length)return null;if(wordIds.length>100)throw new Error('한 번에 최대 100단어를 선택하세요.');
+ const queue=shuffle(rows).map(r=>task(map.get(r.wordId),'quiz',r.skill,words));
+ return {id:nowId(),kind:'review',reviewMode:'custom',label:String(label).slice(0,60),budgetMs:[5,10,20].includes(minutes)?minutes*60000:0,elapsedMs:0,wordIds,queue,index:0,originalQuiz:queue.length,firstCorrect:0,firstAnswered:0,passed:{},feedback:null,finished:false,completed:false,finalized:false,ink:null,heard:false,selection:null,startedAt:Date.now(),earned:0,attempts:0,firstMisses:[],knownIds:[],unknownIds:[...wordIds],surveyReading:false,surveyMeaning:false,autoPlayedTask:null,wordSnapshots:wordIds.map(id=>map.get(id))};
 }

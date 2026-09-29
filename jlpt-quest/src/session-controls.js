@@ -8,35 +8,32 @@ export function swapSession(state){
  return true;
 }
 export function enterReview(state,words,filter='due',now=Date.now()){
- if(live(state.session)&&state.session.kind==='review')return 'resume';
- if(live(state.suspendedSession)&&state.suspendedSession.kind==='review'){
-  swapSession(state);return 'resume';
- }
+ const matches=s=>live(s)&&s.kind==='review'&&(s.reviewMode||'due')===filter&&s.wordIds.every(id=>id.startsWith(state.settings.level+'-'));
+ if(matches(state.session))return 'resume';
+ if(matches(state.suspendedSession)){swapSession(state);return 'resume';}
+ const parked=(state.parkedSessions||[]).find(matches);
+ if(parked){restoreParked(state,parked.id);return 'resume';}
  const review=createReview(state,words,filter,now);
- // Do not park/erase a lesson when there is nothing to review.
  if(!review)return 'empty';
- if(live(state.session)){
-  if(live(state.suspendedSession))throw new Error('보관한 수업을 먼저 이어서 진행해 주세요.');
-  state.suspendedSession=state.session;
- }
- state.session=review;return 'started';
+ activateSession(state,review);return 'started';
 }
 export function finishSession(state){
  if(live(state.session))return false;
  state.session=null;
  if(live(state.suspendedSession))swapSession(state);
  else state.suspendedSession=null;
+ if(!state.session&&state.parkedSessions?.length)state.session=state.parkedSessions.pop();
  return live(state.session);
 }
 export function restartSession(state,words){
  const old=state.session;if(!live(old))return false;
- if(old.kind==='class'){state.session=createClass(state,old.course,words);state.session.id=old.id;}
+ if(old.kind==='class'){state.session=createClass({...state,settings:{...state.settings,intensity:old.intensity}},old.course,words);state.session.id=old.id;}
  else {
   const seen=new Set(),queue=[];
   for(const t of old.queue){
    if(t.phase!=='quiz')continue;
    const key=`${t.wordId}:${t.skill}`;if(seen.has(key))continue;seen.add(key);
-   queue.push({...t,id:nowId(),attempt:0,options:[...t.options]});
+   queue.push({...t,id:nowId(),attempt:0,autoSpeech:0,options:[...t.options]});
   }
   if(!queue.length)return false;
   state.session={...old,id:old.id,queue,index:0,originalQuiz:queue.length,
@@ -49,7 +46,7 @@ export function restartSession(state,words){
 }
 export function lessonName(s){
  if(!s)return '';
- return s.kind==='review'?(s.reviewMode==='preview'?'미리 복습':'복습'):`${s.course?.level||''} 제${s.course?.index||''}장`;
+ return s.kind==='review'?(s.label|| (s.reviewMode==='preview'?'미리 복습':'복습')):`${s.course?.level||''} 제${s.course?.index||''}장`;
 }
 
 /** Keep any in-flight review when deliberately replacing/starting a main class. */
@@ -58,3 +55,15 @@ export function startClassSession(state,course,words){
  const lesson=createClass(state,course,words);
  state.session=lesson;state.suspendedSession=review;return lesson;
 }
+
+export function activateSession(state,next){
+ if(!next)return false;
+ state.parkedSessions??=[];
+ if(live(state.session)&&live(state.suspendedSession)){
+  if(state.parkedSessions.length>=8)throw new Error('보관 중인 학습을 먼저 마쳐 주세요.');
+  state.parkedSessions.push(state.suspendedSession);
+ }
+ if(live(state.session))state.suspendedSession=state.session;
+ state.session=next;return true;
+}
+export function restoreParked(state,id){const i=(state.parkedSessions||[]).findIndex(s=>s.id===id);if(i<0)return false;const [s]=state.parkedSessions.splice(i,1);return activateSession(state,s);}

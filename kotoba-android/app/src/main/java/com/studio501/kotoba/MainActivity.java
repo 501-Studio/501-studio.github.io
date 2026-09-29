@@ -95,7 +95,7 @@ public final class MainActivity extends ComponentActivity {
         ViewCompat.requestApplyInsets(frame);
         WebSettings ws=web.getSettings();ws.setJavaScriptEnabled(true);ws.setDomStorageEnabled(true);
         ws.setAllowFileAccess(false);ws.setAllowContentAccess(false);ws.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-        // Listening prompts auto-play once from APK-local Ogg files. No network TTS is used.
+        // Listening prompts use installed local TTS. Foreground playlist owns background playback.
         ws.setMediaPlaybackRequiresUserGesture(false);if(Build.VERSION.SDK_INT>=26)ws.setSafeBrowsingEnabled(true);
         final WebViewAssetLoader assets=new WebViewAssetLoader.Builder().addPathHandler("/assets/",new WebViewAssetLoader.AssetsPathHandler(this)).build();
         web.setWebViewClient(new WebViewClient(){
@@ -128,8 +128,9 @@ public final class MainActivity extends ComponentActivity {
         ReviewReminders.channel(this);
         ReviewReminders.schedule(this);
         String restored=saved!=null?saved.getString("kotoba-url",START):START;
-        if(restored==null||!(restored.equals(START)||restored.matches(java.util.regex.Pattern.quote(START)+"#(home|lesson|kana|kana-practice|review|words|word-practice|course|profile)")))restored=START;
+        if(restored==null||!(restored.equals(START)||restored.matches(java.util.regex.Pattern.quote(START)+"#(home|lesson|kana|kana-practice|review|words|word-practice|course|profile|study-hub|exam|commute)")))restored=START;
         if(getIntent().getBooleanExtra(ReviewReminders.EXTRA,false)){restored=START+"#review";getIntent().removeExtra(ReviewReminders.EXTRA);}
+        if(getIntent().getBooleanExtra("kotoba-playlist",false)){restored=START+"#commute";getIntent().removeExtra("kotoba-playlist");}
         web.loadUrl(restored);
     }
     private static WebResourceResponse blocked(){return new WebResourceResponse("text/plain","UTF-8",new ByteArrayInputStream("Blocked resource".getBytes(StandardCharsets.UTF_8)));}
@@ -139,7 +140,10 @@ public final class MainActivity extends ComponentActivity {
             String id=q.getString("id"),type=q.getString("type");if(id.length()>100)return;Pending p=new Pending(id,base.reply);request=p;JSONObject body=q.optJSONObject("payload");if(body==null)body=new JSONObject();
             PlayCommerce.Reply reply=(data,error)->respond(p,data,error);
             switch(type){
-                case "speechSpeak": if(speech==null)speech=new JapaneseSpeech(this);speech.speak(body.optString("text",""),body.optDouble("rate",1),(data,error)->respond(p,data,error));break;
+                case "speechSpeak": PlaylistService.pauseForLesson();if(speech==null)speech=new JapaneseSpeech(this);speech.speak(body.optString("text",""),body.optDouble("rate",1),(data,error)->respond(p,data,error));break;
+                case "playlistStart": if(speech!=null)speech.stop();PlaylistService.start(this,body);respond(p,new JSONObject().put("requested",true),null);break;
+                case "playlistControl": PlaylistService.control(body.optString("action"));respond(p,PlaylistService.status(),null);break;
+                case "playlistStatus": respond(p,PlaylistService.status(),null);break;
                 case "speechStop": if(speech!=null)speech.stop();respond(p,new JSONObject(),null);break;
                 case "speechSettings": try{refreshSpeech=true;startActivity(new Intent("com.android.settings.TTS_SETTINGS"));respond(p,new JSONObject(),null);}catch(Exception e){respond(p,null,"설정 앱에서 텍스트 음성 변환을 찾아 주세요.");}break;
                 case "reviewSync": respond(p,ReviewReminders.sync(this,body),null);break;
@@ -179,7 +183,7 @@ public final class MainActivity extends ComponentActivity {
     }
     @Override public void onConfigurationChanged(Configuration configuration){super.onConfigurationChanged(configuration);if(web!=null){web.invalidate();ViewCompat.requestApplyInsets(web);}}
     @Override protected void onSaveInstanceState(Bundle out){if(web!=null&&web.getUrl()!=null)out.putString("kotoba-url",web.getUrl());super.onSaveInstanceState(out);}
-    @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);if(intent.getBooleanExtra(ReviewReminders.EXTRA,false)&&web!=null){intent.removeExtra(ReviewReminders.EXTRA);web.evaluateJavascript("location.hash='review'",null);}}
+    @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);if(intent.getBooleanExtra("kotoba-playlist",false)&&web!=null){intent.removeExtra("kotoba-playlist");web.evaluateJavascript("location.hash='commute'",null);}if(intent.getBooleanExtra(ReviewReminders.EXTRA,false)&&web!=null){intent.removeExtra(ReviewReminders.EXTRA);web.evaluateJavascript("location.hash='review'",null);}}
     @Override public void onRequestPermissionsResult(int requestCode,String[] permissions,int[] results){super.onRequestPermissionsResult(requestCode,permissions,results);if(requestCode==NOTIFICATIONS){Pending p=notificationPermission;notificationPermission=null;ReviewReminders.schedule(this);respond(p,ReviewReminders.status(this),null);}}
     @Override protected void onPause(){ReviewReminders.foreground(false);if(speech!=null)speech.stop();if(web!=null){web.evaluateJavascript("window.dispatchEvent(new Event('kotoba-pause'))",null);web.onPause();}if(ads!=null)ads.pause();super.onPause();}
     @Override protected void onResume(){super.onResume();if(refreshSpeech&&speech!=null){speech.destroy();speech=new JapaneseSpeech(this);refreshSpeech=false;}ReviewReminders.foreground(true);ReviewReminders.schedule(this);if(web!=null)web.onResume();if(commerce!=null)commerce.resume();if(ads!=null)ads.resume();}

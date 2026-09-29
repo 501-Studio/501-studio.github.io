@@ -43,9 +43,9 @@ test('038: every writing flow has answer and hint controls',()=>{const app=read(
 test('038: caches and Android sync contain new study assets',()=>{for(const text of [read('../sw.js'),read('../scripts/sync-android.mjs')])assert.ok(text.includes('learning.css'));for(const name of ['session-controls.js','examples-expanded.json'])assert.ok(read('../sw.js').includes(name));});
 test('038: example lookup stays deterministic, escaped and one-card paginated',async()=>{
  const originalFetch=globalThis.fetch;
- const entries=[{id:'a',wordIds:[id],ja:'山に登った。',ko:'산에 올랐다.',reading:'やまにのぼった。'},{id:'b',wordIds:[id],ja:'<script>alert(1)</script>',ko:'검증용',sourceId:'javascript:bad'}];
+ const entries=[{id:'a',wordIds:['N5-exampletest'],ja:'山に登った。',ko:'산에 올랐다.',reading:'やまにのぼった。'},{id:'b',wordIds:['N5-exampletest'],ja:'<script>alert(1)</script>',ko:'검증용',sourceId:'javascript:bad'}];
  globalThis.fetch=async()=>({ok:true,json:async()=>({version:1,entries})});
- try{await loadExamples();await loadExamples();const w={id,word:'山',reading:'やま'};assert.equal(examplesFor(w).length,2);const first=exampleBody(w,true,0);assert.equal((first.match(/class="example-card"/g)||[]).length,1);assert.ok(first.includes('예문 듣기'));assert.ok(first.includes('0.7×'));const second=exampleBody(w,false,1);assert.ok(second.includes('&lt;script&gt;'));assert.ok(!second.includes('href="javascript:'));assert.ok(!second.includes('example-reading'));}finally{globalThis.fetch=originalFetch;}
+ try{await loadExamples();await loadExamples();const w={id:'N5-exampletest',word:'山',reading:'やま'};assert.equal(examplesFor(w).length,2);const first=exampleBody(w,true,0);assert.equal((first.match(/class="example-card"/g)||[]).length,1);assert.ok(first.includes('예문 듣기'));assert.ok(first.includes('0.7×'));const second=exampleBody(w,false,1);assert.ok(second.includes('&lt;script&gt;'));assert.ok(!second.includes('href="javascript:'));assert.ok(!second.includes('example-reading'));}finally{globalThis.fetch=originalFetch;}
 });
 test('038: sentence playback uses full Japanese and independent slow rate',async()=>{
  let spoken;const oldS=globalThis.speechSynthesis,oldU=globalThis.SpeechSynthesisUtterance;

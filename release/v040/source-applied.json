@@ -1,0 +1,23 @@
+{
+  "version": "0.4.0",
+  "base": "e2501b5a5a16a654e4fac05b9246f044fcd6aaac",
+  "integratedFiles": [
+    "jlpt-quest/index.html",
+    "jlpt-quest/package.json",
+    "jlpt-quest/scripts/sync-android.mjs",
+    "jlpt-quest/src/app.js",
+    "jlpt-quest/src/course-engine.js",
+    "jlpt-quest/src/examples.js",
+    "jlpt-quest/src/practice-ui.js",
+    "jlpt-quest/src/session-controls.js",
+    "jlpt-quest/sw.js",
+    "jlpt-quest/tests/course.test.mjs",
+    "jlpt-quest/tests/release036.test.mjs",
+    "jlpt-quest/tests/release037.test.mjs",
+    "jlpt-quest/tests/release038.test.mjs",
+    "kotoba-android/app/build.gradle",
+    "kotoba-android/app/src/main/AndroidManifest.xml",
+    "kotoba-android/app/src/main/java/com/studio501/kotoba/MainActivity.java"
+  ],
+  "nextBuild": "Use committed source, npm test, android:sync, Gradle."
+}

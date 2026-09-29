@@ -1,0 +1,143 @@
+name: Kotoba 040 learning suite
+on:
+  push:
+    branches: [feat/kotoba-040-learning-suite]
+    paths: [jlpt-quest/**, kotoba-android/**, release/v040/**, release/apply040.py, release/finish040.py, release/polish040.py, release/final-ui040.py, release/android040-check.py, release/package040.py, .github/workflows/kotoba-040.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: kotoba040
+  cancel-in-progress: true
+defaults:
+  run:
+    shell: bash
+env:
+  KOTOBA_EVIDENCE_DIR: /tmp/kotoba040-qa
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/feat/kotoba-040-learning-suite'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Integrate exact source and generate validated original content
+        run: |
+          mkdir -p /tmp/kotoba040-qa
+          python release/apply040.py
+          python release/finish040.py
+          python release/polish040.py
+          python release/final-ui040.py
+          node jlpt-quest/scripts/build-study040.mjs
+      - name: Unit tests and static asset checks
+        working-directory: jlpt-quest
+        run: |
+          npm test 2>&1 | tee /tmp/kotoba040-qa/node.txt
+          node scripts/verify-bundled-assets.mjs 2>&1 | tee /tmp/kotoba040-qa/assets.txt
+      - name: Install test browser
+        run: |
+          pip install playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Real mobile Chromium interactions and regressions
+        working-directory: jlpt-quest
+        timeout-minutes: 10
+        run: |
+          python -m http.server 4173 --bind 127.0.0.1 > /tmp/kotoba040-qa/http.txt 2>&1 &
+          SERVER=$!
+          trap 'kill $SERVER || true' EXIT
+          python tests/continuation040-browser.py
+          python tests/autopronounce041-browser.py
+          python tests/advanced040-browser.py
+          python tests/personal039-browser.py
+          python tests/release038-browser.py
+          python tests/examples038-browser.py
+          python tests/release037-browser.py
+          python tests/release036-browser.py
+      - name: Keep public production approval blocked
+        working-directory: jlpt-quest
+        run: |
+          set +e
+          npm run release:check > /tmp/kotoba040-qa/release-gate.txt 2>&1
+          STATUS=$?
+          set -e
+          cat /tmp/kotoba040-qa/release-gate.txt
+          test "$STATUS" -ne 0
+          grep -q 'RELEASE BLOCKED' /tmp/kotoba040-qa/release-gate.txt
+      - name: Sync tested assets to internal Android package
+        working-directory: jlpt-quest
+        run: npm run android:sync
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: false
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+      - name: Build APK AAB and run native unit tests and lint
+        working-directory: kotoba-android
+        timeout-minutes: 10
+        run: gradle --no-daemon assembleDebug bundleDebug assembleDebugAndroidTest testDebugUnitTest lintDebug 2>&1 | tee /tmp/kotoba040-qa/gradle.txt
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Actual Android rotation and playback lifecycle with bounded cleanup
+        timeout-minutes: 18
+        run: python release/android040-check.py
+      - name: Inspect exact assets and package internal files
+        run: |
+          python release/package040.py
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs /tmp/kotoba040-build/kotoba-v0.4.0-internal.apk > /tmp/kotoba040-qa/signature.txt
+      - name: Preserve tested source on this feature branch only
+        run: |
+          test "$(git ls-remote origin refs/heads/feat/kotoba-040-learning-suite | cut -f1)" = "${GITHUB_SHA}"
+          git add -- jlpt-quest/src jlpt-quest/tests jlpt-quest/advanced.css jlpt-quest/index.html jlpt-quest/package.json jlpt-quest/sw.js jlpt-quest/scripts/sync-android.mjs kotoba-android/app/build.gradle kotoba-android/app/src/main/AndroidManifest.xml kotoba-android/app/src/main/java kotoba-android/app/src/androidTest release/v040/source-applied.json
+          git add -f -- jlpt-quest/data/study040-seed.js
+          git config user.name '501-Studio'
+          git config user.email '501.dingerlab@gmail.com'
+          if ! git diff --cached --quiet; then
+            git commit -m 'feat(kotoba): preserve verified 040 learning suite source [skip ci]'
+            git push origin HEAD:feat/kotoba-040-learning-suite
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kotoba040-internal-build
+          path: /tmp/kotoba040-build/
+          retention-days: 30
+      - name: Save exact source for diagnosis
+        if: always()
+        run: |
+          mkdir -p /tmp/kotoba040-qa
+          python - <<'PY'
+          from pathlib import Path
+          import zipfile
+          with zipfile.ZipFile('/tmp/kotoba040-qa/source-checkpoint.zip','w',zipfile.ZIP_DEFLATED) as z:
+            for base in ['jlpt-quest','kotoba-android','release/v040']:
+              for p in Path(base).rglob('*'):
+                if not p.is_file() or any(s in p.parts for s in ['.git','.gradle','build','node_modules','__pycache__']):continue
+                if p.suffix in ['.ogg','.ttf','.otf','.ttc','.woff','.woff2','.pem','.key','.jks','.keystore','.pyc'] or p.name in ['.env','local.properties'] or 'assets/www' in str(p):continue
+                z.write(p)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kotoba040-verification
+          path: |
+            /tmp/kotoba040-qa/
+            kotoba-android/app/build/reports/
+            kotoba-android/app/build/outputs/androidTest-results/
+            kotoba-android/app/build/test-results/
+          retention-days: 30
