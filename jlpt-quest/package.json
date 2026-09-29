@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "python3 -m http.server 4173 --bind 0.0.0.0",
-    "test": "node --test tests/course.test.mjs tests/curriculum.test.mjs tests/recognition.test.mjs tests/stroke-snap.test.mjs tests/audio.test.mjs tests/release036.test.mjs tests/release037.test.mjs tests/release038.test.mjs tests/examples038.test.mjs tests/personal039.test.mjs tests/advanced040.test.mjs tests/integration040.test.mjs tests/continuation040.test.mjs",
+    "test": "node --test tests/course.test.mjs tests/curriculum.test.mjs tests/recognition.test.mjs tests/stroke-snap.test.mjs tests/audio.test.mjs tests/release036.test.mjs tests/release037.test.mjs tests/release038.test.mjs tests/examples038.test.mjs tests/personal039.test.mjs tests/advanced040.test.mjs tests/integration040.test.mjs tests/continuation040.test.mjs tests/autopronounce041.test.mjs",
     "content:fetch": "node scripts/vendor-content.mjs",
     "release:check": "node scripts/release-check.mjs",
     "android:sync": "node scripts/sync-android.mjs",
