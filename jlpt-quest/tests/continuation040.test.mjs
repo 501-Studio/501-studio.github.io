@@ -1,0 +1,18 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import * as E from '../src/course-engine.js';
+import {courses} from '../src/catalog.js';
+import {enterReview} from '../src/session-controls.js';
+import {createFolder,putInFolder} from '../src/study-data.js';
+import {advanced,folderPageItems} from '../src/advanced-ui.js';
+const words=(await Promise.all(['N5','N4','N3','N2','N1'].map(async l=>JSON.parse(await readFile(new URL('../data/'+l+'.json',import.meta.url),'utf8')).words))).flat();
+const w=words.find(w=>w.word==='学校'&&w.level==='N5'),now=Date.now();
+function fixture(){const s=E.fresh();s.memory[E.keyOf(w.id,'meaning')]=E.schedule(null,true,'old',now-86400000);s.memory[E.keyOf(w.id,'writing')]=E.schedule(null,true,'future',now+86400000);s.session=E.createClass(s,courses(words,'N5')[0],words);s.suspendedSession=E.createReview(s,words,'due',now);return s;}
+test('continuation040 preview starts the requested mode instead of resuming unrelated due review',()=>{const s=fixture(),ids=[s.session.id,s.suspendedSession.id];assert.equal(enterReview(s,words,'preview',now),'started');assert.equal(s.session.reviewMode,'preview');assert.ok(s.session.queue.every(t=>t.skill==='writing'));assert.deepEqual(new Set([s.suspendedSession.id,...s.parkedSessions.map(p=>p.id)]),new Set(ids));assert.ok(E.validateState(s));});
+test('continuation040 a matching parked review resumes without duplicating or discarding lessons',()=>{const s=fixture(),id=s.suspendedSession.id;enterReview(s,words,'preview',now);assert.equal(enterReview(s,words,'due',now),'resume');assert.equal(s.session.id,id);assert.equal(new Set([s.session.id,s.suspendedSession.id,...s.parkedSessions.map(p=>p.id)]).size,3);});
+test('continuation040 different level review does not resume the previous level',()=>{const s=fixture();s.session=s.suspendedSession;s.suspendedSession=null;const old=s.session.id,n4=words.find(w=>w.level==='N4');s.settings.level='N4';s.memory[E.keyOf(n4.id,'meaning')]=E.schedule(null,true,'old',now-86400000);assert.equal(enterReview(s,words,'due',now),'started');assert.ok(s.session.wordIds.every(id=>id.startsWith('N4-')));assert.equal(s.suspendedSession.id,old);});
+test('continuation040 empty requested mode leaves every old session untouched',()=>{const s=fixture();delete s.memory[E.keyOf(w.id,'writing')];const before=JSON.stringify(s);assert.equal(enterReview(s,words,'preview',now),'empty');assert.equal(JSON.stringify(s),before);});
+test('continuation040 full parking capacity never erases the active or saved lessons',()=>{const s=fixture();s.parkedSessions=Array.from({length:8},()=>E.createClass(s,courses(words,'N5')[0],words));const before=JSON.stringify(s);assert.throws(()=>enterReview(s,words,'preview',now),/보관/);assert.equal(JSON.stringify(s),before);});
+test('continuation040 every folder member after the first 200 is reachable and selectable',()=>{const s=E.fresh(),f=createFolder(s,'205단어');putInFolder(s,f.id,words.slice(0,205).map(w=>w.id));advanced.folder=f.id;const all=[];for(let i=0;i<3;i++){advanced.folderPage=i;const p=folderPageItems(s,words);assert.equal(p.pages,3);assert.equal(p.rows.length,i===2?5:100);all.push(...p.rows.map(w=>w.id));}assert.deepEqual(all,words.slice(0,205).map(w=>w.id));});
+test('continuation040 removing a last-page item and an invalid page index cannot hide the folder',()=>{const s=E.fresh(),f=createFolder(s,'작은 폴더');putInFolder(s,f.id,words.slice(0,101).map(w=>w.id));advanced.folder=f.id;advanced.folderPage=200;assert.equal(folderPageItems(s,words).page,1);putInFolder(s,f.id,[words[100].id],true);assert.equal(folderPageItems(s,words).page,0);assert.equal(folderPageItems(s,words).rows.length,100);});
