@@ -44,3 +44,19 @@ if 'console health capture' not in s:
   ids=p.evaluate"""
  assert old in s;s=s.replace(old,new)
 p.write_text(s)
+# Wait for survey-save completion before the test fixture writes IndexedDB.
+# This change affects instrumentation only, not app state or grading code.
+p=Path('kotoba-android/app/src/androidTest/java/com/studio501/kotoba/LessonRotationTest.java');s=p.read_text()
+old='''            // Lifecycle fixture, not an audio test: enter the existing lesson's first trace task.
+            js(s,"(async()=>{const S=await import('./src/storage.js');const v=await S.loadState();v.session.index=v.session.queue.findIndex(t=>t.skill==='trace');v.uiRoute='lesson';await S.commit(v,v.revision);location.reload();})();true");'''
+new=r'''            // Classification saves asynchronously. Wait for the real next screen before seeding.
+            until(s,"!!document.querySelector('[data-action=\"audio-done\"]')");
+            SystemClock.sleep(500);
+            // Lifecycle fixture only. Surface conflicts instead of racing the last survey save.
+            js(s,"(async()=>{try{const S=await import('./src/storage.js');const v=await S.loadState();const index=v.session.queue.findIndex(t=>t.skill==='trace');if(index<0)throw new Error('Trace task missing after survey');v.session.index=index;v.uiRoute='lesson';await S.commit(v,v.revision);document.body.dataset.seedReady='true';}catch(e){document.body.dataset.seedError=String(e);}})();true");
+            until(s,"document.body.dataset.seedReady==='true'||!!document.body.dataset.seedError");
+            assertEquals("Fixture preparation failed", "true", js(s,"document.body.dataset.seedReady==='true'"));
+            js(s,"location.reload();true");'''
+if new not in s:
+ assert old in s;s=s.replace(old,new)
+p.write_text(s)
