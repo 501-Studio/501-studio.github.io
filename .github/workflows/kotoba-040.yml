@@ -54,6 +54,7 @@ jobs:
           SERVER=$!
           trap 'kill $SERVER || true' EXIT
           python tests/continuation040-browser.py
+          python tests/autopronounce041-browser.py
           python tests/advanced040-browser.py
           python tests/personal039-browser.py
           python tests/release038-browser.py
