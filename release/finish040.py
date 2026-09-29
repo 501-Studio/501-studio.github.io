@@ -19,3 +19,22 @@ p.write_text(s)
 p=r/'src/learning-policy.js';s=p.read_text()
 s=s.replace("if(!correct||same||early){result.intervalMs=previous.intervalMs??Math.max(0,base.due-(base.lastAt||now));return result;}","if(!correct){result.intervalMs=600000;return result;}\n if(same||early){result.intervalMs=previous.intervalMs??Math.max(0,base.due-(base.lastAt||now));return result;}")
 p.write_text(s)
+# Tests use literal setup branches rather than new Function, leaving app CSP intact.
+p=r/'tests/advanced040-browser.py';s=p.read_text()
+start=s.index('def fixture(');end=s.index('def click(',start)
+s=s[:start]+'''def fixture(p,body,route='home'):
+ mode='history' if 's.suspendedSession=' in body else 'writing'
+ p.evaluate("""async mode=>{const E=await import('./src/course-engine.js'),S=await import('./src/storage.js'),C=await import('./src/catalog.js');const old=await S.loadState(),s=E.fresh(),all=(await Promise.all(['N5','N4','N3','N2','N1'].map(l=>fetch('./data/'+l+'.json').then(r=>r.json())))).flatMap(p=>p.words);const w=all.find(x=>x.word==='学校'&&x.level==='N5');if(mode==='writing'){s.session=E.createTargetReview(s,all,[{wordId:w.id,skill:'writing'}],{label:'쓰기 검증'});s.uiRoute='lesson';}else{s.session=E.createClass(s,C.courses(all,'N5')[0],all);s.memory[E.keyOf(w.id,'writing')]={stage:1,due:Date.now()+86400000,lapses:4,successes:3,consecutive:2,lastAt:Date.now()-86400000,lastSession:'old',method:'stroke-snap',recent:[0,0,1,1],independentFailures:4};s.suspendedSession=E.createTargetReview(s,all,[{wordId:w.id,skill:'meaning'}],{label:'이전 복습'});s.encountered[w.id]=Date.now();s.study.strokes['学']=[{attempts:3,misses:2}];}await S.commit(s,old.revision);}""",mode)
+ navigate(p,route)
+''' + s[end:]
+p.write_text(s)
+p=Path('kotoba-android/app/src/androidTest/java/com/studio501/kotoba/LessonRotationTest.java');s=p.read_text()
+old='''            // Classification saves asynchronously. Wait for the real next screen before seeding.
+            until(s,"!!document.querySelector('[data-action=\\"audio-done\\"]')");'''
+new='''            // Very first training phase now shows the word before pronunciation.
+            until(s,"!!document.querySelector('[data-action=\\"studied\\"]')");
+            js(s,"document.querySelector('[data-action=\\"studied\\"]').click();true");
+            until(s,"!!document.querySelector('[data-action=\\"audio-done\\"]')");'''
+if new not in s:
+ assert old in s,'Lifecycle fixture marker missing';s=s.replace(old,new)
+p.write_text(s)
