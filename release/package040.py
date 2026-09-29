@@ -16,7 +16,7 @@ with zipfile.ZipFile(OUT/'kotoba-v0.4.0-source.zip','w',zipfile.ZIP_DEFLATED) as
  for root in ['jlpt-quest','kotoba-android','billing-server','release/v040']:
   for p in Path(root).rglob('*'):
    if not p.is_file() or any(x in p.parts for x in ['.git','.gradle','build','__pycache__','node_modules','audio']):continue
-   if p.suffix.lower() in ['.b64','.pyc','.pem','.key','.jks','.keystore','.ttf','.otf','.woff','.woff2','.ogg'] or p.name in ['local.properties','.env'] or 'assets/www' in str(p):continue
+   if p.suffix.lower() in ['.b64','.pyc','.pem','.key','.jks','.keystore','.ttf','.otf','.ttc','.woff','.woff2','.ogg'] or p.name in ['local.properties','.env'] or 'assets/www' in str(p):continue
    z.write(p,Path('kotoba-0.4.0')/p)
- for p in [Path('.github/workflows/kotoba-040.yml'),Path('release/finish040.py'),Path('release/apply040.py'),Path('release/package040.py')]:z.write(p,Path('kotoba-0.4.0')/p)
+ for p in [Path('.github/workflows/kotoba-040.yml'),Path('release/finish040.py'),Path('release/polish040.py'),Path('release/apply040.py'),Path('release/package040.py')]:z.write(p,Path('kotoba-0.4.0')/p)
 print(json.dumps(report,ensure_ascii=False,indent=2))
