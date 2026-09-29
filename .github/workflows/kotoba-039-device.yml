@@ -1,0 +1,147 @@
+name: Kotoba 039 device statistics writing
+on:
+  push:
+    branches: [feat/kotoba-039-device-stats]
+    paths: [.github/workflows/kotoba-039-device.yml, release/apply-personal039.py, release/package-personal039.py, release/personal039.part1, release/personal039.part2, release/personal039.part3, release/fix-personal039.py]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: kotoba039-personal
+  cancel-in-progress: true
+defaults:
+  run:
+    shell: bash
+env:
+  KOTOBA_EVIDENCE_DIR: /tmp/kotoba039-qa
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/feat/kotoba-039-device-stats'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify exact source transport
+        run: |
+          mkdir -p /tmp/kotoba039-qa
+          python release/apply-personal039.py
+          if test -f release/fix-personal039.py; then python release/fix-personal039.py; fi
+      - name: Unit and regression tests
+        working-directory: jlpt-quest
+        run: |
+          npm test 2>&1 | tee /tmp/kotoba039-qa/unit.txt
+          node scripts/verify-bundled-assets.mjs 2>&1 | tee /tmp/kotoba039-qa/assets.txt
+      - name: Install test browser
+        run: |
+          pip install playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Real Chromium interaction and responsive tests
+        working-directory: jlpt-quest
+        run: |
+          python -m http.server 4173 --bind 127.0.0.1 > /tmp/kotoba039-qa/http.txt 2>&1 &
+          SERVER=$!
+          trap 'kill $SERVER || true' EXIT
+          python tests/personal039-browser.py
+          python tests/release038-browser.py
+          python tests/examples038-browser.py
+          python tests/release037-browser.py
+          python tests/release036-browser.py
+      - name: Preserve production approval gate
+        working-directory: jlpt-quest
+        run: |
+          set +e
+          npm run release:check > /tmp/kotoba039-qa/release-gate.txt 2>&1
+          STATUS=$?
+          set -e
+          cat /tmp/kotoba039-qa/release-gate.txt
+          test "$STATUS" -ne 0
+          grep -q 'RELEASE BLOCKED' /tmp/kotoba039-qa/release-gate.txt
+      - name: Sync exact tested device-only assets
+        working-directory: jlpt-quest
+        run: npm run android:sync
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: false
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+      - name: Build APK AAB and run Android unit tests and lint
+        working-directory: kotoba-android
+        run: gradle --no-daemon assembleDebug bundleDebug assembleDebugAndroidTest testDebugUnitTest lintDebug 2>&1 | tee /tmp/kotoba039-qa/gradle.txt
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Actual Android rotation and Activity recreation
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -timezone Asia/Seoul
+          script: |
+            gradle -p kotoba-android --no-daemon connectedDebugAndroidTest
+            adb exec-out screencap -p > /tmp/kotoba039-qa/android.png
+      - name: Inspect APK asset identity and package source
+        run: |
+          python release/package-personal039.py
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs /tmp/kotoba039-build/kotoba-v0.3.9-internal.apk > /tmp/kotoba039-qa/signature.txt
+      - name: Preserve tested readable source on feature branch only
+        run: |
+          test "$(git ls-remote origin refs/heads/feat/kotoba-039-device-stats | cut -f1)" = "${GITHUB_SHA}"
+          python - <<'PY'
+          import json,subprocess
+          paths=json.load(open('/tmp/kotoba039-source-paths.json'))
+          subprocess.run(['git','add','--']+paths,check=True)
+          PY
+          git config user.name '501-Studio'
+          git config user.email '501.dingerlab@gmail.com'
+          if ! git diff --cached --quiet; then
+            git commit -m 'feat(kotoba): device-only speech, real statistics, early review and saved wordbook writing [skip ci]'
+            git push origin HEAD:feat/kotoba-039-device-stats
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kotoba039-device-build
+          path: /tmp/kotoba039-build/
+          retention-days: 30
+      - name: Save source and transport for diagnosis
+        if: always()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import zipfile
+          with zipfile.ZipFile('/tmp/kotoba039-qa/source-checkpoint.zip','w',zipfile.ZIP_DEFLATED) as z:
+            for base in ['jlpt-quest','kotoba-android','release']:
+              for p in Path(base).rglob('*'):
+                if not p.is_file() or any(s in p.parts for s in ['.git','.gradle','build','node_modules','__pycache__']):continue
+                if p.suffix in ['.ogg','.ttf','.otf','.woff','.woff2','.pem','.key','.jks','.keystore','.pyc'] or p.name in ['.env','local.properties'] or 'assets/www' in str(p):continue
+                z.write(p)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kotoba039-device-verification
+          path: |
+            /tmp/kotoba039-qa/
+            kotoba-android/app/build/reports/
+            kotoba-android/app/build/outputs/androidTest-results/
+            kotoba-android/app/build/test-results/
+          retention-days: 30
