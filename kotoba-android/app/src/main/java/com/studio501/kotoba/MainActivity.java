@@ -128,7 +128,7 @@ public final class MainActivity extends ComponentActivity {
         ReviewReminders.channel(this);
         ReviewReminders.schedule(this);
         String restored=saved!=null?saved.getString("kotoba-url",START):START;
-        if(restored==null||!(restored.equals(START)||restored.matches(java.util.regex.Pattern.quote(START)+"#(home|lesson|kana|kana-practice|review|words|course|profile)")))restored=START;
+        if(restored==null||!(restored.equals(START)||restored.matches(java.util.regex.Pattern.quote(START)+"#(home|lesson|kana|kana-practice|review|words|word-practice|course|profile)")))restored=START;
         if(getIntent().getBooleanExtra(ReviewReminders.EXTRA,false)){restored=START+"#review";getIntent().removeExtra(ReviewReminders.EXTRA);}
         web.loadUrl(restored);
     }

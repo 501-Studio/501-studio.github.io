@@ -24,7 +24,7 @@ def accepted(p,n,selector='#ink-canvas'):
  p.wait_for_function("({s,n})=>document.querySelector(s)?.dataset.accepted===String(n)",arg={'s':selector,'n':n},timeout=6000)
 with sync_playwright() as P:
  b=P.chromium.launch(executable_path=os.environ.get('KOTOBA_CHROMIUM')or None,headless=True,args=['--no-sandbox','--autoplay-policy=no-user-gesture-required'])
- c=b.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2);p=c.new_page();p.on('pageerror',lambda e:errors.append(str(e)))
+ c=b.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2);c.add_init_script("window.__deviceTestSpeech=[];Object.defineProperty(window,'SpeechSynthesisUtterance',{configurable:true,value:class{constructor(t){this.text=t;}}});Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{getVoices:()=>[{lang:'ja-JP',localService:true}],speak(u){window.__deviceTestSpeech.push(u.text);setTimeout(()=>u.onend?.(),50)},cancel(){}}});");p=c.new_page();p.on('pageerror',lambda e:errors.append(str(e)))
  try:
   p.goto(BASE);p.wait_for_selector('.kana-entry')
   check('kana course appears before N5 level cards',p.locator('.kana-entry').bounding_box()['y']<p.locator('.levels-panel').bounding_box()['y'])

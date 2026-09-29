@@ -1,4 +1,4 @@
-"""CI browser QA. Real navigation, Canvas, IndexedDB and bundled audio. No billing grants.
+"""CI browser QA. Real navigation, Canvas, IndexedDB and device TTS adapter. No billing grants.
 No authenticated browser/Play Console automation. Test adapters never ship with the app.
 """
 import json,os,math,re,traceback
@@ -32,7 +32,7 @@ def draw_fast(page,paths):
  cdp.detach()
 with sync_playwright() as P:
  b=P.chromium.launch(executable_path=os.environ.get('KOTOBA_CHROMIUM') or None,headless=True,args=['--no-sandbox','--disable-dev-shm-usage','--autoplay-policy=no-user-gesture-required'])
- c=b.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2);p=c.new_page();p.on('pageerror',lambda e:errors.append(str(e)))
+ c=b.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2);c.add_init_script("window.__deviceTestSpeech=[];Object.defineProperty(window,'SpeechSynthesisUtterance',{configurable:true,value:class{constructor(t){this.text=t;}}});Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{getVoices:()=>[{lang:'ja-JP',localService:true}],speak(u){window.__deviceTestSpeech.push(u.text);setTimeout(()=>u.onend?.(),50)},cancel(){}}});");p=c.new_page();p.on('pageerror',lambda e:errors.append(str(e)))
  try:
   p.goto(BASE);p.wait_for_selector('.level-progress-grid',timeout=15000)
   check('all five level summaries render',p.locator('.level-progress').count()==5)
@@ -52,7 +52,7 @@ with sync_playwright() as P:
   check('speaker button has no visible text',p.locator('.audio-main').inner_text().strip()=='')
   check('speaker has accessible label',bool(p.locator('.audio-main').get_attribute('aria-label')))
   p.wait_for_function("()=>document.querySelector('[data-action=\"audio-done\"]')?.disabled===false",timeout=15000)
-  check('automatic bundled audio completes',not p.locator('[data-action="audio-done"]').is_disabled())
+  check('device TTS adapter completes listening (not audibility)',not p.locator('[data-action="audio-done"]').is_disabled())
   check('autoplay debug message invisible',p.locator('#audio-status').bounding_box()['height']<=1)
   p.screenshot(path=str(OUT/'listening.png'))
   p.locator('[data-action="audio-done"]').click();p.wait_for_selector('#ink-canvas')
@@ -74,8 +74,9 @@ with sync_playwright() as P:
   check('recurring terms and one-time distinction visible','자동 갱신' in p.locator('.subscription-disclosure').inner_text() and '일회성 구매' in p.locator('.subscription-disclosure').inner_text());p.screenshot(path=str(OUT/'premium.png'))
   p.locator('[data-action="close-modal"]').click();p.goto(BASE+'#words');p.wait_for_selector('#search');p.locator('#search').fill('おまわりさん');p.wait_for_timeout(120);check('wordbook uses corrected built-in meaning','경찰관, 순경' in p.locator('#word-results').inner_text())
   check('no browser JS errors',not errors)
-  # Full offline HTTP routes represent APK AssetLoader. Real audio decode, no mock verdict.
+  # Offline routes emulate AssetLoader; installed device TTS is mocked, never the grader.
   offline=b.new_context(viewport={'width':390,'height':780},has_touch=True,offline=True)
+  offline.add_init_script("Object.defineProperty(window,'SpeechSynthesisUtterance',{configurable:true,value:class{constructor(t){this.text=t;}}});Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{getVoices:()=>[{lang:'ja-JP',localService:true}],speak(u){setTimeout(()=>u.onend?.(),50)},cancel(){}}});")
   from urllib.parse import urlparse,unquote
   def local(route):
    u=urlparse(route.request.url);path=(ROOT/(unquote(u.path).lstrip('/') or 'index.html')).resolve()
@@ -83,7 +84,7 @@ with sync_playwright() as P:
    types={'.html':'text/html','.js':'text/javascript','.json':'application/json','.css':'text/css','.ogg':'audio/ogg','.png':'image/png','.svg':'image/svg+xml'}
    route.fulfill(status=200,body=path.read_bytes(),content_type=types.get(path.suffix,'text/plain'))
   offline.route(BASE+'**',local);o=offline.new_page();o.goto(BASE);o.wait_for_selector('.level-progress-grid',timeout=10000);seed(o,skill='audio');o.wait_for_function("()=>document.querySelector('[data-action=\"audio-done\"]')?.disabled===false",timeout=15000)
-  check('fresh offline listening works from bundled assets',o.evaluate('navigator.onLine') is False)
+  check('offline UI works with installed-device TTS adapter (not physical audio)',o.evaluate('navigator.onLine') is False)
   offline.close()
  except Exception:
   (OUT/'failure.txt').write_text(traceback.format_exc())

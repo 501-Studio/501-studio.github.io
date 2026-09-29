@@ -22,7 +22,7 @@ test('native rotation handles configuration changes and restores valid internal 
 test('system TTS filters network and missing voices; notifications use no exact alarm privilege',()=>{const a=read('../../kotoba-android/app/src/main/java/com/studio501/kotoba/JapaneseSpeech.java'),m=read('../../kotoba-android/app/src/main/AndroidManifest.xml');assert.match(a,/isNetworkConnectionRequired/);assert.match(a,/KEY_FEATURE_NOT_INSTALLED/);assert.match(a,/onDone/);assert.match(m,/POST_NOTIFICATIONS/);assert.match(m,/BOOT_COMPLETED/);assert.doesNotMatch(m,/SCHEDULE_EXACT_ALARM|USE_EXACT_ALARM|RECORD_AUDIO/);});
 
 import {execFileSync} from 'node:child_process';
-test('standard source build validates all bundled neural assets without replacing content',()=>{
+test('standard source build validates device-only audio and complete learning assets',()=>{
  const output=execFileSync(process.execPath,['scripts/verify-bundled-assets.mjs'],{cwd:new URL('../',import.meta.url),encoding:'utf8'});
- const report=JSON.parse(output.trim());assert.equal(report.valid,true);assert.equal(report.audio,7050);assert.equal(report.kana,162);assert.equal(report.networkFetches,0);
+ const report=JSON.parse(output.trim());assert.equal(report.valid,true);assert.equal(report.audio,0);assert.equal(report.audioMode,'device-only');assert.equal(report.kana,162);assert.equal(report.networkFetches,0);
 });
