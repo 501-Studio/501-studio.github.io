@@ -10,8 +10,8 @@ assert hashlib.sha256(raw).hexdigest()=='a64941563645cb4b042600cd2e62e41804a54bb
 payload=gzip.decompress(raw);assert len(payload)<1000000
 pack=json.loads(payload);assert pack['format']==2
 sha=lambda text:hashlib.sha256(text.encode('utf-8')).hexdigest()
-# Idempotent re-runs can encounter the already committed, precisely checked QA fixes.
-fixed={'jlpt-quest/personal.css':'27d389d66d8a8a4fc63a061d19f431ad74b27d8f21efb8b62e42fb2e3d48bc54','jlpt-quest/tests/release036-browser.py':'34b2c9d7683239c801bd609784c75ffb57292c05d7e7d382266767c9cb824aac','jlpt-quest/tests/personal039-browser.py':'381c8b1586a077d104b54496d8526f2829e4a3bd83d8aaaccd69831f0e876624'}
+# Idempotent re-runs recognize the precise, committed QA fixes rather than reverting them.
+fixed={'jlpt-quest/personal.css':'27d389d66d8a8a4fc63a061d19f431ad74b27d8f21efb8b62e42fb2e3d48bc54','jlpt-quest/tests/release036-browser.py':'34b2c9d7683239c801bd609784c75ffb57292c05d7e7d382266767c9cb824aac','jlpt-quest/tests/personal039-browser.py':'381c8b1586a077d104b54496d8526f2829e4a3bd83d8aaaccd69831f0e876624','kotoba-android/app/src/androidTest/java/com/studio501/kotoba/LessonRotationTest.java':'409d6742abca7a87b0ba68fe5a623f47d3faa74fae2119e3d8d4b4e0d0c4c2bb'}
 changes=[]
 for row in pack['files']:
  p=Path(row['path']);assert not p.is_absolute() and '..' not in p.parts
