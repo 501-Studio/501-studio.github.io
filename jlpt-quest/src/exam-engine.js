@@ -29,8 +29,8 @@ export function finishExam(state,now=Date.now()){
  const byType=Object.fromEntries(Object.keys(EXAM_TYPES).map(k=>[k,{total:0,correct:0}]));let correct=0;
  const errors=[],wrongIds=[];items.forEach((q,i)=>{const good=e.answers[i]===q.answer;byType[q.type].total++;if(good){correct++;byType[q.type].correct++;}else {errors.push(q.wordId);wrongIds.push(q.id);}});
  const result={id:e.id,at:now,level:e.level,total:items.length,correct,byType,wordIds:errors};
- if(!e.recorded){study(state).exams.push(result);study(state).exams=study(state).exams.slice(-100);study(state).examErrors=[...new Set([...study(state).examErrors,...errors])];study(state).examWrongIds=[...new Set([...(study(state).examWrongIds||[]).filter(id=>!e.ids.includes(id)||wrongIds.includes(id)),...wrongIds])];e.recorded=true;}
- return result;
+ if(!e.recorded){study(state).exams.push(result);study(state).exams=study(state).exams.slice(-100);study(state).examErrors=[...new Set([...study(state).examErrors,...errors])];study(state).examWrongIds=[...new Set([...(study(state).examWrongIds||[]).filter(id=>!e.ids.includes(id)||wrongIds.includes(id)),...wrongIds])];study(state).examErrors=[...new Set(study(state).examWrongIds.map(id=>bank.get(id)?.wordId).filter(Boolean))];e.recorded=true;}
+ return study(state).exams.find(r=>r.id===e.id)||result;
 }
 
 export function startErrorExam(state,now=Date.now()){

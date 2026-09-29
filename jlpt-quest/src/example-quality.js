@@ -3,23 +3,23 @@ import {esc} from './view.js';
 import {idFor} from './catalog.js';
 const curated=new Map();
 function add(id,e){if(!curated.has(id))curated.set(id,[]);curated.get(id).push(e);}
-for(const row of seeds)for(const tier of ['easy','natural'])add(row.id,{id:'040-'+row.id+'-'+tier,wordIds:[row.id],targets:[],ja:row[tier],ko:row[tier+'Ko'],reading:'',surface:row.word,sense:row.meaning,tier,translationReview:'assistant-authored',readingReview:'not-generated',source:'Kotoba 0.4 original',license:'Project original',independentNativeReview:false,register:['N1','N2'].includes(row.level)?'문어·격식':'일상',koTargets:[row.meaning]});
+for(const row of seeds)for(const tier of ['easy','natural'])add(row.id,{id:'040-'+row.id+'-'+tier,wordIds:[row.id],targets:[],ja:row[tier],ko:row[tier+'Ko'],reading:'',surface:row.word,sense:row.meaning,tier,translationReview:'assistant-authored',readingReview:'not-generated',source:'Kotoba 0.4 original',license:'Project original',independentNativeReview:false,register:'학습 용례',koTargets:[row.meaning.replace(/(하다|되다|함)$/,'')]});
 // Explicit additional senses and conjugated target surfaces, not substring-based dictionary reassignment.
 const extra=[
  ['N5','聞く','きく','듣다','easy','音楽を聞くのが好きです。','음악을 듣는 것을 좋아합니다。','聞く'],
  ['N5','聞く','きく','묻다','natural','分からない道を駅員に聞きました。','모르는 길을 역무원에게 물었습니다.','聞きました'],
  ['N5','見る','みる','보다','easy','夜、テレビを見ます。','밤에 텔레비전을 봅니다.','見ます'],
  ['N5','見る','みる','돌보다','natural','午後は妹の面倒を見ます。','오후에는 여동생을 돌봅니다.','見ます'],
- ['N4','頼む','たのむ','부탁하다','easy','友達に仕事を頼んだ。','친구에게 일을 부탁했다.','頼んだ'],
- ['N4','頼む','たのむ','주문하다','natural','店員にコーヒーを二つ頼んだ。','점원에게 커피 두 잔을 주문했다.','頼んだ']
+ ['N5','頼む','たのむ','부탁하다','easy','友達に仕事を頼んだ。','친구에게 일을 부탁했다.','頼んだ'],
+ ['N5','頼む','たのむ','주문하다','natural','店員にコーヒーを二つ頼んだ。','점원에게 커피 두 잔을 주문했다.','頼んだ']
 ];
-for(const [l,w,r,sense,tier,ja,ko,surface]of extra){const id=idFor(l,w,r);add(id,{id:'040-sense-'+id+'-'+tier,wordIds:[id],targets:[],ja,ko:ko.replace('。','.'),surface,sense,tier,reading:'',translationReview:'assistant-authored',source:'Kotoba 0.4 original',license:'Project original',independentNativeReview:false,register:'일상'});}
+for(const [l,w,r,sense,tier,ja,ko,surface]of extra){const id=idFor(l,w,r);add(id,{id:'040-sense-'+id+'-'+tier,wordIds:[id],targets:[],ja,ko:ko.replace('。','.'),surface,sense,tier,reading:'',translationReview:'assistant-authored',source:'Kotoba 0.4 original',license:'Project original',independentNativeReview:false,register:'일상',koTargets:surface==='頼んだ'?[sense==='부탁하다'?'부탁했다':'주문했다']:surface==='聞きました'?['물었습니다']:sense==='돌보다'?['돌봅니다']:sense==='듣다'?['듣는']:['봅니다']});}
 export function quality(e,w){
  const issues=[];if(!e.ja?.trim()||!e.ko?.trim())issues.push('내용 누락');
  if(e.translationReview==='machine-draft')issues.push('번역 검수 전');
  if(e.readingReview?.startsWith('automated'))issues.push('읽기 자동 생성');
  if(e.ja?.length>({N5:35,N4:45,N3:60,N2:85,N1:100}[w.level]||80))issues.push('긴 문장');
- if(/[候也哉]|ござる|けり|なりけり|古典|古い文章/.test(e.ja))issues.push('문어·옛 표현');
+ if(/ござる|に候|と候|なりけり|けり[。！？]|古典|古い文章/.test(e.ja))issues.push('문어·옛 표현');
  if(!e.ja?.includes(w.word)&&!(e.surface&&e.wordIds?.length===1&&e.ja.includes(e.surface)))issues.push('활용형·표기 확인 필요');
  return {issues,usable:!issues.includes('내용 누락'),tier:e.tier||(e.ja.length<=35?'easy':'natural'),sense:e.sense||'기본 용례',register:e.register||(issues.includes('문어·옛 표현')?'문어·옛 표현':'용례'),reviewed:e.translationReview!=='machine-draft'};
 }

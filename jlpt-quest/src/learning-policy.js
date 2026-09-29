@@ -26,7 +26,8 @@ export function adaptiveInterval(record,base,{correct,sessionId,now,latencyMs=0,
  const observed=!same&&(!early||!correct);
  const recentNext=observed?[...recent,correct?1:0]:recent;
  const result={...base,recent:recentNext,independentFailures:(previous.independentFailures??previous.lapses??0)+(observed&&!correct?1:0),intervalMs:base.due-now};
- if(!correct||same||early){result.intervalMs=previous.intervalMs??Math.max(0,base.due-(base.lastAt||now));return result;}
+ if(!correct){result.intervalMs=600000;return result;}
+ if(same||early){result.intervalMs=previous.intervalMs??Math.max(0,base.due-(base.lastAt||now));return result;}
  const samples=Math.min(1000,previous.latencySamples||0),average=previous.averageMs||0;
  const validTime=Number.isFinite(latencyMs)&&latencyMs>=250&&latencyMs<=120000;
  if(validTime){result.averageMs=average?(average*samples+latencyMs)/(samples+1):latencyMs;result.latencySamples=samples+1;}

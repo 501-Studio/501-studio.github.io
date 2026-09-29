@@ -13,7 +13,7 @@ export function validateStudy(raw){
   if(!/^folder-[a-z0-9-]{1,80}$/.test(f?.id)||folderIds.has(f.id)||!text(f.name,40).trim()||!Array.isArray(f.wordIds))throw new Error('단어장 폴더 기록이 올바르지 않습니다.');
   folderIds.add(f.id);s.folders.push({id:f.id,name:text(f.name,40).trim(),wordIds:[...new Set(f.wordIds.filter(idOK))].slice(0,16000)});
  }
- for(const e of (Array.isArray(raw.events)?raw.events:[]).slice(-30000))if(idOK(e?.wordId)&&num(e.at)&&SKILLS.includes(e.skill))s.events.push({at:e.at,wordId:e.wordId,skill:e.skill,correct:e.correct===true,assisted:e.assisted===true,retry:e.retry===true,relearned:e.relearned===true,mastered:e.mastered===true,latencyMs:num(e.latencyMs,120000)?e.latencyMs:0});
+ for(const e of (Array.isArray(raw.events)?raw.events:[]).slice(-30000))if(idOK(e?.wordId)&&num(e.at)&&SKILLS.includes(e.skill))s.events.push({at:e.at,wordId:e.wordId,skill:e.skill,correct:e.correct===true,assisted:e.assisted===true,retry:e.retry===true,sessionId:text(e.sessionId,80),relearned:e.relearned===true,mastered:e.mastered===true,latencyMs:num(e.latencyMs,120000)?e.latencyMs:0});
  for(const [char,rows] of Object.entries(raw.strokes||{}).slice(0,5000))if([...char].length===1&&Array.isArray(rows))s.strokes[char]=rows.slice(0,60).map(r=>({attempts:num(r?.attempts,1e8)?r.attempts:0,misses:num(r?.misses,1e8)?Math.min(r.misses,r.attempts||0):0}));
  for(const e of (Array.isArray(raw.exams)?raw.exams:[]).slice(-100))if(typeof e?.id==='string'&&num(e.at)&&num(e.total,100)&&num(e.correct,e.total)&&Array.isArray(e.wordIds))s.exams.push({id:text(e.id,80),at:e.at,total:e.total,correct:e.correct,level:/^N[1-5]$/.test(e.level)?e.level:'N5',wordIds:e.wordIds.filter(idOK).slice(0,100),byType:cleanScores(e.byType)});
  s.examWrongIds=[...new Set((Array.isArray(raw.examWrongIds)?raw.examWrongIds:[]).filter(x=>typeof x==='string'&&/^q040-N[1-5]-[a-z0-9]+$/.test(x)))].slice(0,100);
@@ -28,7 +28,7 @@ function cleanScores(raw){const out={};for(const k of ['reading','meaning','cont
 export function recordAnswer(state,t,result,old,now,latencyMs=0){
  const s=study(state),correct=result.correct===true&&!result.assisted;
  const mastered=SKILLS.every(k=>(state.memory[keyOf(t.wordId,k)]?.stage??-1)>=3)&&((old?.stage??-1)<3);
- s.events.push({at:now,wordId:t.wordId,skill:t.skill,correct,assisted:!!result.assisted,retry:t.attempt>0,relearned:!correct&&(old?.successes||0)>0,mastered,latencyMs:num(latencyMs,120000)?latencyMs:0});
+ s.events.push({at:now,wordId:t.wordId,skill:t.skill,correct,assisted:!!result.assisted,retry:t.attempt>0||!!state.session?.id&&(old?.lastSession===state.session.id||s.events.some(e=>e.sessionId===state.session.id&&e.wordId===t.wordId&&e.skill===t.skill)),sessionId:String(state.session?.id||'').slice(0,80),relearned:!correct&&(old?.successes||0)>0,mastered,latencyMs:num(latencyMs,120000)?latencyMs:0});
  if(s.events.length>30000)s.events.splice(0,s.events.length-30000);
 }
 export function recordStroke(state,char,index,accepted){
@@ -51,11 +51,12 @@ export function monthlyStats(state,words,month=dayKey().slice(0,7)){
  const ids=new Set(words.map(w=>w.id)),s=study(state),events=s.events.filter(e=>ids.has(e.wordId)&&dayKey(e.at).startsWith(month)),ind=events.filter(e=>!e.retry),newIds=words.filter(w=>state.encountered[w.id]&&dayKey(state.encountered[w.id]).startsWith(month)).map(w=>w.id);
  const missed={};for(const e of ind)if(!e.correct)missed[e.wordId]=(missed[e.wordId]||0)+1;
  const worst=Object.entries(missed).sort((a,b)=>b[1]-a[1])[0];
- return {newIds,events,correct:ind.filter(e=>e.correct).length,total:ind.length,mastered:[...new Set(events.filter(e=>e.mastered).map(e=>e.wordId))].length,relapsed:[...new Set(events.filter(e=>e.relearned).map(e=>e.wordId))].length,worst:worst?{id:worst[0],count:worst[1]}:null,since:s.startedAt,partial:s.events.length>=30000};
+ const wordMap=new Map(words.map(w=>[w.id,w])),groups=new Map();for(const e of ind){const level=wordMap.get(e.wordId)?.level,key=level+':'+e.skill;const g=groups.get(key)||{level,skill:e.skill,total:0,misses:0};g.total++;if(!e.correct)g.misses++;groups.set(key,g);}const weakest=[...groups.values()].filter(g=>g.total>=3&&g.misses>0).sort((a,b)=>b.misses/b.total-a.misses/a.total||b.total-a.total)[0]||null;
+ return {weakest,newIds,events,correct:ind.filter(e=>e.correct).length,total:ind.length,mastered:[...new Set(events.filter(e=>e.mastered).map(e=>e.wordId))].length,relapsed:[...new Set(events.filter(e=>e.relearned).map(e=>e.wordId))].length,worst:worst?{id:worst[0],count:worst[1]}:null,since:s.startedAt,partial:s.events.length>=30000};
 }
 /** Suggest earlier slots only. Never postpone an overdue or future memory deadline. */
 export function spreadPlan(state,cap=60,now=Date.now()){
- cap=Math.max(10,Math.min(300,Math.round(cap)));const load={},moves=[];
+ cap=Number.isFinite(cap)?Math.max(10,Math.min(300,Math.round(cap))):60;const load={},moves=[];
  const rows=Object.entries(state.memory).filter(([,r])=>r.due>now).sort((a,b)=>a[1].due-b[1].due);
  for(const [,r] of rows)load[dayKey(r.due)]=(load[dayKey(r.due)]||0)+1;
  for(const [key,r] of rows){const d=dayKey(r.due);if(load[d]<=cap)continue;const maxShift=Math.min(2*86400000,Math.floor((r.due-now)*.2));

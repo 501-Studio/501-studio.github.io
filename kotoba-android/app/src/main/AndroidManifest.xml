@@ -4,6 +4,9 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <queries><intent><action android:name="android.intent.action.TTS_SERVICE" /></intent></queries>
     <application android:label="코토바" android:icon="@drawable/ic_launcher"
         android:theme="@style/AppTheme" android:usesCleartextTraffic="false"
@@ -13,6 +16,7 @@
         <activity android:name=".MainActivity" android:exported="true" android:windowSoftInputMode="adjustResize" android:configChanges="screenLayout|orientation|screenSize|keyboard|keyboardHidden|smallestScreenSize">
             <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent-filter>
         </activity>
+        <service android:name=".PlaylistService" android:exported="false" android:foregroundServiceType="mediaPlayback" android:stopWithTask="false" />
         <receiver android:name=".ReviewReminderReceiver" android:exported="false">
             <intent-filter><action android:name="android.intent.action.BOOT_COMPLETED" /><action android:name="android.intent.action.MY_PACKAGE_REPLACED" /><action android:name="android.intent.action.TIME_SET" /><action android:name="android.intent.action.TIMEZONE_CHANGED" /></intent-filter>
         </receiver>

@@ -16,7 +16,7 @@ test('every definition has comma separators and no translation boilerplate or En
 test('editorial audit distinguishes reviewed meanings from punctuation-only changes',()=>{const a=JSON.parse(read('../editorial/audit.json'));assert.equal(a.total,8451);assert.ok(a.semanticReviewed>=2404);assert.equal(a.semanticReviewed+a.remainingSemanticReview,a.total);assert.equal(a.semanticReviewComplete,false);assert.equal(a.levels.N5.semanticReviewed,669);assert.equal(a.levels.N4.semanticReviewed,655);});
 test('unknown words receive three writing repetitions before the actual exam',()=>{
  const state=fresh(),c=courses(STARTERS,'N5')[0];state.session=createClass(state,c,STARTERS);const id=c.wordIds[0];while(current(state.session)?.phase==='survey')classifySurvey(state,current(state.session).id,current(state.session).wordId!==id,STARTERS);
- const training=state.session.queue.filter(t=>t.phase==='learn'&&t.wordId===id);assert.deepEqual(training.map(t=>t.skill),['audio','trace','trace','trace']);assert.deepEqual(training.filter(t=>t.skill==='trace').map(t=>[t.practiceIndex,t.practiceTotal,t.guided]),[[1,3,true],[2,3,true],[3,3,false]]);
+ const training=state.session.queue.filter(t=>t.phase==='learn'&&t.wordId===id);assert.deepEqual(training.map(t=>t.skill),['study','audio','trace','trace','trace']);assert.deepEqual(training.filter(t=>t.skill==='trace').map(t=>[t.practiceIndex,t.practiceTotal,t.guided]),[[1,3,true],[2,3,true],[3,3,false]]);
  const restored=validateState(JSON.parse(JSON.stringify(state)));assert.equal(restored.session.queue.find(t=>t.practiceIndex===3).guided,false);
 });
 test('selected review type is not blocked by unrelated skills',()=>{

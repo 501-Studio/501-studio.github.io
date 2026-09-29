@@ -52,7 +52,9 @@ public final class LessonRotationTest {
                 js(s,"document.querySelector('[data-action=\""+(mountain?"unknown-word":"known-word")+"\"]').click();true");
             }
             assertEquals("Exactly one unknown target must enter practice; observed="+observed,1,unknown);
-            // Classification saves asynchronously. Wait for the real next screen before seeding.
+            // Very first training phase now shows the word before pronunciation.
+            until(s,"!!document.querySelector('[data-action=\"studied\"]')");
+            js(s,"document.querySelector('[data-action=\"studied\"]').click();true");
             until(s,"!!document.querySelector('[data-action=\"audio-done\"]')");
             SystemClock.sleep(500);
             // Lifecycle fixture only. Surface conflicts instead of racing the last survey save.
