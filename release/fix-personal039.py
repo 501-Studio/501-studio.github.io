@@ -1,4 +1,4 @@
-"""Small, asserted QA fixes after the checked 039 source delta."""
+"""Asserted, idempotent QA corrections for the checked 039 source delta."""
 from pathlib import Path
 import json
 root=Path('jlpt-quest')
@@ -24,12 +24,6 @@ if 'settled screenshot' not in s:
   check('writing help controls fit above footer without scrolling',helpbox['y']+helpbox['height']<=footbox['y']+1)
   p.screenshot(path=str(OUT/'writing.png'));draw(p,BANK['山'][1:]);"""
  assert old in s;s=s.replace(old,new)
-p.write_text(s)
-paths=Path('/tmp/kotoba039-source-paths.json')
-if paths.exists():
- files=json.loads(paths.read_text());files.extend(str(p) for p in [root/'tests/release036-browser.py',root/'personal.css',root/'tests/personal039-browser.py']);paths.write_text(json.dumps(list(dict.fromkeys(files))))
-print('Applied offline TTS test adapter, compact practice layout, and settled screenshot checks.')
-p=root/'tests/personal039-browser.py';s=p.read_text()
 if 'console health capture' not in s:
  s=s.replace('checks=[];errors=[];requests=[]', 'checks=[];errors=[];requests=[];console_messages=[] # console health capture')
  s=s.replace("p.on('request',lambda r:requests.append(r.url))", "p.on('request',lambda r:requests.append(r.url));p.on('console',lambda m:console_messages.append({'type':m.type,'text':m.text}) if m.type in ['error','warning'] else None)")
@@ -43,13 +37,31 @@ if 'console health capture' not in s:
   p.locator('[data-action="close-modal"]').click()
   ids=p.evaluate"""
  assert old in s;s=s.replace(old,new)
+if 'custom count clears unrelated preset selection' not in s:
+ old="p.locator('#practice-repeats').fill('2');p.wait_for_timeout(500);"
+ new="p.locator('#practice-repeats').fill('2');check('custom count clears unrelated preset selection',p.locator('.repeat-options [aria-pressed=\"true\"]').count()==0);p.wait_for_timeout(500);"
+ assert old in s;s=s.replace(old,new)
 p.write_text(s)
-# Wait for survey-save completion before the test fixture writes IndexedDB.
-# This change affects instrumentation only, not app state or grading code.
+p=root/'src/app.js';s=p.read_text()
+if "if(event.target.id==='practice-repeats')" not in s:
+ old="document.addEventListener('input',event=>{if(event.target.id==='search'){search=event.target.value;limit=80;document.querySelector('#word-results').innerHTML=wordRows();}});"
+ new="""document.addEventListener('input',event=>{
+ if(event.target.id==='search'){search=event.target.value;limit=80;document.querySelector('#word-results').innerHTML=wordRows();}
+ if(event.target.id==='practice-repeats'){
+  const count=Number(event.target.value);
+  if(Number.isSafeInteger(count)&&count>=1&&count<=20)practiceRepeats=count;
+  document.querySelectorAll('.repeat-options [data-count]').forEach(button=>{const selected=Number(button.dataset.count)===count;button.classList.toggle('selected',selected);button.setAttribute('aria-pressed',String(selected));});
+ }
+});"""
+ assert old in s;s=s.replace(old,new)
+p.write_text(s)
+# Android evaluateJavascript uses about:blank as the import base (confirmed logcat).
+# Keep the instrumentation module URL explicit; production source is unaffected.
 p=Path('kotoba-android/app/src/androidTest/java/com/studio501/kotoba/LessonRotationTest.java');s=p.read_text()
-old='''            // Lifecycle fixture, not an audio test: enter the existing lesson's first trace task.
+if 'Classification saves asynchronously.' not in s:
+ old='''            // Lifecycle fixture, not an audio test: enter the existing lesson's first trace task.
             js(s,"(async()=>{const S=await import('./src/storage.js');const v=await S.loadState();v.session.index=v.session.queue.findIndex(t=>t.skill==='trace');v.uiRoute='lesson';await S.commit(v,v.revision);location.reload();})();true");'''
-new=r'''            // Classification saves asynchronously. Wait for the real next screen before seeding.
+ new=r'''            // Classification saves asynchronously. Wait for the real next screen before seeding.
             until(s,"!!document.querySelector('[data-action=\"audio-done\"]')");
             SystemClock.sleep(500);
             // Lifecycle fixture only. Surface conflicts instead of racing the last survey save.
@@ -57,6 +69,8 @@ new=r'''            // Classification saves asynchronously. Wait for the real ne
             until(s,"document.body.dataset.seedReady==='true'||!!document.body.dataset.seedError");
             assertEquals("Fixture preparation failed", "true", js(s,"document.body.dataset.seedReady==='true'"));
             js(s,"location.reload();true");'''
-if new not in s:
  assert old in s;s=s.replace(old,new)
+s=s.replace("await import('./src/storage.js')", "await import(new URL('./src/storage.js',location.href).href)")
+s=s.replace('assertEquals("Fixture preparation failed", "true",', 'assertEquals("Fixture preparation failed: "+js(s,"document.body.dataset.seedError||\'unknown\'"), "true",')
 p.write_text(s)
+print('Applied offline adapter, compact controls, repeat synchronization, and explicit fixture module URL.')
