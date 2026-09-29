@@ -1,30 +1,25 @@
-import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import {readFile} from 'node:fs/promises';
-import {ALL_KANA} from '../src/kana-engine.js';
-const root=new URL('../',import.meta.url);
-const manifest=JSON.parse(await readFile(new URL('../data/audio-manifest.json',import.meta.url),'utf8'));
-const packs=['N5','N4','N3','N2','N1'].map(l=>JSON.parse(fs.readFileSync(new URL(`../data/${l}.json`,import.meta.url))).words).flat();
-test('offline audio manifest covers every installed N1-N5 word',()=>{
- assert.equal(manifest.complete,true);assert.equal(manifest.words,packs.length+ALL_KANA.length);assert.equal(Object.keys(manifest.clips).length,packs.length+ALL_KANA.length);
- for(const w of [...packs,...ALL_KANA])assert.ok(manifest.clips[w.id],w.id);
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
+import {speak,speakSentence,configureAudio,stopAudio} from '../src/audio.js';
+import {fresh,validateState} from '../src/course-engine.js';
+import {installBridge} from '../src/native.js';
+const read=p=>fs.readFileSync(new URL(p,import.meta.url),'utf8');
+function browser(fn,voices=[{lang:'ja-JP',localService:true}]){
+ const oldS=globalThis.speechSynthesis,oldU=globalThis.SpeechSynthesisUtterance;globalThis.SpeechSynthesisUtterance=class{constructor(text){this.text=text;}};
+ const played=[];globalThis.speechSynthesis={getVoices:()=>voices,speak(u){played.push({text:u.text,rate:u.rate});queueMicrotask(()=>u.onend?.());},cancel(){}};
+ return Promise.resolve().then(()=>fn(played)).finally(()=>{stopAudio();globalThis.speechSynthesis=oldS;globalThis.SpeechSynthesisUtterance=oldU;});
+}
+test('legacy bundled settings migrate to device-only and daily targets are removed',()=>{const s=fresh();s.settings.audioEngine='bundled';s.settings.goal=30;const v=validateState(s);assert.equal(v.settings.audioEngine,'device');assert.equal('goal'in v.settings,false);});
+test('word, kana, sentence and slow playback all use device TTS (browser mock)',()=>browser(async played=>{configureAudio({audioEngine:'bundled'});await speak('N5-id',1,{text:'やま'});await speak('KANA-test',.7,{text:'あ'});await speakSentence('山に登ります。',.7);assert.deepEqual(played,[{text:'やま',rate:1},{text:'あ',rate:.7},{text:'山に登ります。',rate:.7}]);}));
+test('missing Japanese voice rejects with installation guidance, never fallback',()=>browser(async played=>{await assert.rejects(speak('N5-id',1,{text:'やま'}),/日本|일본어/);assert.equal(played.length,0);},[{lang:'en-US',localService:true}]));
+test('cloud-only Japanese voice is not misrepresented as offline',()=>browser(async played=>{await assert.rejects(speakSentence('山です。'),/오프라인/);assert.equal(played.length,0);},[{lang:'ja-JP',localService:false}]));
+test('word IDs never get spoken when actual reading is absent',()=>browser(async played=>{await assert.rejects(speak('N5-id'));assert.equal(played.length,0);}));
+test('successful native completion is required; no pre-generated audio dependency',async()=>{
+ const messages=[];globalThis.KotobaNative={postMessage(raw){const m=JSON.parse(raw);messages.push(m);queueMicrotask(()=>globalThis.KotobaNative.onmessage({data:JSON.stringify({id:m.id,result:{}})}));}};installBridge();
+ try{await speak('N5-id',.7,{text:'やま'});await speakSentence('山です。');assert.equal(messages.filter(m=>m.type==='speechSpeak').length,2);assert.equal(messages.find(m=>m.type==='speechSpeak').payload.rate,.7);}finally{stopAudio();delete globalThis.KotobaNative;}
+ const audio=read('../src/audio.js'),sw=read('../sw.js');assert.doesNotMatch(audio,/new Audio\(|audio-manifest|data\/audio/);assert.doesNotMatch(sw,/audio-manifest|data\/audio/);
 });
-test('every referenced audio file is bundled, non-empty Ogg Opus',()=>{
- const unique=new Set(Object.values(manifest.clips));assert.equal(unique.size,manifest.uniqueClips);
- for(const name of unique){const p=new URL('../data/audio/'+name,import.meta.url);const b=fs.readFileSync(p);assert.ok(b.length>300,name);assert.equal(b.subarray(0,4).toString(),'OggS',name);}
+test('native speech errors are propagated rather than treated as completed listening',async()=>{
+ globalThis.KotobaNative={postMessage(raw){const m=JSON.parse(raw);queueMicrotask(()=>globalThis.KotobaNative.onmessage({data:JSON.stringify({id:m.id,error:m.type==='speechSpeak'?'일본어 음성 없음':null,result:{}})}));}};installBridge();
+ try{await assert.rejects(speak('N5-id',1,{text:'やま'}),/음성 없음/);}finally{stopAudio();delete globalThis.KotobaNative;}
 });
-test('core audio stays bundled while Ads and Billing use explicit network permission',()=>{
- const manifestXml=fs.readFileSync(new URL('../../kotoba-android/app/src/main/AndroidManifest.xml',import.meta.url),'utf8');
- const main=fs.readFileSync(new URL('../../kotoba-android/app/src/main/java/com/studio501/kotoba/MainActivity.java',import.meta.url),'utf8');
- assert.doesNotMatch(manifestXml,/RECORD_AUDIO/);assert.match(manifestXml,/TTS_SERVICE/);assert.match(manifestXml,/android\.permission\.INTERNET/);
- assert.doesNotMatch(main,/TextToSpeech|speech\.tts|case "speak"|stopSpeech/);
- assert.match(main,/setMediaPlaybackRequiresUserGesture\(false\)/);
-});
-test('web audio defaults to bundled files, with explicit offline-only native TTS option',()=>{
- const audio=fs.readFileSync(new URL('../src/audio.js',import.meta.url),'utf8');
- const wordPlayback=audio.slice(audio.indexOf('export async function speak('),audio.indexOf('export async function speakSentence('));
- assert.doesNotMatch(wordPlayback,/speechSynthesis|SpeechSynthesisUtterance|callNative\(['"]speak/);
- assert.match(audio,/localService===true/); // sentences may use explicitly installed offline Japanese voices
- assert.match(audio,/audio-manifest\.json/);assert.match(audio,/data\/audio/);
-});
-test('audio attribution is recorded for commercial redistribution',()=>{
- assert.equal(manifest.voiceLicense,'Apache-2.0');assert.equal(manifest.voice,'jf_alpha');assert.match(manifest.attribution,/Kokoro-82M/);assert.ok(fs.existsSync(new URL('../data/licenses/Kokoro-Apache-2.0.txt',import.meta.url)));
-});
+test('no microphone permission; Android still declares the system TTS query',()=>{const m=read('../../kotoba-android/app/src/main/AndroidManifest.xml');assert.doesNotMatch(m,/RECORD_AUDIO/);assert.match(m,/TTS_SERVICE/);});

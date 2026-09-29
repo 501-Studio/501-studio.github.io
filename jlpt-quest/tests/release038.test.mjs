@@ -59,6 +59,6 @@ test('038: sentence playback rejects remote-only voices instead of substituting 
 });
 test('038: stop cancels pending sentence playback promptly',async()=>{
  let canceled=0;const oldS=globalThis.speechSynthesis,oldU=globalThis.SpeechSynthesisUtterance;globalThis.SpeechSynthesisUtterance=class{};globalThis.speechSynthesis={getVoices:()=>[{lang:'ja',localService:true}],speak(){},cancel(){canceled++;}};
- try{const p=speakSentence('長い例文です。');const rejection=assert.rejects(p,/중단/);stopAudio();await rejection;assert.ok(canceled>0);}finally{stopAudio();globalThis.speechSynthesis=oldS;globalThis.SpeechSynthesisUtterance=oldU;}
+ try{const p=speakSentence('長い例文です。');const rejection=assert.rejects(p,/중단/);await new Promise(r=>setTimeout(r,0));stopAudio();await rejection;assert.ok(canceled>0);}finally{stopAudio();globalThis.speechSynthesis=oldS;globalThis.SpeechSynthesisUtterance=oldU;}
 });
 test('038: empty or oversized sentence input fails clearly',async()=>{await assert.rejects(speakSentence(''));await assert.rejects(speakSentence('あ'.repeat(501)));});

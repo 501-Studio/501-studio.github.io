@@ -49,7 +49,7 @@ export function restartSession(state,words){
 }
 export function lessonName(s){
  if(!s)return '';
- return s.kind==='review'?'잊기 전에 복습':`${s.course?.level||''} 제${s.course?.index||''}장`;
+ return s.kind==='review'?(s.reviewMode==='preview'?'미리 복습':'복습'):`${s.course?.level||''} 제${s.course?.index||''}장`;
 }
 
 /** Keep any in-flight review when deliberately replacing/starting a main class. */

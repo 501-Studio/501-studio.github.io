@@ -1,3 +1,4 @@
+import {validateWordPractice,validatePracticeLog} from './word-practice.js';
 import {freshKana,validateKana} from './kana-engine.js';
 import {LEVELS,writingChars,hash} from './catalog.js';
 export const SCHEMA=3,MINUTE=60000,DAY=86400000;
@@ -6,7 +7,7 @@ export const SKILLS=['meaning','listening','writing'];
 export const keyOf=(id,skill)=>`${id}:${skill}`;
 export const nowId=()=>globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`;
 export const dayKey=(time=Date.now())=>{const d=new Date(time);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
-export function fresh(){return {version:SCHEMA,revision:0,settings:{level:'N5',furigana:true,motion:true,haptics:true,penWidth:8,rate:1,goal:10,kanjiOnlyPractice:false,audioEngine:'bundled',audioRevision:2,reviewNotifications:true},memory:{},encountered:{},known:{},learned:{},completed:{},starred:[],daily:{},xp:0,session:null,suspendedSession:null,legacy:null,kana:freshKana(),uiRoute:'home'};}
+export function fresh(){return {version:SCHEMA,revision:0,settings:{level:'N5',furigana:true,motion:true,haptics:true,penWidth:8,rate:1,kanjiOnlyPractice:false,audioEngine:'device',audioRevision:3,reviewNotifications:true},memory:{},encountered:{},known:{},learned:{},completed:{},starred:[],daily:{},xp:0,session:null,suspendedSession:null,wordPractice:null,practiceLog:{},legacy:null,kana:freshKana(),uiRoute:'home'};}
 export function schedule(old,correct,sessionId,now=Date.now(),method='auto'){
  const r={stage:-1,due:0,lapses:0,successes:0,lastSession:'',consecutive:0,...old};
  if(!correct)return {...r,stage:0,due:now+INTERVALS[0],lapses:r.lapses+1,consecutive:0,lastAt:now,lastSession:sessionId,method};
@@ -46,11 +47,20 @@ export function classifySurvey(state,taskId,known,words,now=Date.now()){
 export function createReview(state,words,filter='due',now=Date.now()){
  const map=new Map(words.map(w=>[w.id,w]));const due=dueItems(state,words,now,filter).slice(0,15);if(!due.length)return null;
  const queue=due.map(r=>task(map.get(r.wordId),'quiz',r.skill,words));const wordIds=[...new Set(due.map(x=>x.wordId))];
- return {id:nowId(),kind:'review',wordIds,queue,index:0,originalQuiz:queue.length,firstCorrect:0,firstAnswered:0,passed:{},feedback:null,finished:false,completed:false,finalized:false,ink:null,heard:false,selection:null,startedAt:now,earned:0,attempts:0,firstMisses:[],knownIds:[],unknownIds:[...wordIds],surveyReading:false,surveyMeaning:false,autoPlayedTask:null,wordSnapshots:wordIds.map(id=>map.get(id))};
+ return {id:nowId(),kind:'review',reviewMode:filter,wordIds,queue,index:0,originalQuiz:queue.length,firstCorrect:0,firstAnswered:0,passed:{},feedback:null,finished:false,completed:false,finalized:false,ink:null,heard:false,selection:null,startedAt:now,earned:0,attempts:0,firstMisses:[],knownIds:[],unknownIds:[...wordIds],surveyReading:false,surveyMeaning:false,autoPlayedTask:null,wordSnapshots:wordIds.map(id=>map.get(id))};
 }
 export const current=s=>s?.queue?.[s.index]||null;
 export function dueItems(state,words,now=Date.now(),filter='due'){
- const ids=new Set(words.filter(w=>w.level===state.settings.level).map(w=>w.id));return Object.entries(state.memory).flatMap(([key,r])=>{const [wordId,skill]=key.split(':');if(!ids.has(wordId)||!SKILLS.includes(skill))return [];if(filter==='due'&&r.due>now)return [];if(filter==='weak'&&!(r.lapses>0&&r.consecutive<2))return [];return [{...r,wordId,skill}];}).sort((a,b)=>a.due-b.due);
+ const ids=new Set(words.filter(w=>w.level===state.settings.level).map(w=>w.id));
+ const rows=Object.entries(state.memory).flatMap(([key,r])=>{
+  const [wordId,skill]=key.split(':');if(!ids.has(wordId)||!SKILLS.includes(skill))return [];
+  if(filter==='due'&&r.due>now)return [];if(filter==='preview'&&r.due<=now)return [];
+  if(filter==='weak'&&!(r.lapses>0&&r.consecutive<2))return [];
+  return [{...r,wordId,skill}];
+ });
+ // A self-reported known word has no fabricated test result, but can be tested now.
+ if(filter==='preview')for(const wordId of ids)if(state.known[wordId])for(const skill of SKILLS)if(!state.memory[keyOf(wordId,skill)])rows.push({wordId,skill,due:now,stage:-1,knownPreview:true});
+ return rows.sort((a,b)=>a.due-b.due);
 }
 function award(state,t,correct,now){const day=dayKey(now),d=state.daily[day]||{keys:[],words:[],xp:0};const k=keyOf(t.wordId,t.skill);if(d.keys.includes(k))return 0;const n=t.phase==='quiz'?(correct?10:2):0;if(!n)return 0;d.keys.push(k);if(!d.words.includes(t.wordId))d.words.push(t.wordId);d.xp+=n;state.daily[day]=d;state.xp+=n;return n;}
 export function submit(state,taskId,result,now=Date.now()){
@@ -97,14 +107,15 @@ export function validateState(input){
  if(!input||input.version!==SCHEMA||!LEVELS.includes(input.settings?.level))throw new Error('지원하지 않는 학습 기록 형식입니다.');
  const s=fresh(),n=(v,max=9e15)=>Number.isFinite(v)&&v>=0&&v<=max;
  s.revision=Number.isSafeInteger(input.revision)&&input.revision>=0?input.revision:0;s.xp=n(input.xp)?input.xp:0;
- s.settings={...s.settings,level:input.settings.level,furigana:input.settings.furigana!==false,motion:input.settings.motion!==false,haptics:input.settings.haptics!==false,goal:[5,10,20,30].includes(input.settings.goal)?input.settings.goal:10,rate:[.7,.85,1].includes(input.settings.rate)?input.settings.rate:.85,penWidth:[3,4,6,8].includes(input.settings.penWidth)?input.settings.penWidth:6};
+ s.settings={...s.settings,level:input.settings.level,furigana:input.settings.furigana!==false,motion:input.settings.motion!==false,haptics:input.settings.haptics!==false,rate:[.7,.85,1].includes(input.settings.rate)?input.settings.rate:.85,penWidth:[3,4,6,8].includes(input.settings.penWidth)?input.settings.penWidth:6};
  s.settings.kanjiOnlyPractice=input.settings.kanjiOnlyPractice===true;
- s.settings.audioEngine=input.settings.audioEngine==='device'?'device':'bundled';
- s.settings.audioRevision=2;
+ s.settings.audioEngine='device';
+ s.settings.audioRevision=3;
  if(!input.settings.audioRevision&&s.settings.rate===.85)s.settings.rate=1;
  s.settings.reviewNotifications=input.settings.reviewNotifications!==false;
  s.kana=validateKana(input.kana);
- s.uiRoute=['home','course','review','words','profile','lesson','kana','kana-practice'].includes(input.uiRoute)?input.uiRoute:'home';
+ s.wordPractice=validateWordPractice(input.wordPractice);s.practiceLog=validatePracticeLog(input.practiceLog);
+ s.uiRoute=['home','course','review','words','profile','lesson','kana','kana-practice','word-practice'].includes(input.uiRoute)?input.uiRoute:'home';
  for(const field of ['encountered','known','learned'])for(const [id,time]of Object.entries(input[field]||{})){if(ID.test(id)&&n(time))s[field][id]=time;}
  for(const [key,r]of Object.entries(input.memory||{})){const [id,skill]=key.split(':');if(!ID.test(id)||!SKILLS.includes(skill))continue;
   if(!r||!Number.isInteger(r.stage)||r.stage<0||r.stage>5||!n(r.due)||!n(r.lapses)||!n(r.successes)||!n(r.consecutive))throw new Error('복습 기록이 손상되었습니다.');
@@ -128,7 +139,7 @@ function validateSession(q){
  if(q.kind==='class'&&(!q.course||!COURSE.test(q.course.id)||!LEVELS.includes(q.course.level)))throw new Error('수업 정보가 손상되었습니다.');
  if(q.queue.some(t=>!t||typeof t.id!=='string'||!q.wordIds.includes(t.wordId)||!phase.includes(t.phase)||!skills.includes(t.skill)||(t.phase==='quiz'&&!SKILLS.includes(t.skill))||(t.phase==='survey'&&t.skill!=='survey')||(t.phase==='learn'&&!['study','audio','trace'].includes(t.skill))||!Array.isArray(t.options)||t.options.some(x=>typeof x!=='string'||x.length>4000)||!Number.isInteger(t.attempt)||t.attempt<0||t.attempt>2))throw new Error('수업 문항이 손상되었습니다.');
  const cleanIds=a=>[...new Set((Array.isArray(a)?a:[]).filter(id=>q.wordIds.includes(id)))];
- const s={id:q.id.slice(0,80),kind:q.kind,course:q.course?{id:String(q.course.id).slice(0,100),level:q.course.level,title:String(q.course.title||'').slice(0,100),index:q.course.index,startNo:q.course.startNo,endNo:q.course.endNo,wordIds:[...q.wordIds]}:null,wordIds:[...q.wordIds],queue:q.queue.map(t=>({id:t.id.slice(0,80),wordId:t.wordId,phase:t.phase,skill:t.skill,attempt:t.attempt,options:t.options,practiceIndex:[1,2,3].includes(t.practiceIndex)?t.practiceIndex:1,practiceTotal:3,guided:t.guided!==false})),index:q.index,passed:{},feedback:null,finished:q.finished===true,completed:false,finalized:q.finalized===true,ink:null,heard:q.heard===true,selection:typeof q.selection==='string'?q.selection:null,assisted:q.assisted===true,showExample:q.showExample===true,exampleIndex:Number.isSafeInteger(q.exampleIndex)&&q.exampleIndex>=0&&q.exampleIndex<100?q.exampleIndex:0,knownIds:cleanIds(q.knownIds),unknownIds:cleanIds(q.unknownIds),contentRevision:typeof q.contentRevision==='string'?q.contentRevision:null,surveyReading:q.surveyReading===true,surveyMeaning:q.surveyMeaning===true,autoPlayedTask:typeof q.autoPlayedTask==='string'?q.autoPlayedTask.slice(0,80):null,wordSnapshots:[]};
+ const s={id:q.id.slice(0,80),kind:q.kind,reviewMode:['due','weak','all','preview'].includes(q.reviewMode)?q.reviewMode:'due',course:q.course?{id:String(q.course.id).slice(0,100),level:q.course.level,title:String(q.course.title||'').slice(0,100),index:q.course.index,startNo:q.course.startNo,endNo:q.course.endNo,wordIds:[...q.wordIds]}:null,wordIds:[...q.wordIds],queue:q.queue.map(t=>({id:t.id.slice(0,80),wordId:t.wordId,phase:t.phase,skill:t.skill,attempt:t.attempt,options:t.options,practiceIndex:[1,2,3].includes(t.practiceIndex)?t.practiceIndex:1,practiceTotal:3,guided:t.guided!==false})),index:q.index,passed:{},feedback:null,finished:q.finished===true,completed:false,finalized:q.finalized===true,ink:null,heard:q.heard===true,selection:typeof q.selection==='string'?q.selection:null,assisted:q.assisted===true,showExample:q.showExample===true,exampleIndex:Number.isSafeInteger(q.exampleIndex)&&q.exampleIndex>=0&&q.exampleIndex<100?q.exampleIndex:0,knownIds:cleanIds(q.knownIds),unknownIds:cleanIds(q.unknownIds),contentRevision:typeof q.contentRevision==='string'?q.contentRevision:null,surveyReading:q.surveyReading===true,surveyMeaning:q.surveyMeaning===true,autoPlayedTask:typeof q.autoPlayedTask==='string'?q.autoPlayedTask.slice(0,80):null,wordSnapshots:[]};
  for(const key of ['originalQuiz','firstCorrect','firstAnswered','earned','attempts','startedAt'])s[key]=Number.isFinite(q[key])&&q[key]>=0?q[key]:0;
  for(const [key,val]of Object.entries(q.passed||{})){const [id,skill]=key.split(':');if(q.wordIds.includes(id)&&SKILLS.includes(skill)&&typeof val==='boolean')s.passed[key]=val;}
  s.firstMisses=Array.isArray(q.firstMisses)?q.firstMisses.filter(x=>typeof x==='string'&&x.length<60):[];

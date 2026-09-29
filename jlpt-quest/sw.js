@@ -1,13 +1,14 @@
-const NAME='kotoba-course-0.3.8';
+const NAME='kotoba-course-0.3.9';
 const CORE=[
- './','./index.html','./styles.css','./typography.css','./course.css','./snap.css','./release.css','./learning.css',
+ './','./index.html','./styles.css','./typography.css','./course.css','./snap.css','./release.css','./learning.css','./personal.css',
  './icon.svg','./icon-192.png','./icon-512.png','./manifest.webmanifest',
  './privacy.html','./terms.html','./licenses.html','./CONTENT-LICENSE.md',
  './src/kana-engine.js','./src/kana-ui.js','./src/examples.js','./src/reminders.js','./data/examples.json','./data/examples-expanded.json',
+ './src/statistics.js','./src/statistics-ui.js','./src/word-practice.js','./src/practice-ui.js',
  './src/session-controls.js','./src/app.js','./src/fit-text.js','./src/commerce.js','./src/catalog.js','./src/course-engine.js','./src/storage.js','./src/packs.js',
  './src/native.js','./src/shape-grader.js','./src/audio.js','./src/ink.js','./src/view.js',
  './src/ui.js','./src/motion.js','./src/stroke-match.js','./src/stroke-bank.js','./src/stroke-pad.js',
- './data/starter.js','./data/strokes.json','./data/coverage.json','./data/audio-manifest.json',
+ './data/starter.js','./data/strokes.json','./data/coverage.json',
  './data/N1.json','./data/N2.json','./data/N3.json','./data/N4.json','./data/N5.json',
  './data/licenses/KanjiVG-COPYING.txt'
 ];
@@ -15,9 +16,6 @@ self.addEventListener('install',event=>{
  event.waitUntil((async()=>{
   const cache=await caches.open(NAME);
   await cache.addAll(CORE);
-  const manifest=await fetch(new URL('./data/audio-manifest.json',self.registration.scope)).then(r=>r.json());
-  const audio=[...new Set(Object.values(manifest.clips||{}))].map(name=>'./data/audio/'+name);
-  for(let i=0;i<audio.length;i+=180)await cache.addAll(audio.slice(i,i+180));
  })());
 });
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('kotoba-course-')&&k!==NAME).map(k=>caches.delete(k))))));

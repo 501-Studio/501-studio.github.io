@@ -52,8 +52,14 @@ public final class LessonRotationTest {
                 js(s,"document.querySelector('[data-action=\""+(mountain?"unknown-word":"known-word")+"\"]').click();true");
             }
             assertEquals("Exactly one unknown target must enter practice; observed="+observed,1,unknown);
-            until(s,"!!document.querySelector('[data-action=\"audio-done\"]:not([disabled])')");
-            js(s,"document.querySelector('[data-action=\"audio-done\"]').click();true");
+            // Classification saves asynchronously. Wait for the real next screen before seeding.
+            until(s,"!!document.querySelector('[data-action=\"audio-done\"]')");
+            SystemClock.sleep(500);
+            // Lifecycle fixture only. Surface conflicts instead of racing the last survey save.
+            js(s,"(async()=>{try{const S=await import(new URL('./src/storage.js',location.href).href);const v=await S.loadState();const index=v.session.queue.findIndex(t=>t.skill==='trace');if(index<0)throw new Error('Trace task missing after survey');v.session.index=index;v.uiRoute='lesson';await S.commit(v,v.revision);document.body.dataset.seedReady='true';}catch(e){document.body.dataset.seedError=String(e);}})();true");
+            until(s,"document.body.dataset.seedReady==='true'||!!document.body.dataset.seedError");
+            assertEquals("Fixture preparation failed: "+js(s,"document.body.dataset.seedError||'unknown'"), "true", js(s,"document.body.dataset.seedReady==='true'"));
+            js(s,"location.reload();true");
             until(s,"!!document.querySelector('#ink-canvas')");
             // Dispatch pointer input through the real pad/matcher. Nothing directly marks it accepted.
             js(s,"(async()=>{const b=await fetch('./data/strokes.json').then(r=>r.json()),c=document.querySelector('#ink-canvas'),r=c.getBoundingClientRect(),p=b.characters['山'][0];p.forEach(([x,y],i)=>c.dispatchEvent(new PointerEvent(i?'pointermove':'pointerdown',{bubbles:true,pointerId:1,pointerType:'touch',isPrimary:true,buttons:1,clientX:r.left+x*r.width,clientY:r.top+y*r.height})));const [x,y]=p[p.length-1];c.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,pointerId:1,pointerType:'touch',isPrimary:true,buttons:0,clientX:r.left+x*r.width,clientY:r.top+y*r.height}));})();true");
