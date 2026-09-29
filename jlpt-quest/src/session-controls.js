@@ -33,7 +33,7 @@ export function restartSession(state,words){
   for(const t of old.queue){
    if(t.phase!=='quiz')continue;
    const key=`${t.wordId}:${t.skill}`;if(seen.has(key))continue;seen.add(key);
-   queue.push({...t,id:nowId(),attempt:0,options:[...t.options]});
+   queue.push({...t,id:nowId(),attempt:0,autoSpeech:0,options:[...t.options]});
   }
   if(!queue.length)return false;
   state.session={...old,id:old.id,queue,index:0,originalQuiz:queue.length,
