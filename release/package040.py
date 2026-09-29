@@ -9,7 +9,8 @@ with zipfile.ZipFile(apk) as z:
    p=W/n.removeprefix('assets/www/');assert p.is_file() and z.read(n)==p.read_bytes(),n;checked.append(n)
  assert not any(n.endswith('.ogg') for n in z.namelist()),'Bundled audio unexpectedly present'
  for required in ['src/advanced-ui.js','src/learning-policy.js','src/exam-engine.js','data/study040-seed.js','advanced.css']:assert 'assets/www/'+required in checked,required
-report={'version':'0.4.0-internal','versionCode':13,'verifiedWebAssets':len(checked),'bundledAudioFiles':0,'productionReleased':False,'physicalVoiceAudibilityVerified':False,'independentLanguageReviewComplete':False,'originalExamItems':100,'originalExampleSentences':206,'apkBytes':apk.stat().st_size,'apkSha256':hashlib.sha256(apk.read_bytes()).hexdigest(),'aabSha256':hashlib.sha256(aab.read_bytes()).hexdigest()}
+native=json.loads((QA/'android-run.json').read_text());assert native['testsCompleted'] and native['failures']==0 and native['errors']==0 and native['skipped']==0
+report={'version':'0.4.0-internal','versionCode':13,'inputCommit':os.environ.get('GITHUB_SHA'),'verifiedWebAssets':len(checked),'bundledAudioFiles':0,'productionReleased':False,'physicalVoiceAudibilityVerified':False,'independentLanguageReviewComplete':False,'originalExamItems':100,'originalExampleSentences':206,'nativeTests':native['tests'],'apkBytes':apk.stat().st_size,'apkSha256':hashlib.sha256(apk.read_bytes()).hexdigest(),'aabSha256':hashlib.sha256(aab.read_bytes()).hexdigest()}
 (QA/'package-check.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
 shutil.copyfile(apk,OUT/'kotoba-v0.4.0-internal.apk');shutil.copyfile(aab,OUT/'kotoba-v0.4.0-internal.aab')
 with zipfile.ZipFile(OUT/'kotoba-v0.4.0-source.zip','w',zipfile.ZIP_DEFLATED) as z:
@@ -18,5 +19,6 @@ with zipfile.ZipFile(OUT/'kotoba-v0.4.0-source.zip','w',zipfile.ZIP_DEFLATED) as
    if not p.is_file() or any(x in p.parts for x in ['.git','.gradle','build','__pycache__','node_modules','audio']):continue
    if p.suffix.lower() in ['.b64','.pyc','.pem','.key','.jks','.keystore','.ttf','.otf','.ttc','.woff','.woff2','.ogg'] or p.name in ['local.properties','.env'] or 'assets/www' in str(p):continue
    z.write(p,Path('kotoba-0.4.0')/p)
- for p in [Path('.github/workflows/kotoba-040.yml'),Path('release/finish040.py'),Path('release/polish040.py'),Path('release/apply040.py'),Path('release/package040.py')]:z.write(p,Path('kotoba-0.4.0')/p)
+ for name in ['.github/workflows/kotoba-040.yml','release/finish040.py','release/polish040.py','release/final-ui040.py','release/android040-check.py','release/apply040.py','release/package040.py']:
+  p=Path(name);z.write(p,Path('kotoba-0.4.0')/p)
 print(json.dumps(report,ensure_ascii=False,indent=2))
