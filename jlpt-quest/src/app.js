@@ -25,7 +25,7 @@ import {isNative,callNative,installBridge} from './native.js';
 import {applyMotion,haptic,celebrate} from './motion.js';
 
 const root=document.querySelector('#app'),modal=document.querySelector('#modal-root');
-let state=fresh(),words=[],lookup=new Map(),ready=false,saving=false,busy=false,ink=null,storageOK=true,warning='',toastTimer,epoch=0,audioNonce=0,gradeNonce=0;
+let state=fresh(),words=[],lookup=new Map(),ready=false,saving=false,busy=false,ink=null,storageOK=true,warning='',toastTimer,epoch=0,audioNonce=0,gradeNonce=0,autoVoiceWarned=false;
 let modalFit=()=>{},footerObserver=null,budgetTimer=null,promptClock={id:null,at:0};
 let statsView={days:7,level:'all',date:null},practiceWordId=null,practiceRepeats=3;
 let filter='due',wordFilter='all',search='',limit=80,courseLimit=24,pendingCourse=null,imported=null,priorFocus=null;
@@ -164,8 +164,8 @@ function render(){disposeAdvanced();clearInterval(budgetTimer);stopFitting();foo
 
  const foot=document.querySelector('.lesson-footer');if(foot){const measure=()=>document.documentElement.style.setProperty('--lesson-foot',`${foot.getBoundingClientRect().height}px`);measure();footerObserver=new ResizeObserver(measure);footerObserver.observe(foot);}
 
- if(route()==='lesson'&&t&&['audio','listening'].includes(t.skill)&&!state.session.heard&&state.session.autoPlayedTask!==t.id){
-  state.session.autoPlayedTask=t.id;save();setTimeout(()=>{if(route()==='lesson'&&current(state.session)?.id===t.id&&!state.session.heard)play(false,null,true);},90);
+ if(route()==='lesson'&&t&&state.session&&!state.session.finished){
+  const w=W(t.wordId);setTimeout(()=>{if(route()==='lesson'&&state.session&&current(state.session)?.id===t.id)autoPronounceOnce(state.session,t,w);},90);
  }
  if(route()==='word-practice'){ink=mountPractice(state,W(state.wordPractice?.wordId),{save});return;}
  if(route()==='kana-practice'){ink=mountKana(state,{save,render,toast});return;}
@@ -215,6 +215,33 @@ async function startCourse(id,replace=false){
  cancelWork();startClassSession(state,c,words);closeModal();if(await save())go('lesson');
 }
 async function submitCurrent(result,advanceTraining=false){if(busy||!storageOK)return;const s=state.session,t=current(s);if(!t)return;const elapsed=promptClock.id===t.id&&!promptClock.invalid?performance.now()-promptClock.at:0;result.latencyMs=elapsed>=250&&elapsed<=120000?elapsed:0;if(submit(state,t.id,result)){offerReviewPermission(state).catch(()=>{});busy=true;const ok=await save();busy=false;if(!ok)return;if(advanceTraining){next(state);await save();}else haptic(state.settings,result.correct);render();document.querySelector('[data-action="next"]')?.focus({preventScroll:true});}}
+const AUTO_SPEECH_PROMPT=1,AUTO_SPEECH_EXAMPLE=2,AUTO_SPEECH_FEEDBACK=4;
+function autoSpeechStage(s,t){
+ if(!s||!t)return null;
+ if(s.feedback&&!s.feedback.training)return {bit:AUTO_SPEECH_FEEDBACK,name:'feedback'};
+ if(s.showExample)return {bit:AUTO_SPEECH_EXAMPLE,name:'example'};
+ if(['survey','trace','writing','meaning','audio','listening'].includes(t.skill))return {bit:AUTO_SPEECH_PROMPT,name:'prompt'};
+ return null;
+}
+async function autoPronounceOnce(s,t,w){
+ const stage=autoSpeechStage(s,t);if(!stage||!w||((t.autoSpeech||0)&stage.bit))return;
+ t.autoSpeech=(t.autoSpeech||0)|stage.bit;
+ if(stage.bit===AUTO_SPEECH_PROMPT&&promptClock.id===t.id)promptClock.invalid=true;
+ save();
+ const nonce=++audioNonce;
+ try{
+  await speak(w.id,state.settings.rate,{text:w.reading||w.word});
+  if(nonce!==audioNonce||route()!=='lesson'||state.session!==s||current(s)?.id!==t.id)return;
+  if(stage.bit===AUTO_SPEECH_PROMPT&&['audio','listening'].includes(t.skill)){
+   s.heard=true;await save();const status=document.querySelector('#audio-status');if(status)status.textContent='재생 완료';
+   document.querySelectorAll('.answer-option').forEach(el=>el.disabled=!!s.feedback);syncButtons();
+  }
+ }catch(e){
+  if(nonce===audioNonce&&!autoVoiceWarned){autoVoiceWarned=true;toast(e.message||'기기의 일본어 음성을 확인해 주세요.');}
+ }finally{
+  if(stage.bit===AUTO_SPEECH_PROMPT&&state.session===s&&current(s)?.id===t.id&&!s.feedback)promptClock={id:t.id,at:performance.now(),invalid:false};
+ }
+}
 async function play(slow=false,wordId=null,auto=false){const s=state.session,t=wordId?null:current(s),w=W(wordId||t?.wordId);if(!w)return;const nonce=++audioNonce,rate=slow?.7:state.settings.rate;const status=wordId?document.querySelector('.sheet .word-audio-status')||document.querySelector(`.wordbook-item:has([data-id="${wordId}"]) .word-audio-status`):document.querySelector('#audio-status');if(status)status.textContent='재생 중';document.querySelector('.audio-main')?.classList.add('playing');
  try{await speak(w.id,rate,{text:w.reading||w.word});
  if(nonce!==audioNonce)return;if(status)status.textContent='재생 완료';if(t&&state.session===s&&current(s)?.id===t.id&&route()==='lesson'){s.heard=true;await save();if(status)status.textContent='재생 완료';document.querySelectorAll('.answer-option').forEach(el=>el.disabled=!!s.feedback);syncButtons();}}
@@ -261,7 +288,7 @@ document.addEventListener('click',async event=>{
  if(a==='kana-pause'){cancelWork();if(!await save())return;openModal(`${modalHead('문자 수업 중단')}<p>현재 글자·연습 단계·필기를 저장해 두었어요.</p><div class="pause-actions">${btn('kana-open','저장하고 나가기','primary wide')}${btn('review-start','저장하고 단어 복습하기','soft wide')}${btn('kana-restart-request','이 줄을 처음부터','soft wide')}${btn('keep-learning','계속 연습하기','text wide')}</div>`);return;}
  if(a==='kana-restart-request'){openModal(`${modalHead('이 줄을 처음부터 쓸까요?')}<p>진행 중인 줄의 첫 글자부터 시작해요. 이미 익힌 글자와 복습 기록은 지우지 않습니다.</p><div class="modal-actions">${btn('kana-restart-confirm','처음부터 쓰기','primary')}${btn('keep-learning','취소','soft')}</div>`);return;}
  if(a.startsWith('kana-')){if(a==='kana-restart-confirm')closeModal();await handleKanaAction(a,el.dataset,state,{save,render,toast,go});return;}
- if(a==='examples'){const w=W(el.dataset.id);if(w){cancelWork();if(route()==='lesson'&&!modal.firstChild){s.showExample=true;s.exampleIndex=0;await save();render();scrollTo(0,0);}else openModal(`${modalHead('문장 속에서 기억해요')}${exampleBody(w,state.settings.furigana)}`);}}
+ if(a==='examples'){const w=W(el.dataset.id);if(w){cancelWork();if(route()==='lesson'&&!modal.firstChild){s.showExample=true;s.exampleIndex=0;await save();render();scrollTo(0,0);}else{openModal(`${modalHead('문장 속에서 기억해요')}${exampleBody(w,state.settings.furigana)}`);setTimeout(()=>play(false,w.id,true),90);}}}
  else if(a==='hide-examples'&&s){cancelWork();s.showExample=false;await save();render();}
  else if(a==='example-page'){cancelWork();const w=W(el.dataset.id),i=Number(el.dataset.index);if(!w||!Number.isSafeInteger(i)||i<0||i>=examplesFor(w).length)return;if(modal.firstChild)openModal(`${modalHead('문장 속에서 기억해요')}${exampleBody(w,state.settings.furigana,i)}`);else if(s){s.exampleIndex=i;await save();render();}}
  else if(a==='example-audio'){const w=W(el.dataset.id),e=examplesFor(w)[Number(el.dataset.index)];if(!e)return;const nonce=++audioNonce;const status=el.closest('.example-pane')?.querySelector('.example-audio-status');el.setAttribute('aria-busy','true');if(status)status.textContent='예문 재생 중';try{await speakSentence(e.speechText||e.ja,el.dataset.slow==='true'?.7:state.settings.rate);if(nonce===audioNonce&&status?.isConnected)status.textContent='재생 완료';}catch(error){if(nonce===audioNonce){if(status?.isConnected)status.textContent=error.message;toast(error.message);}}finally{if(el.isConnected)el.removeAttribute('aria-busy');}}
