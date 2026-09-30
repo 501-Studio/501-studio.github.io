@@ -1,4 +1,5 @@
 import {fresh,validateState} from './course-engine.js';
+import {normalizeTutorial,mergeTutorial} from './tutorial-state.js';
 const DB_NAME='kotoba-learning-v3';let db;
 export class ConflictError extends Error{constructor(){super('다른 탭에서 기록이 바뀌었습니다. 최신 기록을 다시 불러왔어요.');this.name='ConflictError';}}
 export async function openStore(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,1);req.onupgradeneeded=()=>{req.result.createObjectStore('state');req.result.createObjectStore('packs');};req.onsuccess=()=>{db=req.result;db.onversionchange=()=>db.close();resolve();};req.onerror=()=>reject(req.error);req.onblocked=()=>reject(new Error('다른 창의 저장소를 닫고 다시 열어 주세요.'));});}
@@ -10,3 +11,12 @@ export const loadPack=level=>read('packs',level);
 export function savePack(pack){return new Promise((resolve,reject)=>{const tx=db.transaction('packs','readwrite');tx.objectStore('packs').put(pack,pack.level);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}
 export function rawState(){return read('state','current');}
 export function replaceBackup(state,packs,expected){return new Promise((resolve,reject)=>{if(!db)return reject(new Error('저장소가 없습니다.'));const tx=db.transaction(['state','packs'],'readwrite'),store=tx.objectStore('state');const get=store.get('current');let output,conflict=false;get.onsuccess=()=>{if((get.result?.revision||0)!==expected){conflict=true;tx.abort();return;}output=structuredClone(state);output.revision=expected+1;store.put(output,'current');for(const p of packs)tx.objectStore('packs').put(p,p.level);};tx.oncomplete=()=>resolve(output);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(conflict?new ConflictError():tx.error||new Error('가져오기가 취소됐습니다.'));});}
+
+/** Help is a device preference in a separate key, not a scored learning record. */
+export async function loadTutorial(){return normalizeTutorial(await read('state','tutorial-v1'));}
+export function storeTutorial(value){return new Promise((resolve,reject)=>{
+ if(!db)return reject(new Error('안내 상태를 저장할 수 없습니다.'));
+ const tx=db.transaction('state','readwrite'),store=tx.objectStore('state'),get=store.get('tutorial-v1');let saved;
+ get.onsuccess=()=>{try{saved=mergeTutorial(get.result,value);store.put(saved,'tutorial-v1');}catch(error){tx.abort();reject(error);}};
+ tx.oncomplete=()=>resolve(saved);tx.onerror=()=>reject(tx.error||new Error('안내 저장 실패'));tx.onabort=()=>reject(tx.error||new Error('안내 저장 취소'));
+});}

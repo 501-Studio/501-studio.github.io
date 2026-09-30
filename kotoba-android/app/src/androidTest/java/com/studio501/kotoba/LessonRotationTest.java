@@ -40,6 +40,7 @@ public final class LessonRotationTest {
         try(ActivityScenario<MainActivity>s=ActivityScenario.launch(MainActivity.class)){
             s.onActivity(a->a.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT));
             until(s,"!!document.querySelector('.level-progress-grid')");
+            js(s,"document.querySelector('[data-action=\"tutorial-skip\"]')?.click();true");
             // Start and classify the actual lesson through its public UI.
             js(s,"document.querySelector('[data-action=\"start-course\"][data-id=\"N5-chapter-1\"]').click();true");
             int unknown=0;

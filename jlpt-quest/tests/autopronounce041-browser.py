@@ -5,6 +5,7 @@ The speech adapter verifies requests, not physical speaker audibility.
 from pathlib import Path
 import os,json,time,traceback
 from playwright.sync_api import sync_playwright
+from qa_tutorial import dismiss_tutorial
 OUT=Path(os.environ.get('KOTOBA_EVIDENCE_DIR','/tmp/kotoba040-qa'))/'autopronounce041';OUT.mkdir(parents=True,exist_ok=True)
 BASE=os.environ.get('KOTOBA_TEST_URL','http://127.0.0.1:4173/')
 checks=[];errors=[]
@@ -28,7 +29,7 @@ def seed(p,mode):
 with sync_playwright() as P:
  b=P.chromium.launch(headless=True,args=['--no-sandbox']);c=b.new_context(viewport={'width':390,'height':780},has_touch=True);c.add_init_script(TTS);p=c.new_page();p.on('pageerror',lambda e:errors.append(str(e)))
  try:
-  nav(p,'home');check('real app loads','코토바' in p.title() and p.locator('.level-progress-grid').count()==1)
+  nav(p,'home');dismiss_tutorial(p);check('real app loads','코토바' in p.title() and p.locator('.level-progress-grid').count()==1)
   target=seed(p,'survey');p.evaluate('window.__spoken=[]');nav(p,'lesson')
   check('survey auto-plays current word once',len(spoken(p))==1 and spoken(p)[0]['text']==target['reading'])
   p.locator('[data-action="furigana"]').click();p.wait_for_timeout(220)

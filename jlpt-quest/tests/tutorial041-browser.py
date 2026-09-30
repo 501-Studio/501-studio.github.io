@@ -17,7 +17,7 @@ def action(p,name):p.locator('[data-action="'+name+'"]').first.click();p.wait_fo
 def help_state(p):return p.evaluate("async()=>{const S=await import('./src/storage.js');return S.loadTutorial();}")
 def learning(p):return p.evaluate("async()=>{const S=await import('./src/storage.js');return S.rawState().then(s=>s||null);}")
 def settings(p):p.locator('.appbar [data-action="settings"]').click();p.wait_for_selector('[data-action="tutorial-open"]')
-def screenshot(p,name):p.screenshot(path=str(OUT/name),full_page=True)
+def screenshot(p,name):p.screenshot(path=str(OUT/name),full_page=False)
 def context(b,script=TTS):
  c=b.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2)
  if script:c.add_init_script(script)
@@ -68,9 +68,9 @@ with sync_playwright() as P:
   p.reload();p.wait_for_selector('.level-progress-grid');check('skipped guide does not return next launch',p.locator('.tutorial').count()==0)
   # Preserve a realistic previous-version main/review/XP record. Clear only help preference.
   p.evaluate("""async()=>{const E=await import('./src/course-engine.js'),S=await import('./src/storage.js');const all=(await fetch('./data/N5.json').then(r=>r.json())).words;const old=await S.loadState(),s=E.fresh(),w=all.find(w=>w.word==='学校');s.xp=71;s.known[w.id]=Date.now();s.session=E.createTargetReview(s,all,[{wordId:w.id,skill:'meaning'}]);s.suspendedSession=E.createTargetReview(s,all,[{wordId:w.id,skill:'writing'}]);s.uiRoute='lesson';await S.commit(s,old.revision);await new Promise((resolve,reject)=>{const r=indexedDB.open('kotoba-learning-v3',1);r.onsuccess=()=>{const db=r.result,tx=db.transaction('state','readwrite');tx.objectStore('state').delete('tutorial-v1');tx.oncomplete=()=>{db.close();resolve();};tx.onerror=()=>reject(tx.error);};});}""")
-  p.goto(BASE+'#lesson');p.wait_for_selector('.answer-option');p.wait_for_timeout(250)
+  p.goto(BASE+'?upgrade041=1#lesson');p.wait_for_selector('.answer-option');p.wait_for_timeout(250)
   check('upgrading never interrupts an existing lesson with first-run help',p.locator('.tutorial').count()==0)
-  p.goto(BASE+'#home');step(p,0);before=learning(p);action(p,'tutorial-skip')
+  p.goto(BASE+'?upgrade041=1#home');step(p,0);before=learning(p);action(p,'tutorial-skip')
   check('deferred home help preserves saved lesson review and XP',learning(p)==before and before['xp']==71 and before['suspendedSession'] is not None)
   settings(p);action(p,'tutorial-open');step(p,0);action(p,'tutorial-next');action(p,'tutorial-skip')
   check('settings replay does not touch any saved learning field',learning(p)==before)

@@ -1,3 +1,6 @@
+import {tutorialView} from './tutorial.js';
+import {freshTutorial,normalizeTutorial,tutorialProgress,shouldOfferTutorial,TUTORIAL_STEPS} from './tutorial-state.js';
+import {loadTutorial,storeTutorial} from './storage.js';
 import {advanced,hubEntry,hubView,examView,commuteView,monthlyPanel,wordSelectionBar,selectedWordButton,handleAdvanced,mountAdvanced,disposeAdvanced} from './advanced-ui.js';
 import {INTENSITIES,intensityKey,policyDescription,completedWord} from './learning-policy.js';
 import {recordStroke} from './study-data.js';
@@ -27,6 +30,7 @@ import {applyMotion,haptic,celebrate} from './motion.js';
 const root=document.querySelector('#app'),modal=document.querySelector('#modal-root');
 let state=fresh(),words=[],lookup=new Map(),ready=false,saving=false,busy=false,ink=null,storageOK=true,warning='',toastTimer,epoch=0,audioNonce=0,gradeNonce=0,autoVoiceWarned=false;
 let modalFit=()=>{},footerObserver=null,budgetTimer=null,promptClock={id:null,at:0};
+let tutorialRecord=freshTutorial(),tutorialSession=null,tutorialWrites=Promise.resolve(),tutorialSuppressed=false,tutorialSaveFailed=false;
 let statsView={days:7,level:'all',date:null},practiceWordId=null,practiceRepeats=3;
 let filter='due',wordFilter='all',search='',limit=80,courseLimit=24,pendingCourse=null,imported=null,priorFocus=null;
 let savedRevision=0,tail=Promise.resolve(),stopFitting=()=>{};
@@ -146,7 +150,7 @@ function render(){disposeAdvanced();clearInterval(budgetTimer);stopFitting();foo
  ink?.destroy();ink=null;applyMotion(state.settings);configureAudio(state.settings);
  const t=current(state.session);document.documentElement.dataset.lesson=String(['lesson','kana-practice','word-practice'].includes(route()));document.documentElement.dataset.feedback=String(route()==='lesson'&&!!state.session?.feedback);document.documentElement.dataset.snap=String(route()==='kana-practice'||route()==='word-practice'||(route()==='lesson'&&!!t&&['trace','writing'].includes(t.skill)));
  root.innerHTML=route()==='word-practice'?practiceView(state,W(state.wordPractice?.wordId)):route()==='kana-practice'?kanaPractice(state):route()==='lesson'?questionPage():shell(({home,course:curriculum,review,words:wordPage,profile,'study-hub':()=>hubView(state,words),exam:()=>examView(state),commute:()=>commuteView(state),kana:()=>kanaHome(state)}[route()]||home)());
- stopFitting=fitHeadwords(root);notifyScreen(route()==='word-practice'?'kana-practice':route(),state.session);
+ stopFitting=fitHeadwords(root);offerTutorial();notifyScreen(tutorialSession?'tutorial':route()==='word-practice'?'kana-practice':route(),state.session);
  mountAdvanced(advancedContext());
  if(route()==='lesson'&&t&&!state.session.feedback){if(promptClock.id!==t.id)promptClock={id:t.id,at:performance.now()};}else promptClock={id:null,at:0};
  const timed=state.session;
@@ -186,12 +190,56 @@ function render(){disposeAdvanced();clearInterval(budgetTimer);stopFitting();foo
 }
 function syncButtons(){const s=state.session;if(!s)return;const b=document.querySelector('[data-action="answer"]');if(b)b.disabled=!canAnswer()||busy;const a=document.querySelector('[data-action="audio-done"]');if(a)a.disabled=!s.heard||busy;}
 function modalHead(title){return `<div class="sheet-head"><h2 id="sheet-title">${title}</h2><button class="icon-btn" data-action="close-modal" aria-label="닫기">${icon('close')}</button></div>`;}
-function openModal(body){if(promptClock.id)promptClock.invalid=true;modalFit();priorFocus=document.activeElement;modal.innerHTML=`<div class="modal-backdrop"><section class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">${body}</section></div>`;document.body.classList.add('modal-open');modal.querySelector('button,input,select')?.focus();modalFit=fitHeadwords(modal);}
-function closeModal(){audioNonce++;stopAudio();modalFit();modal.innerHTML='';document.body.classList.remove('modal-open');priorFocus?.focus?.();}
+function openModal(body,forTutorial=false){if(tutorialSession&&!forTutorial)return;cancelWork();if(promptClock.id)promptClock.invalid=true;modalFit();priorFocus=document.activeElement;modal.innerHTML=`<div class="modal-backdrop"><section class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">${body}</section></div>`;document.body.classList.add('modal-open');modal.querySelector('button,input,select')?.focus();modalFit=fitHeadwords(modal);root.inert=true;}
+function closeModal(restore=true){if(tutorialSession){finishTutorial('skipped',restore);return;}root.inert=false;audioNonce++;stopAudio();modalFit();modal.innerHTML='';document.body.classList.remove('modal-open');priorFocus?.focus?.();}
+function persistTutorial(value){
+ tutorialRecord=normalizeTutorial(value);const snapshot={...tutorialRecord};
+ tutorialWrites=tutorialWrites.catch(()=>{}).then(()=>storeTutorial(snapshot));
+ tutorialWrites.catch(()=>{tutorialSaveFailed=true;const status=modal.querySelector('.tour-storage-status');if(status)status.textContent='안내 상태를 저장하지 못했습니다. 다음 실행 때 다시 나올 수 있습니다.';toast('안내 상태를 저장하지 못했습니다. 학습 기록은 변경하지 않았습니다.');});
+}
+function offerTutorial(){
+ if(tutorialSession||tutorialSuppressed)return;
+ if(shouldOfferTutorial(tutorialRecord,{route:route(),ready,storageOK,hidden:document.hidden,modalOpen:!!modal.firstChild}))startTutorial(false);
+}
+function startTutorial(replay=true){
+ if(tutorialSession)return;
+ cancelWork();tutorialSession={step:replay?0:tutorialRecord.step,replay,route:route(),focus:document.activeElement};
+ if(!replay)persistTutorial(tutorialProgress(tutorialSession.step));
+ showTutorial();
+}
+function showTutorial(){
+ if(!tutorialSession)return;
+ openModal(tutorialView(tutorialSession.step,{replay:tutorialSession.replay}),true);
+ const sheet=modal.querySelector('.sheet');sheet?.setAttribute('aria-describedby','tour-description');
+ modal.querySelector('#sheet-title')?.focus({preventScroll:true});
+ if(tutorialSaveFailed)modal.querySelector('.tour-storage-status').textContent='안내 상태를 저장하지 못했습니다. 다음 실행 때 다시 나올 수 있습니다.';
+ notifyScreen('tutorial',state.session);
+}
+function finishTutorial(status='skipped',restore=true){
+ const tour=tutorialSession;if(!tour)return;
+ tutorialSession=null;tutorialSuppressed=true;
+ if(status==='completed'||tutorialRecord.status!=='completed')persistTutorial(tutorialProgress(tour.step,status));
+ closeModal();
+ if(tour.replay&&restore&&route()===tour.route){settings();modal.querySelector('[data-action="tutorial-open"]')?.focus({preventScroll:true});}
+ else if(restore){(tour.focus?.isConnected?tour.focus:root.querySelector('.appbar [data-action="settings"]'))?.focus?.({preventScroll:true});}
+ notifyScreen(route()==='word-practice'?'kana-practice':route(),state.session);
+}
+function handleTutorialAction(action){
+ if(action==='tutorial-open'){startTutorial(true);return true;}
+ if(!tutorialSession)return false;
+ if(action==='tutorial-skip'){finishTutorial('skipped');return true;}
+ if(action==='tutorial-finish'){if(tutorialSession.step===TUTORIAL_STEPS-1)finishTutorial('completed');return true;}
+ if(action==='tutorial-previous'||action==='tutorial-next'){
+  tutorialSession.step=Math.min(TUTORIAL_STEPS-1,Math.max(0,tutorialSession.step+(action==='tutorial-next'?1:-1)));
+  if(!tutorialSession.replay)persistTutorial(tutorialProgress(tutorialSession.step));
+  showTutorial();
+ }
+ return true;
+}
 function switchSetting(key,label,description=''){
  return `<div class="setting-row"><div><b>${label}</b>${description?`<small>${description}</small>`:''}</div><label class="setting-switch"><input type="checkbox" role="switch" data-setting="${key}" aria-label="${label}" ${state.settings[key]?'checked':''}><span class="switch-track" aria-hidden="true"><i></i></span></label></div>`;
 }
-function settings(){openModal(`${modalHead('설정')}<button class="premium-entry" data-action="premium">${icon('spark')}<div><b>광고 없이 사용</b><small>코토바 프리미엄</small></div>${icon('next')}</button>${switchSetting('furigana','히라가나 표시')}${switchSetting('motion','애니메이션')}<div class="setting-row"><b>듣기 속도</b><select data-setting="rate" aria-label="듣기 속도">${[.7,.85,1].map(n=>`<option value="${n}" ${n===state.settings.rate?'selected':''}>${n}×</option>`).join('')}</select></div><div class="setting-row"><b>펜 굵기</b><select data-setting="penWidth" aria-label="펜 굵기">${[4,6,8].map(n=>`<option value="${n}" ${n===state.settings.penWidth?'selected':''}>${n===4?'보통':n===6?'굵게':'더 굵게'}</option>`).join('')}</select></div><section class="settings-section"><h3>학습 강도</h3><select data-setting="intensity" aria-label="학습 강도">${Object.entries(INTENSITIES).map(([k,p])=>`<option value="${k}" ${state.settings.intensity===k?'selected':''}>${p.label}</option>`).join('')}</select><p id="intensity-description" class="fine">${policyDescription(state.settings.intensity)}</p><p class="fine">모르는 단어 기준입니다. 새 회차부터 적용하며 진행 중인 수업은 바꾸지 않습니다.</p>${switchSetting('adaptiveSRS','개인별 복습 간격')}<p class="fine">자동 채점 기록에 따라 간격을 조절합니다. 이미 정해진 복습일은 다음 채점 전까지 유지됩니다.</p></section><section class="settings-section"><h3>쓰기 연습</h3>${switchSetting('kanjiOnlyPractice','한자만 쓰기 연습','수업에서 가나만 있는 단어의 따라 쓰기를 생략합니다. 쓰기 시험은 유지합니다.')}</section><section class="settings-section"><h3>일본어 음성</h3><p class="setting-note">단어·예문·가나는 기기의 일본어 음성으로 재생합니다. 일본어 오프라인 음성이 설치되어 있어야 합니다.</p>${btn('speech-settings','기기 음성 설정','soft')}${btn('speech-test','음성 테스트','text')}</section><section class="settings-section"><h3>알림</h3>${switchSetting('reviewNotifications','복습 알림','오전 9시~오후 10시 · 하루 최대 2회')}${btn('reminder-permission','알림 권한 확인','text')}</section><div class="modal-actions">${btn('export','기록 백업','soft')}${btn('import','백업 가져오기','soft')}</div><input id="backup-file" type="file" accept="application/json,.json" class="sr-only"><div class="legal-links">${btn('restore-purchases','구매 복원','text')}${btn('manage-subscription','구독 관리','text')}${btn('privacy-options','광고 개인정보 선택','text')}<a href="./privacy.html">개인정보처리방침</a><a href="./terms.html">이용약관</a><a href="./licenses.html">오픈소스·저작권</a></div><div class="spaced">${btn('reset','학습 기록 초기화','text danger')}</div><p class="fine">코토바 0.4.0 · 내부 테스트</p>`);}
+function settings(){openModal(`${modalHead('설정')}<button class="premium-entry" data-action="premium">${icon('spark')}<div><b>광고 없이 사용</b><small>코토바 프리미엄</small></div>${icon('next')}</button><section class="settings-section"><button type="button" class="btn soft tutorial-replay" data-action="tutorial-open">${icon('book')}<span>튜토리얼 다시 보기<small>학습·복습·단어장 사용법</small></span>${icon('next')}</button></section>${switchSetting('furigana','히라가나 표시')}${switchSetting('motion','애니메이션')}<div class="setting-row"><b>듣기 속도</b><select data-setting="rate" aria-label="듣기 속도">${[.7,.85,1].map(n=>`<option value="${n}" ${n===state.settings.rate?'selected':''}>${n}×</option>`).join('')}</select></div><div class="setting-row"><b>펜 굵기</b><select data-setting="penWidth" aria-label="펜 굵기">${[4,6,8].map(n=>`<option value="${n}" ${n===state.settings.penWidth?'selected':''}>${n===4?'보통':n===6?'굵게':'더 굵게'}</option>`).join('')}</select></div><section class="settings-section"><h3>학습 강도</h3><select data-setting="intensity" aria-label="학습 강도">${Object.entries(INTENSITIES).map(([k,p])=>`<option value="${k}" ${state.settings.intensity===k?'selected':''}>${p.label}</option>`).join('')}</select><p id="intensity-description" class="fine">${policyDescription(state.settings.intensity)}</p><p class="fine">모르는 단어 기준입니다. 새 회차부터 적용하며 진행 중인 수업은 바꾸지 않습니다.</p>${switchSetting('adaptiveSRS','개인별 복습 간격')}<p class="fine">자동 채점 기록에 따라 간격을 조절합니다. 이미 정해진 복습일은 다음 채점 전까지 유지됩니다.</p></section><section class="settings-section"><h3>쓰기 연습</h3>${switchSetting('kanjiOnlyPractice','한자만 쓰기 연습','수업에서 가나만 있는 단어의 따라 쓰기를 생략합니다. 쓰기 시험은 유지합니다.')}</section><section class="settings-section"><h3>일본어 음성</h3><p class="setting-note">단어·예문·가나는 기기의 일본어 음성으로 재생합니다. 일본어 오프라인 음성이 설치되어 있어야 합니다.</p>${btn('speech-settings','기기 음성 설정','soft')}${btn('speech-test','음성 테스트','text')}</section><section class="settings-section"><h3>알림</h3>${switchSetting('reviewNotifications','복습 알림','오전 9시~오후 10시 · 하루 최대 2회')}${btn('reminder-permission','알림 권한 확인','text')}</section><div class="modal-actions">${btn('export','기록 백업','soft')}${btn('import','백업 가져오기','soft')}</div><input id="backup-file" type="file" accept="application/json,.json" class="sr-only"><div class="legal-links">${btn('restore-purchases','구매 복원','text')}${btn('manage-subscription','구독 관리','text')}${btn('privacy-options','광고 개인정보 선택','text')}<a href="./privacy.html">개인정보처리방침</a><a href="./terms.html">이용약관</a><a href="./licenses.html">오픈소스·저작권</a></div><div class="spaced">${btn('reset','학습 기록 초기화','text danger')}</div><p class="fine">코토바 0.4.1 · 내부 테스트</p>`);}
 function detail(id){
  const w=W(id);if(!w)return;
  const rows=['meaning','writing','listening'].map(k=>{const v=wordStatus(state,id,k);return `<div class="memory-row"><b>${{meaning:'뜻',writing:'쓰기',listening:'듣기'}[k]}</b><span>${v.kind==='tested'?dueLabel(v.record.due):v.kind==='known'?'아는 단어로 분류 · 시험 전':'시험 기록 없음'}</span></div>`;}).join('');
@@ -224,6 +272,7 @@ function autoSpeechStage(s,t){
  return null;
 }
 async function autoPronounceOnce(s,t,w){
+ if(document.hidden||modal.firstChild||!storageOK||state.session!==s||current(s)!==t)return;
  const stage=autoSpeechStage(s,t);if(!stage||!w||((t.autoSpeech||0)&stage.bit))return;
  t.autoSpeech=(t.autoSpeech||0)|stage.bit;
  if(stage.bit===AUTO_SPEECH_PROMPT&&promptClock.id===t.id)promptClock.invalid=true;
@@ -239,7 +288,7 @@ async function autoPronounceOnce(s,t,w){
  }catch(e){
   if(nonce===audioNonce&&!autoVoiceWarned){autoVoiceWarned=true;toast(e.message||'기기의 일본어 음성을 확인해 주세요.');}
  }finally{
-  if(stage.bit===AUTO_SPEECH_PROMPT&&state.session===s&&current(s)?.id===t.id&&!s.feedback)promptClock={id:t.id,at:performance.now(),invalid:false};
+  if(nonce===audioNonce&&!document.hidden&&!modal.firstChild&&stage.bit===AUTO_SPEECH_PROMPT&&state.session===s&&current(s)?.id===t.id&&!s.feedback)promptClock={id:t.id,at:performance.now(),invalid:false};
  }
 }
 async function play(slow=false,wordId=null,auto=false){const s=state.session,t=wordId?null:current(s),w=W(wordId||t?.wordId);if(!w)return;const nonce=++audioNonce,rate=slow?.7:state.settings.rate;const status=wordId?document.querySelector('.sheet .word-audio-status')||document.querySelector(`.wordbook-item:has([data-id="${wordId}"]) .word-audio-status`):document.querySelector('#audio-status');if(status)status.textContent='재생 중';document.querySelector('.audio-main')?.classList.add('playing');
@@ -254,6 +303,7 @@ function confirmImport(raw){if(raw.length>30e6)throw new Error('백업 파일은
 document.addEventListener('click',async event=>{
  const el=event.target.closest('[data-action]');if(!el||el.disabled||!ready)return;const a=el.dataset.action,s=state.session,t=current(s);
  try{
+ if(handleTutorialAction(a))return;
  if(await handleAdvanced(a,el,advancedContext()))return;
  if(a==='stats-range'){statsView.days=Number(el.dataset.days);statsView.date=null;render();return;}
  if(a==='stats-level'){statsView.level=el.dataset.level;statsView.date=null;render();return;}
@@ -288,7 +338,7 @@ document.addEventListener('click',async event=>{
  if(a==='kana-pause'){cancelWork();if(!await save())return;openModal(`${modalHead('문자 수업 중단')}<p>현재 글자·연습 단계·필기를 저장해 두었어요.</p><div class="pause-actions">${btn('kana-open','저장하고 나가기','primary wide')}${btn('review-start','저장하고 단어 복습하기','soft wide')}${btn('kana-restart-request','이 줄을 처음부터','soft wide')}${btn('keep-learning','계속 연습하기','text wide')}</div>`);return;}
  if(a==='kana-restart-request'){openModal(`${modalHead('이 줄을 처음부터 쓸까요?')}<p>진행 중인 줄의 첫 글자부터 시작해요. 이미 익힌 글자와 복습 기록은 지우지 않습니다.</p><div class="modal-actions">${btn('kana-restart-confirm','처음부터 쓰기','primary')}${btn('keep-learning','취소','soft')}</div>`);return;}
  if(a.startsWith('kana-')){if(a==='kana-restart-confirm')closeModal();await handleKanaAction(a,el.dataset,state,{save,render,toast,go});return;}
- if(a==='examples'){const w=W(el.dataset.id);if(w){cancelWork();if(route()==='lesson'&&!modal.firstChild){s.showExample=true;s.exampleIndex=0;await save();render();scrollTo(0,0);}else{openModal(`${modalHead('문장 속에서 기억해요')}${exampleBody(w,state.settings.furigana)}`);setTimeout(()=>play(false,w.id,true),90);}}}
+ if(a==='examples'){const w=W(el.dataset.id);if(w){cancelWork();if(route()==='lesson'&&!modal.firstChild){s.showExample=true;s.exampleIndex=0;await save();render();scrollTo(0,0);}else{openModal(`${modalHead('문장 속에서 기억해요')}${exampleBody(w,state.settings.furigana)}`);const sheet=modal.firstChild;setTimeout(()=>{if(!document.hidden&&modal.firstChild===sheet&&sheet?.querySelector('.example-pane'))play(false,w.id,true);},90);}}}
  else if(a==='hide-examples'&&s){cancelWork();s.showExample=false;await save();render();}
  else if(a==='example-page'){cancelWork();const w=W(el.dataset.id),i=Number(el.dataset.index);if(!w||!Number.isSafeInteger(i)||i<0||i>=examplesFor(w).length)return;if(modal.firstChild)openModal(`${modalHead('문장 속에서 기억해요')}${exampleBody(w,state.settings.furigana,i)}`);else if(s){s.exampleIndex=i;await save();render();}}
  else if(a==='example-audio'){const w=W(el.dataset.id),e=examplesFor(w)[Number(el.dataset.index)];if(!e)return;const nonce=++audioNonce;const status=el.closest('.example-pane')?.querySelector('.example-audio-status');el.setAttribute('aria-busy','true');if(status)status.textContent='예문 재생 중';try{await speakSentence(e.speechText||e.ja,el.dataset.slow==='true'?.7:state.settings.rate);if(nonce===audioNonce&&status?.isConnected)status.textContent='재생 완료';}catch(error){if(nonce===audioNonce){if(status?.isConnected)status.textContent=error.message;toast(error.message);}}finally{if(el.isConnected)el.removeAttribute('aria-busy');}}
@@ -363,11 +413,11 @@ document.addEventListener('change',async event=>{
  if(k&&['furigana','motion','penWidth','rate','kanjiOnlyPractice','reviewNotifications','intensity','adaptiveSRS'].includes(k)){state.settings[k]=['furigana','motion','kanjiOnlyPractice','reviewNotifications','adaptiveSRS'].includes(k)?event.target.checked:k==='intensity'?intensityKey(event.target.value):Number(event.target.value);await save();if(k==='intensity'){const d=document.querySelector('#intensity-description');if(d)d.textContent=policyDescription(state.settings.intensity);}if(k==='reviewNotifications'&&state.settings[k])await requestReviewPermission().catch(()=>{});render();}
  if(event.target.id==='backup-file'){const f=event.target.files[0];if(!f)return;try{if(f.size>30e6)throw new Error('백업은 30MB 이하만 가능합니다.');confirmImport(await f.text());}catch(e){toast(e.message);}}
 });
-document.addEventListener('keydown',event=>{if(!modal.firstChild)return;if(event.key==='Escape'){event.preventDefault();closeModal();}if(event.key==='Tab'){const all=[...modal.querySelectorAll('button:not(:disabled),input:not(.sr-only),select,a[href]')],first=all[0],last=all.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}}});
-window.addEventListener('hashchange',()=>{cancelWork();closeModal();if(ready){save();render();}scrollTo(0,0);});
+document.addEventListener('keydown',event=>{if(!modal.firstChild)return;if(event.key==='Escape'){event.preventDefault();closeModal();}if(event.key==='Tab'){const all=[...modal.querySelectorAll('button:not(:disabled),input:not(.sr-only),select,a[href]')],first=all[0],last=all.at(-1);if(!all.includes(document.activeElement)){event.preventDefault();(event.shiftKey?last:first)?.focus();}else if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}}});
+window.addEventListener('hashchange',()=>{cancelWork();closeModal(false);if(ready){save();render();}scrollTo(0,0);});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){promptClock.invalid=true;cancelWork();ink?.destroy();ink=null;save();}else if(ready)render();});
 window.addEventListener('beforeunload',()=>{cancelWork();});
-async function boot(){installBridge();try{await openStore();state=await loadState();savedRevision=state.revision;await initializePacks();await loadStrokeBank();await loadExamples();mergeWords();requireStrokes(words.flatMap(writingChars));if(!location.hash&&((state.uiRoute==='lesson'&&state.session&&!state.session.finished)||(state.uiRoute==='kana-practice'&&state.kana.session&&!state.kana.session.finished)||(state.uiRoute==='word-practice'&&state.wordPractice&&!state.wordPractice.finished)))history.replaceState(null,'','#'+state.uiRoute);ready=true;render();syncReminders(state).catch(()=>{});refreshCommerce().catch(()=>{});}catch(e){storageOK=false;warning=e.message;ready=true;await initializePacks();mergeWords();root.innerHTML=`<main class="fatal"><h1>학습 기록을 불러오지 못했습니다.</h1><p>${esc(e.message)}</p><p>손상된 기록을 새 기록으로 덮어쓰지 않았습니다. 원본 백업을 내려받고 개발자에게 전달해 주세요.</p><button id="raw-backup" class="btn primary">원본 기록 백업</button></main>`;document.querySelector('#raw-backup').onclick=async()=>{try{downloadJSON(await rawState(),'kotoba-recovery.json');}catch{toast('저장소 접근이 차단되어 백업도 읽을 수 없습니다. 다른 브라우저에서 확인하세요.');}};}
+async function boot(){installBridge();try{await openStore();state=await loadState();savedRevision=state.revision;try{tutorialRecord=await loadTutorial();}catch{tutorialSuppressed=true;tutorialSaveFailed=true;}await initializePacks();await loadStrokeBank();await loadExamples();mergeWords();requireStrokes(words.flatMap(writingChars));if(!location.hash&&((state.uiRoute==='lesson'&&state.session&&!state.session.finished)||(state.uiRoute==='kana-practice'&&state.kana.session&&!state.kana.session.finished)||(state.uiRoute==='word-practice'&&state.wordPractice&&!state.wordPractice.finished)))history.replaceState(null,'','#'+state.uiRoute);ready=true;render();syncReminders(state).catch(()=>{});refreshCommerce().catch(()=>{});}catch(e){storageOK=false;warning=e.message;ready=true;await initializePacks();mergeWords();root.innerHTML=`<main class="fatal"><h1>학습 기록을 불러오지 못했습니다.</h1><p>${esc(e.message)}</p><p>손상된 기록을 새 기록으로 덮어쓰지 않았습니다. 원본 백업을 내려받고 개발자에게 전달해 주세요.</p><button id="raw-backup" class="btn primary">원본 기록 백업</button></main>`;document.querySelector('#raw-backup').onclick=async()=>{try{downloadJSON(await rawState(),'kotoba-recovery.json');}catch{toast('저장소 접근이 차단되어 백업도 읽을 수 없습니다. 다른 브라우저에서 확인하세요.');}};}
  if('serviceWorker'in navigator&&!isNative()&&location.protocol==='https:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
 }
 boot();
