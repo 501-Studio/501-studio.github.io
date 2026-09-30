@@ -21,4 +21,15 @@ old='// Start and classify the actual lesson through its public UI.'
 new='js(s,"document.querySelector(\'[data-action=\\\"tutorial-skip\\\"]\')?.click();true");\n            // Start and classify the actual lesson through its public UI.'
 if new not in s:assert old in s;s=s.replace(old,new)
 p.write_text(s)
-print('Historical regressions dismiss the actual guide UI before testing their own flow.')
+# Changing only #route is same-document navigation. The upgrade fixture must boot
+# a fresh app after removing its device preference, like an actual app update.
+# Do not clear/modify any app runtime flag to make this test pass.
+p=ROOT/'tutorial041-browser.py';s=p.read_text()
+for old,new in [
+ ("p.goto(BASE+'#lesson');p.wait_for_selector('.answer-option')", "p.goto(BASE+'?upgrade041=1#lesson');p.wait_for_selector('.answer-option')"),
+ ("p.goto(BASE+'#home');step(p,0);before=learning(p)", "p.goto(BASE+'?upgrade041=1#home');step(p,0);before=learning(p)"),
+ ("def screenshot(p,name):p.screenshot(path=str(OUT/name),full_page=True)", "def screenshot(p,name):p.screenshot(path=str(OUT/name),full_page=False)")
+]:
+ if new not in s:assert old in s,old;s=s.replace(old,new)
+p.write_text(s)
+print('Historical regressions dismiss actual help UI; upgrade fixture performs a new boot.')
