@@ -28,14 +28,21 @@ public final class TutorialLifecycleTest {
  private void until(ActivityScenario<MainActivity>s,String code)throws Exception{
   long end=SystemClock.elapsedRealtime()+25000;
   while(SystemClock.elapsedRealtime()<end){if("true".equals(js(s,code)))return;SystemClock.sleep(100);}
-  fail("Tutorial condition failed: "+code+" page="+js(s,"document.body.innerText.slice(0,1500)"));
+  fail("Tutorial condition failed: "+code+" page="+js(s,"JSON.stringify({body:document.body.innerText.slice(0,1500),seedError:document.body.dataset.seedError})"));
  }
  @Test public void tutorialResumesAndBackReturnsToSettingsWithoutResettingRecords()throws Exception{
   try(ActivityScenario<MainActivity>s=ActivityScenario.launch(MainActivity.class)){
    until(s,"!!document.querySelector('#main')");
+   // Another lifecycle test may have left a saved lesson. Navigate normally first.
+   js(s,"location.hash='home';true");until(s,"!!document.querySelector('.level-progress-grid')");
+   until(s,"!document.querySelector('#function-tutorial[open]') || !!document.querySelector('#function-tutorial[aria-busy=\"false\"]')");
    js(s,"document.querySelector('#function-tutorial [data-tour-action=\"skip\"]')?.click();true");
    until(s,"!document.querySelector('#function-tutorial[open]')");
-   js(s,"(async()=>{const S=await import('./src/storage.js');const v=await S.loadState();v.tutorial={version:1,status:'started',step:1};v.uiRoute='home';await S.commit(v,v.revision);location.href=location.href.split('#')[0]+'#home';location.reload();})();true");
+   // evaluateJavascript has no module base URL: resolve against the actual page explicitly.
+   js(s,"(async()=>{try{const S=await import(new URL('./src/storage.js',location.href).href);const v=await S.loadState();v.tutorial={version:1,status:'started',step:1};v.uiRoute='home';await S.commit(v,v.revision);document.body.dataset.seedReady='true';}catch(e){document.body.dataset.seedError=String(e);}})();true");
+   until(s,"document.body.dataset.seedReady==='true'||!!document.body.dataset.seedError");
+   assertEquals("Fixture failed: "+js(s,"document.body.dataset.seedError||''"),"true",js(s,"document.body.dataset.seedReady==='true'"));
+   js(s,"location.reload();true");
    until(s,"document.querySelector('#function-tutorial[open][aria-busy=\"false\"]')?.innerText.includes('한 글자')===true");
    s.recreate();until(s,"document.querySelector('#function-tutorial[open][aria-busy=\"false\"]')?.innerText.includes('한 글자')===true");
    js(s,"document.querySelector('#function-tutorial [data-tour-action=\"skip\"]').click();true");until(s,"!document.querySelector('#function-tutorial[open]')");

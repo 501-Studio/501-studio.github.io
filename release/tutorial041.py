@@ -31,8 +31,7 @@ replace('kotoba-android/app/build.gradle',"versionName '0.4.0'","versionName '0.
 p=ROOT/'package.json';d=json.loads(p.read_text());d['version']='0.4.1'
 if 'tests/tutorial041.test.mjs' not in d['scripts']['test']:d['scripts']['test']+=' tests/tutorial041.test.mjs'
 p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
-# Returning-user regression cases explicitly dismiss the new first-run overlay.
-# New-install, migration, accessibility, failure and replay paths have a separate suite.
+# Returning-user cases dismiss onboarding through its public button.
 for name in ['continuation040','autopronounce041','advanced040','personal039','release038','examples038','release037','release036']:
  p=ROOT/f'tests/{name}-browser.py';s=p.read_text()
  if 'from tutorial_helpers import returning_user' not in s:s='from tutorial_helpers import returning_user\n'+s
@@ -45,4 +44,7 @@ replace(path,'// Start and classify the actual lesson through its public UI.', '
             js(s,"document.querySelector('#function-tutorial [data-tour-action=\\\"skip\\\"]')?.click();true");
             until(s,"!document.querySelector('#function-tutorial[open]')");
             // Start and classify the actual lesson through its public UI.''')
+replace(path,'// Dismiss the first-run tutorial through its public button when present.', '''// Wait for asynchronous first-run persistence before pressing a disabled button.
+            until(s,"!document.querySelector('#function-tutorial[open]') || !!document.querySelector('#function-tutorial[aria-busy=\\\"false\\\"]')");
+            // Dismiss the first-run tutorial through its public button when present.''')
 print('Tutorial 041 source integrated; existing learning state schema preserved.')
