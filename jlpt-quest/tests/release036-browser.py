@@ -1,3 +1,4 @@
+from tutorial_helpers import returning_user
 """CI browser QA. Real navigation, Canvas, IndexedDB and device TTS adapter. No billing grants.
 No authenticated browser/Play Console automation. Test adapters never ship with the app.
 """
@@ -13,7 +14,7 @@ def check(name,ok):
 def seed(page,word='おまわりさん',skill='audio'):
  page.evaluate('''async ({word,skill})=>{
  const E=await import('./src/course-engine.js'),C=await import('./src/catalog.js'),S=await import('./src/storage.js');await S.openStore();
- const existing=await S.loadState(),state=E.fresh();const all=(await Promise.all(['N5','N4','N3','N2','N1'].map(l=>fetch('./data/'+l+'.json').then(r=>r.json())))).flatMap(p=>p.words);
+ const existing=await S.loadState(),state=Object.assign(E.fresh(),{tutorial:{version:1,status:'skipped',step:0}});const all=(await Promise.all(['N5','N4','N3','N2','N1'].map(l=>fetch('./data/'+l+'.json').then(r=>r.json())))).flatMap(p=>p.words);
  const w=all.find(w=>w.level==='N5'&&w.word===word),c=C.courses(all,'N5').find(c=>c.wordIds.includes(w.id));state.session=E.createClass(state,c,all);
  if(skill==='survey')state.session.index=state.session.queue.findIndex(t=>t.wordId===w.id);
  else {while(E.current(state.session)?.phase==='survey'){const t=E.current(state.session);E.classifySurvey(state,t.id,t.wordId!==w.id,all);}state.session.index=state.session.queue.findIndex(t=>t.wordId===w.id&&t.skill===skill&&(skill==='meaning'||skill==='listening'||skill==='writing'?t.phase==='quiz':t.phase==='learn'));}
@@ -32,7 +33,7 @@ def draw_fast(page,paths):
  cdp.detach()
 with sync_playwright() as P:
  b=P.chromium.launch(executable_path=os.environ.get('KOTOBA_CHROMIUM') or None,headless=True,args=['--no-sandbox','--disable-dev-shm-usage','--autoplay-policy=no-user-gesture-required'])
- c=b.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2);c.add_init_script("window.__deviceTestSpeech=[];Object.defineProperty(window,'SpeechSynthesisUtterance',{configurable:true,value:class{constructor(t){this.text=t;}}});Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{getVoices:()=>[{lang:'ja-JP',localService:true}],speak(u){window.__deviceTestSpeech.push(u.text);setTimeout(()=>u.onend?.(),50)},cancel(){}}});");p=c.new_page();p.on('pageerror',lambda e:errors.append(str(e)))
+ c=b.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2);c.add_init_script("window.__deviceTestSpeech=[];Object.defineProperty(window,'SpeechSynthesisUtterance',{configurable:true,value:class{constructor(t){this.text=t;}}});Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{getVoices:()=>[{lang:'ja-JP',localService:true}],speak(u){window.__deviceTestSpeech.push(u.text);setTimeout(()=>u.onend?.(),50)},cancel(){}}});");p=c.new_page();returning_user(p);p.on('pageerror',lambda e:errors.append(str(e)))
  try:
   p.goto(BASE);p.wait_for_selector('.level-progress-grid',timeout=15000)
   check('all five level summaries render',p.locator('.level-progress').count()==5)

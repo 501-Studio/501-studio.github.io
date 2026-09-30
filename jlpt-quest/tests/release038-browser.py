@@ -1,3 +1,4 @@
+from tutorial_helpers import returning_user
 """Interaction/viewport evidence: real Chromium, no hand-written verdict bypass.
 Voice controls use a clearly identified offline-voice mock; actual device audibility is not claimed.
 """
@@ -11,7 +12,7 @@ def check(name,value):
  if not value:raise AssertionError(name)
 def state(p):return p.evaluate("async()=>{const S=await import('./src/storage.js');await S.openStore();return await S.loadState();}")
 def seed(p,skill='meaning'):
- p.evaluate('''async skill=>{const E=await import('./src/course-engine.js'),C=await import('./src/catalog.js'),S=await import('./src/storage.js');await S.openStore();const old=await S.loadState(),s=E.fresh(),all=(await Promise.all(['N5','N4','N3','N2','N1'].map(l=>fetch('./data/'+l+'.json').then(r=>r.json())))).flatMap(p=>p.words),w=all.find(x=>x.level==='N5'&&x.word==='山'),c=C.courses(all,'N5').find(c=>c.wordIds.includes(w.id));s.uiRoute='lesson';s.session=E.createClass(s,c,all);while(E.current(s.session)?.phase==='survey'){const t=E.current(s.session);E.classifySurvey(s,t.id,t.wordId!==w.id,all);}s.session.index=s.session.queue.findIndex(t=>t.wordId===w.id&&t.skill===skill&&t.phase===(skill==='trace'?'learn':'quiz'));s.memory[E.keyOf(w.id,'meaning')]=E.schedule(undefined,false,'earlier',Date.now()-700000);await S.commit(s,old.revision);}''',skill)
+ p.evaluate('''async skill=>{const E=await import('./src/course-engine.js'),C=await import('./src/catalog.js'),S=await import('./src/storage.js');await S.openStore();const old=await S.loadState(),s=Object.assign(E.fresh(),{tutorial:{version:1,status:'skipped',step:0}}),all=(await Promise.all(['N5','N4','N3','N2','N1'].map(l=>fetch('./data/'+l+'.json').then(r=>r.json())))).flatMap(p=>p.words),w=all.find(x=>x.level==='N5'&&x.word==='山'),c=C.courses(all,'N5').find(c=>c.wordIds.includes(w.id));s.uiRoute='lesson';s.session=E.createClass(s,c,all);while(E.current(s.session)?.phase==='survey'){const t=E.current(s.session);E.classifySurvey(s,t.id,t.wordId!==w.id,all);}s.session.index=s.session.queue.findIndex(t=>t.wordId===w.id&&t.skill===skill&&t.phase===(skill==='trace'?'learn':'quiz'));s.memory[E.keyOf(w.id,'meaning')]=E.schedule(undefined,false,'earlier',Date.now()-700000);await S.commit(s,old.revision);}''',skill)
  p.goto(BASE+'#lesson',wait_until='domcontentloaded');p.reload(wait_until='domcontentloaded');p.wait_for_selector('.question')
 def draw(p,paths):
  canvas=p.locator('#ink-canvas');canvas.scroll_into_view_if_needed();box=canvas.bounding_box();cdp=p.context.new_cdp_session(p)
@@ -23,7 +24,7 @@ def draw(p,paths):
  cdp.detach()
 def accepted(p,n):p.wait_for_function('n=>document.querySelector("#ink-canvas")?.dataset.accepted===String(n)',arg=n)
 with sync_playwright() as P:
- b=P.chromium.launch(headless=True,args=['--no-sandbox','--autoplay-policy=no-user-gesture-required']);c=b.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2);p=c.new_page();p.on('pageerror',lambda e:errors.append(str(e)))
+ b=P.chromium.launch(executable_path=os.environ.get('KOTOBA_CHROMIUM') or None,headless=True,args=['--no-sandbox','--autoplay-policy=no-user-gesture-required']);c=b.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2);p=c.new_page();returning_user(p);p.on('pageerror',lambda e:errors.append(str(e)))
  try:
   p.goto(BASE);p.wait_for_selector('.kana-entry');seed(p)
   check('unanswered exam keeps examples hidden',p.locator('[data-action="examples"]').count()==0 and p.locator('.example-card').count()==0)

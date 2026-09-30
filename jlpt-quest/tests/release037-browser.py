@@ -1,3 +1,4 @@
+from tutorial_helpers import returning_user
 """Real-browser regression for orientation, kana, examples and settings. No verdict bypass."""
 import os,json,traceback,time
 from pathlib import Path
@@ -10,7 +11,7 @@ def check(name,passed):
  if not passed:raise AssertionError(name)
 def state(p):return p.evaluate("async()=>{const S=await import('./src/storage.js');await S.openStore();return await S.loadState();}")
 def seed(p,word='山',skill='trace',kanji=False):
- p.evaluate('''async ({word,skill,kanji})=>{const E=await import('./src/course-engine.js'),C=await import('./src/catalog.js'),S=await import('./src/storage.js');await S.openStore();const old=await S.loadState(),s=E.fresh();const all=(await Promise.all(['N5','N4','N3','N2','N1'].map(l=>fetch('./data/'+l+'.json').then(r=>r.json())))).flatMap(p=>p.words);const w=all.find(x=>x.level==='N5'&&x.word===word),c=C.courses(all,'N5').find(c=>c.wordIds.includes(w.id));s.settings.kanjiOnlyPractice=kanji;s.uiRoute='lesson';s.session=E.createClass(s,c,all);while(E.current(s.session)?.phase==='survey'){const t=E.current(s.session);E.classifySurvey(s,t.id,t.wordId!==w.id,all);}s.session.index=s.session.queue.findIndex(t=>t.wordId===w.id&&t.skill===skill&&(skill==='audio'||skill==='trace'?t.phase==='learn':t.phase==='quiz'));await S.commit(s,old.revision);}''',dict(word=word,skill=skill,kanji=kanji))
+ p.evaluate('''async ({word,skill,kanji})=>{const E=await import('./src/course-engine.js'),C=await import('./src/catalog.js'),S=await import('./src/storage.js');await S.openStore();const old=await S.loadState(),s=Object.assign(E.fresh(),{tutorial:{version:1,status:'skipped',step:0}});const all=(await Promise.all(['N5','N4','N3','N2','N1'].map(l=>fetch('./data/'+l+'.json').then(r=>r.json())))).flatMap(p=>p.words);const w=all.find(x=>x.level==='N5'&&x.word===word),c=C.courses(all,'N5').find(c=>c.wordIds.includes(w.id));s.settings.kanjiOnlyPractice=kanji;s.uiRoute='lesson';s.session=E.createClass(s,c,all);while(E.current(s.session)?.phase==='survey'){const t=E.current(s.session);E.classifySurvey(s,t.id,t.wordId!==w.id,all);}s.session.index=s.session.queue.findIndex(t=>t.wordId===w.id&&t.skill===skill&&(skill==='audio'||skill==='trace'?t.phase==='learn':t.phase==='quiz'));await S.commit(s,old.revision);}''',dict(word=word,skill=skill,kanji=kanji))
  p.goto(BASE+'#lesson',wait_until='domcontentloaded');p.reload(wait_until='domcontentloaded');p.wait_for_selector('.question')
 def draw(p,paths,selector='#ink-canvas'):
  canvas=p.locator(selector);canvas.scroll_into_view_if_needed();box=canvas.bounding_box();cdp=p.context.new_cdp_session(p)
@@ -24,7 +25,7 @@ def accepted(p,n,selector='#ink-canvas'):
  p.wait_for_function("({s,n})=>document.querySelector(s)?.dataset.accepted===String(n)",arg={'s':selector,'n':n},timeout=6000)
 with sync_playwright() as P:
  b=P.chromium.launch(executable_path=os.environ.get('KOTOBA_CHROMIUM')or None,headless=True,args=['--no-sandbox','--autoplay-policy=no-user-gesture-required'])
- c=b.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2);c.add_init_script("window.__deviceTestSpeech=[];Object.defineProperty(window,'SpeechSynthesisUtterance',{configurable:true,value:class{constructor(t){this.text=t;}}});Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{getVoices:()=>[{lang:'ja-JP',localService:true}],speak(u){window.__deviceTestSpeech.push(u.text);setTimeout(()=>u.onend?.(),50)},cancel(){}}});");p=c.new_page();p.on('pageerror',lambda e:errors.append(str(e)))
+ c=b.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2);c.add_init_script("window.__deviceTestSpeech=[];Object.defineProperty(window,'SpeechSynthesisUtterance',{configurable:true,value:class{constructor(t){this.text=t;}}});Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{getVoices:()=>[{lang:'ja-JP',localService:true}],speak(u){window.__deviceTestSpeech.push(u.text);setTimeout(()=>u.onend?.(),50)},cancel(){}}});");p=c.new_page();returning_user(p);p.on('pageerror',lambda e:errors.append(str(e)))
  try:
   p.goto(BASE);p.wait_for_selector('.kana-entry')
   check('kana course appears before N5 level cards',p.locator('.kana-entry').bounding_box()['y']<p.locator('.levels-panel').bounding_box()['y'])

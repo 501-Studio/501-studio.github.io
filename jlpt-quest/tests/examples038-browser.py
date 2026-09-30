@@ -1,3 +1,4 @@
+from tutorial_helpers import returning_user
 """Real mobile feedback, full corpus samples, and honest draft disclosure.
 Browser plugin absent; Playwright Chromium exercises real DOM and IndexedDB.
 Long text may scroll; the fixed Next action must remain reachable.
@@ -11,12 +12,12 @@ def check(name,value):
  checks.append({'name':name,'pass':bool(value)})
  if not value:raise AssertionError(name)
 with sync_playwright() as P:
- b=P.chromium.launch(headless=True,args=['--no-sandbox']);c=b.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2);p=c.new_page();p.on('pageerror',lambda e:errors.append(str(e)))
+ b=P.chromium.launch(executable_path=os.environ.get('KOTOBA_CHROMIUM') or None,headless=True,args=['--no-sandbox']);c=b.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2);p=c.new_page();returning_user(p);p.on('pageerror',lambda e:errors.append(str(e)))
  try:
   p.goto(BASE);p.wait_for_selector('.kana-entry');check('correct nonblank app and no error overlay','코토바' in p.title() and p.locator('.kana-entry').count()==1)
   targets=p.evaluate('''async()=>{const X=await import('./src/examples.js');const all=(await Promise.all(['N5','N4','N3','N2','N1'].map(l=>fetch('./data/'+l+'.json').then(r=>r.json())))).flatMap(p=>p.words);const score=w=>{const e=X.examplesFor(w)[0];return e.ja.length+(e.reading||'').length/2+e.ko.length/2};return ['N5','N4','N3','N2','N1'].flatMap(l=>{const ws=all.filter(w=>w.level===l&&X.examplesFor(w)[0]?.wordIds?.length);return [ws.reduce((a,b)=>score(a)>score(b)?a:b).id,ws.sort((a,b)=>Math.abs(score(a)-55)-Math.abs(score(b)-55))[0].id];});}''')
   for ix,wid in enumerate(targets):
-   p.evaluate('''async id=>{const E=await import('./src/course-engine.js'),C=await import('./src/catalog.js'),S=await import('./src/storage.js');await S.openStore();const old=await S.loadState(),s=E.fresh(),all=(await Promise.all(['N5','N4','N3','N2','N1'].map(l=>fetch('./data/'+l+'.json').then(r=>r.json())))).flatMap(p=>p.words),w=all.find(w=>w.id===id),course=C.courses(all,w.level).find(c=>c.wordIds.includes(id));s.uiRoute='lesson';s.session=E.createClass(s,course,all);while(E.current(s.session)?.phase==='survey'){const t=E.current(s.session);E.classifySurvey(s,t.id,t.wordId!==id,all);}s.session.index=s.session.queue.findIndex(t=>t.wordId===id&&t.skill==='meaning'&&t.phase==='quiz');if(s.session.index<0)throw Error('No meaning question for '+id);await S.commit(s,old.revision);}''',wid)
+   p.evaluate('''async id=>{const E=await import('./src/course-engine.js'),C=await import('./src/catalog.js'),S=await import('./src/storage.js');await S.openStore();const old=await S.loadState(),s=Object.assign(E.fresh(),{tutorial:{version:1,status:'skipped',step:0}}),all=(await Promise.all(['N5','N4','N3','N2','N1'].map(l=>fetch('./data/'+l+'.json').then(r=>r.json())))).flatMap(p=>p.words),w=all.find(w=>w.id===id),course=C.courses(all,w.level).find(c=>c.wordIds.includes(id));s.uiRoute='lesson';s.session=E.createClass(s,course,all);while(E.current(s.session)?.phase==='survey'){const t=E.current(s.session);E.classifySurvey(s,t.id,t.wordId!==id,all);}s.session.index=s.session.queue.findIndex(t=>t.wordId===id&&t.skill==='meaning'&&t.phase==='quiz');if(s.session.index<0)throw Error('No meaning question for '+id);await S.commit(s,old.revision);}''',wid)
    p.goto(BASE+'#lesson',wait_until='domcontentloaded');p.reload(wait_until='domcontentloaded');p.wait_for_selector('.answer-option');p.locator('.answer-option').first.click();p.locator('[data-action="answer"]').click();p.wait_for_selector('.example-card');p.wait_for_timeout(300)
    draft=p.locator('.example-translation-draft')
    if draft.count():

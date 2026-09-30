@@ -1,3 +1,4 @@
+from tutorial_helpers import returning_user
 """Real Chromium integration. TTS adapter verifies call order, not physical audibility.
 Browser plugin absent; local navigation is blocked by administrator policy, so CI is used.
 """
@@ -15,7 +16,7 @@ def navigate(p,route):
  p.goto(BASE+'?qa='+str(time.time_ns())+'#'+route);p.wait_for_selector('#app .page, #app .question');p.wait_for_timeout(250)
 def fixture(p,body,route='home'):
  mode='history' if 's.suspendedSession=' in body else 'writing'
- p.evaluate("""async mode=>{const E=await import('./src/course-engine.js'),S=await import('./src/storage.js'),C=await import('./src/catalog.js');const old=await S.loadState(),s=E.fresh(),all=(await Promise.all(['N5','N4','N3','N2','N1'].map(l=>fetch('./data/'+l+'.json').then(r=>r.json())))).flatMap(p=>p.words);const w=all.find(x=>x.word==='学校'&&x.level==='N5');if(mode==='writing'){s.session=E.createTargetReview(s,all,[{wordId:w.id,skill:'writing'}],{label:'쓰기 검증'});s.uiRoute='lesson';}else{s.session=E.createClass(s,C.courses(all,'N5')[0],all);s.memory[E.keyOf(w.id,'writing')]={stage:1,due:Date.now()+86400000,lapses:4,successes:3,consecutive:2,lastAt:Date.now()-86400000,lastSession:'old',method:'stroke-snap',recent:[0,0,1,1],independentFailures:4};s.suspendedSession=E.createTargetReview(s,all,[{wordId:w.id,skill:'meaning'}],{label:'이전 복습'});s.encountered[w.id]=Date.now();s.study.strokes['学']=[{attempts:3,misses:2}];}await S.commit(s,old.revision);}""",mode)
+ p.evaluate("""async mode=>{const E=await import('./src/course-engine.js'),S=await import('./src/storage.js'),C=await import('./src/catalog.js');const old=await S.loadState(),s=Object.assign(E.fresh(),{tutorial:{version:1,status:'skipped',step:0}}),all=(await Promise.all(['N5','N4','N3','N2','N1'].map(l=>fetch('./data/'+l+'.json').then(r=>r.json())))).flatMap(p=>p.words);const w=all.find(x=>x.word==='学校'&&x.level==='N5');if(mode==='writing'){s.session=E.createTargetReview(s,all,[{wordId:w.id,skill:'writing'}],{label:'쓰기 검증'});s.uiRoute='lesson';}else{s.session=E.createClass(s,C.courses(all,'N5')[0],all);s.memory[E.keyOf(w.id,'writing')]={stage:1,due:Date.now()+86400000,lapses:4,successes:3,consecutive:2,lastAt:Date.now()-86400000,lastSession:'old',method:'stroke-snap',recent:[0,0,1,1],independentFailures:4};s.suspendedSession=E.createTargetReview(s,all,[{wordId:w.id,skill:'meaning'}],{label:'이전 복습'});s.encountered[w.id]=Date.now();s.study.strokes['学']=[{attempts:3,misses:2}];}await S.commit(s,old.revision);}""",mode)
  navigate(p,route)
 def click(p,a):p.locator('[data-action="'+a+'"]').first.click();p.wait_for_timeout(150)
 def hub(p,tab):
@@ -30,7 +31,7 @@ def draw(p,selector,lines):
  cdp.detach();p.wait_for_timeout(220)
 def screenshot(p,name):p.wait_for_timeout(250);p.screenshot(path=str(OUT/name),full_page=True)
 with sync_playwright() as P:
- b=P.chromium.launch(headless=True,args=['--no-sandbox']);c=b.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2);c.add_init_script(TTS);p=c.new_page();p.on('pageerror',lambda e:errors.append(str(e)));p.on('console',lambda m:console.append(m.text) if m.type=='error' else None);p.on('request',lambda r:requests.append(r.url))
+ b=P.chromium.launch(executable_path=os.environ.get('KOTOBA_CHROMIUM') or None,headless=True,args=['--no-sandbox']);c=b.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2);c.add_init_script(TTS);p=c.new_page();returning_user(p);p.on('pageerror',lambda e:errors.append(str(e)));p.on('console',lambda m:console.append(m.text) if m.type=='error' else None);p.on('request',lambda r:requests.append(r.url))
  try:
   navigate(p,'home');check('page identity, meaningful content and no error overlay','코토바' in p.title() and p.locator('.study-entry').count()>0 and p.locator('.fatal,vite-error-overlay').count()==0)
   p.locator('.appbar [data-action="settings"]').click();p.locator('[data-setting="intensity"]').select_option('veryeasy');p.wait_for_timeout(200)

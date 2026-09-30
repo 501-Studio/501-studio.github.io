@@ -1,3 +1,4 @@
+from tutorial_helpers import returning_user
 """Mode-switch and large-folder regressions in the actual application UI.
 Explicit test records only. Does not edit a user's library or relax application CSP.
 """
@@ -17,7 +18,7 @@ def click(p,action):p.locator('[data-action="'+action+'"]').first.click();p.wait
 def seed(p,mode):
  return p.evaluate("""async mode=>{
   const E=await import('./src/course-engine.js'),S=await import('./src/storage.js'),C=await import('./src/catalog.js'),D=await import('./src/study-data.js');
-  const old=await S.loadState(),s=E.fresh(),all=(await Promise.all(['N5','N4','N3','N2','N1'].map(l=>fetch('./data/'+l+'.json').then(r=>r.json())))).flatMap(p=>p.words),w=all.find(w=>w.word==='学校'&&w.level==='N5');
+  const old=await S.loadState(),s=Object.assign(E.fresh(),{tutorial:{version:1,status:'skipped',step:0}}),all=(await Promise.all(['N5','N4','N3','N2','N1'].map(l=>fetch('./data/'+l+'.json').then(r=>r.json())))).flatMap(p=>p.words),w=all.find(w=>w.word==='学校'&&w.level==='N5');
   if(mode==='preview'){
    s.memory[E.keyOf(w.id,'meaning')]=E.schedule(null,true,'old',Date.now()-86400000);
    s.memory[E.keyOf(w.id,'writing')]=E.schedule(null,true,'future',Date.now()+86400000);
@@ -33,7 +34,7 @@ def seed(p,mode):
   await S.commit(s,old.revision);return {ids:[s.session?.id,s.suspendedSession?.id].filter(Boolean),folder:s.study.folders[0]?.id,tail:all.filter(w=>w.level==='N5').slice(200,205).map(w=>w.id)};
  }""",mode)
 with sync_playwright() as P:
- b=P.chromium.launch(headless=True,args=['--no-sandbox']);c=b.new_context(viewport={'width':390,'height':780},has_touch=True);p=c.new_page();p.on('pageerror',lambda e:errors.append(str(e)))
+ b=P.chromium.launch(executable_path=os.environ.get('KOTOBA_CHROMIUM') or None,headless=True,args=['--no-sandbox']);c=b.new_context(viewport={'width':390,'height':780},has_touch=True);p=c.new_page();returning_user(p);p.on('pageerror',lambda e:errors.append(str(e)))
  try:
   nav(p,'home');check('app identity and nonblank real UI','코토바' in p.title() and p.locator('.level-progress-grid').count()==1 and p.locator('.fatal,vite-error-overlay').count()==0)
   f=seed(p,'preview');nav(p,'review');click(p,'preview-start');p.wait_for_selector('.question');s=state(p)
