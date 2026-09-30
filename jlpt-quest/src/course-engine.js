@@ -1,3 +1,4 @@
+import {normalizeTutorial} from './tutorial.js';
 import {intensity,intensityKey,adaptiveInterval} from './learning-policy.js';
 import {freshStudy,validateStudy,recordAnswer} from './study-data.js';
 import {validateWordPractice,validatePracticeLog} from './word-practice.js';
@@ -9,7 +10,7 @@ export const SKILLS=['meaning','listening','writing'];
 export const keyOf=(id,skill)=>`${id}:${skill}`;
 export const nowId=()=>globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`;
 export const dayKey=(time=Date.now())=>{const d=new Date(time);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
-export function fresh(){return {version:SCHEMA,revision:0,settings:{level:'N5',furigana:true,motion:true,haptics:true,penWidth:8,rate:1,kanjiOnlyPractice:false,audioEngine:'device',audioRevision:3,reviewNotifications:true,intensity:'medium',adaptiveSRS:true},study:freshStudy(),parkedSessions:[],memory:{},encountered:{},known:{},learned:{},completed:{},starred:[],daily:{},xp:0,session:null,suspendedSession:null,wordPractice:null,practiceLog:{},legacy:null,kana:freshKana(),uiRoute:'home'};}
+export function fresh(){return {version:SCHEMA,revision:0,tutorial:normalizeTutorial(),settings:{level:'N5',furigana:true,motion:true,haptics:true,penWidth:8,rate:1,kanjiOnlyPractice:false,audioEngine:'device',audioRevision:3,reviewNotifications:true,intensity:'medium',adaptiveSRS:true},study:freshStudy(),parkedSessions:[],memory:{},encountered:{},known:{},learned:{},completed:{},starred:[],daily:{},xp:0,session:null,suspendedSession:null,wordPractice:null,practiceLog:{},legacy:null,kana:freshKana(),uiRoute:'home'};}
 function fixedSchedule(old,correct,sessionId,now=Date.now(),method='auto'){
  const r={stage:-1,due:0,lapses:0,successes:0,lastSession:'',consecutive:0,...old};
  if(!correct)return {...r,stage:0,due:now+INTERVALS[0],lapses:r.lapses+1,consecutive:0,lastAt:now,lastSession:sessionId,method};
@@ -128,7 +129,7 @@ export function validateState(input){
  if(!input.settings.audioRevision&&s.settings.rate===.85)s.settings.rate=1;
  s.settings.reviewNotifications=input.settings.reviewNotifications!==false;
  s.settings.intensity=intensityKey(input.settings.intensity);s.settings.adaptiveSRS=input.settings.adaptiveSRS!==false;
- s.study=validateStudy(input.study);
+ s.study=validateStudy(input.study);s.tutorial=normalizeTutorial(input.tutorial);
  s.parkedSessions=(Array.isArray(input.parkedSessions)?input.parkedSessions:[]).slice(0,8).map(validateSession).filter(q=>!q.finished);
  s.kana=validateKana(input.kana);
  s.wordPractice=validateWordPractice(input.wordPractice);s.practiceLog=validatePracticeLog(input.practiceLog);

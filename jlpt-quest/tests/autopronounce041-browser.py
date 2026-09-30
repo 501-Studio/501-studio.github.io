@@ -1,3 +1,4 @@
+from tutorial_helpers import returning_user
 """Automatic word-pronunciation regression in the actual lesson UI.
 Browser plugin is not available in this session, so CI Playwright is used.
 The speech adapter verifies requests, not physical speaker audibility.
@@ -19,14 +20,14 @@ def state(p):return p.evaluate("async()=>{const S=await import('./src/storage.js
 def seed(p,mode):
  return p.evaluate("""async mode=>{
   const E=await import('./src/course-engine.js'),S=await import('./src/storage.js'),C=await import('./src/catalog.js');
-  const old=await S.loadState(),s=E.fresh(),all=(await Promise.all(['N5','N4','N3','N2','N1'].map(l=>fetch('./data/'+l+'.json').then(r=>r.json())))).flatMap(p=>p.words);
+  const old=await S.loadState(),s=Object.assign(E.fresh(),{tutorial:{version:1,status:'skipped',step:0}}),all=(await Promise.all(['N5','N4','N3','N2','N1'].map(l=>fetch('./data/'+l+'.json').then(r=>r.json())))).flatMap(p=>p.words);
   const w=all.find(x=>x.word==='学校'&&x.level==='N5');
   if(mode==='survey'){const c=C.courses(all,'N5').find(c=>c.wordIds.includes(w.id));s.session=E.createClass(s,c,all);s.session.index=s.session.queue.findIndex(t=>t.wordId===w.id&&t.skill==='survey');}
   else s.session=E.createTargetReview(s,all,[{wordId:w.id,skill:mode}],{label:'자동 발음 검증'});
   s.uiRoute='lesson';await S.commit(s,old.revision);return {word:w.word,reading:w.reading,meaning:w.meaning};
  }""",mode)
 with sync_playwright() as P:
- b=P.chromium.launch(headless=True,args=['--no-sandbox']);c=b.new_context(viewport={'width':390,'height':780},has_touch=True);c.add_init_script(TTS);p=c.new_page();p.on('pageerror',lambda e:errors.append(str(e)))
+ b=P.chromium.launch(executable_path=os.environ.get('KOTOBA_CHROMIUM') or None,headless=True,args=['--no-sandbox']);c=b.new_context(viewport={'width':390,'height':780},has_touch=True);c.add_init_script(TTS);p=c.new_page();returning_user(p);p.on('pageerror',lambda e:errors.append(str(e)))
  try:
   nav(p,'home');check('real app loads','코토바' in p.title() and p.locator('.level-progress-grid').count()==1)
   target=seed(p,'survey');p.evaluate('window.__spoken=[]');nav(p,'lesson')

@@ -40,6 +40,11 @@ public final class LessonRotationTest {
         try(ActivityScenario<MainActivity>s=ActivityScenario.launch(MainActivity.class)){
             s.onActivity(a->a.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT));
             until(s,"!!document.querySelector('.level-progress-grid')");
+            // Wait for asynchronous first-run persistence before pressing a disabled button.
+            until(s,"!document.querySelector('#function-tutorial[open]') || !!document.querySelector('#function-tutorial[aria-busy=\"false\"]')");
+            // Dismiss the first-run tutorial through its public button when present.
+            js(s,"document.querySelector('#function-tutorial [data-tour-action=\"skip\"]')?.click();true");
+            until(s,"!document.querySelector('#function-tutorial[open]')");
             // Start and classify the actual lesson through its public UI.
             js(s,"document.querySelector('[data-action=\"start-course\"][data-id=\"N5-chapter-1\"]').click();true");
             int unknown=0;
