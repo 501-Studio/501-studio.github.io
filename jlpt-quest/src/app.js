@@ -119,7 +119,7 @@ function questionPage(){const s=state.session;if(!s)return `<div class="focus-sh
  if(t.skill==='survey'){
   const reading=s.surveyReading&&w.reading?`<span class="survey-reading" lang="ja">${esc(w.reading)}</span>`:'';
   const meaning=s.surveyMeaning?`<p class="survey-meaning">${esc(w.meaning)}</p>`:'<p class="survey-placeholder">아는 단어와 모르는 단어로 분류하세요.</p>';
-  body=`${heading('아는 단어 확인','30단어를 빠르게 훑은 뒤 모르는 단어만 시험해요.')}<section class="survey-card"><span class="survey-count">${s.index+1} / ${s.wordIds.length}</span><div class="survey-headword"><strong lang="ja" data-fit-word data-max-font="64">${esc(w.word)}</strong></div>${reading}${meaning}<div class="survey-reveals"><button data-action="survey-reading" class="${s.surveyReading?'active':''}">あ ${s.surveyReading?'히라가나 숨기기':'히라가나 표시하기'}</button><button data-action="survey-meaning" class="${s.surveyMeaning?'active':''}">${icon('eye')}${s.surveyMeaning?'뜻 숨기기':'한국어 뜻 표시하기'}</button></div></section>`;
+  body=`${heading('아는 단어 확인','30단어를 빠르게 훑은 뒤 모르는 단어만 시험해요.')}<section class="survey-card"><span class="survey-count">${s.index+1} / ${s.wordIds.length}</span><div class="survey-headword"><strong lang="ja" data-fit-word data-max-font="64">${esc(w.word)}</strong></div>${reading}${meaning}<div class="survey-manual-audio"><button type="button" class="btn soft survey-listen-button" data-action="survey-listen" aria-label="${esc(w.word)} 발음 듣기">${icon('sound')} 발음 듣기</button><p id="survey-audio-status" class="survey-audio-status" role="status" aria-live="polite"></p></div><div class="survey-reveals"><button data-action="survey-reading" class="${s.surveyReading?'active':''}">あ ${s.surveyReading?'히라가나 숨기기':'히라가나 표시하기'}</button><button data-action="survey-meaning" class="${s.surveyMeaning?'active':''}">${icon('eye')}${s.surveyMeaning?'뜻 숨기기':'한국어 뜻 표시하기'}</button></div></section>`;
  }
  if(t.skill==='study')body=`${heading('새 단어','뜻과 발음을 확인하세요.')}<section class="flashcard intro-card">${wordHTML(w,true)}<p class="word-meaning">${esc(w.meaning)}</p><span class="label">${w.level}</span></section>`;
  if(t.skill==='audio'||t.skill==='listening')body=`${heading(training?'발음 듣기':'듣고 단어 선택','')}<section class="listening-stage ${training?'training-audio':''}">${training?`<div class="listening-headword">${wordHTML(w,true)}</div>`:''}<div class="audio-controls"><button class="audio-main" data-action="listen" aria-label="다시 듣기">${icon('sound')}</button><button class="slow-button" data-action="slow" aria-label="천천히 다시 듣기">0.7×</button></div>${training?`<p class="word-meaning">${esc(w.meaning)}</p>`:''}<p class="audio-status sr-only" id="audio-status" aria-live="polite">${s.heard?'재생 완료':''}</p></section>${training?'':options(t,w)}`;
@@ -268,7 +268,7 @@ function autoSpeechStage(s,t){
  if(!s||!t)return null;
  if(s.feedback&&!s.feedback.training)return {bit:AUTO_SPEECH_FEEDBACK,name:'feedback'};
  if(s.showExample)return {bit:AUTO_SPEECH_EXAMPLE,name:'example'};
- if(['survey','trace','writing','meaning','audio','listening'].includes(t.skill))return {bit:AUTO_SPEECH_PROMPT,name:'prompt'};
+ if(['trace','writing','meaning','audio','listening'].includes(t.skill))return {bit:AUTO_SPEECH_PROMPT,name:'prompt'};
  return null;
 }
 async function autoPronounceOnce(s,t,w){
@@ -361,6 +361,13 @@ document.addEventListener('click',async event=>{
  else if(a==='restart-session'&&s&&!s.finished){cancelWork();openModal(`${modalHead('이번 회차를 처음부터 할까요?')}<p>${esc(lessonName(s))}의 첫 단계로 돌아가요. 이번 수업의 필기와 문제 진행은 초기화하지만, 이미 쌓인 복습 기록·XP·완료한 회독 수는 유지해요.</p><div class="modal-actions">${btn('confirm-restart','이번 회차 처음부터','primary')}${btn('keep-learning','취소','soft')}</div>`);}
  else if(a==='confirm-restart'&&!busy){cancelWork();busy=true;try{ink?.destroy();ink=null;if(restartSession(state,words)){closeModal();if(await save())go('lesson');}}finally{busy=false;}}
  else if(a==='home'){go('home');}
+ else if(a==='survey-listen'&&t?.skill==='survey'){
+  const w=W(t.wordId),status=document.querySelector('#survey-audio-status'),nonce=++audioNonce;
+  el.setAttribute('aria-busy','true');if(status)status.textContent='재생 중';
+  try{await speak(w.id,state.settings.rate,{text:w.reading||w.word});if(nonce===audioNonce&&status?.isConnected)status.textContent='재생 완료';}
+  catch(error){if(nonce===audioNonce){if(status?.isConnected)status.textContent=error.message;toast(error.message);}}
+  finally{if(el.isConnected)el.removeAttribute('aria-busy');}
+ }
  else if(a==='survey-reading'&&t?.phase==='survey'){s.surveyReading=!s.surveyReading;await save();render();}
  else if(a==='survey-meaning'&&t?.phase==='survey'){s.surveyMeaning=!s.surveyMeaning;await save();render();}
  else if((a==='known-word'||a==='unknown-word')&&t?.phase==='survey'){if(classifySurvey(state,t.id,a==='known-word',words)){await save();render();scrollTo(0,0);if(s.finished&&s.completed)celebrate(document.querySelector('#celebration'),state.settings.motion);}}
