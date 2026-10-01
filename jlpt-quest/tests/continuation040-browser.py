@@ -4,6 +4,7 @@ Explicit test records only. Does not edit a user's library or relax application 
 from pathlib import Path
 import os,json,time,traceback
 from playwright.sync_api import sync_playwright
+from qa_tutorial import dismiss_tutorial
 OUT=Path(os.environ.get('KOTOBA_EVIDENCE_DIR','/tmp/kotoba040-qa'))/'continuation040';OUT.mkdir(parents=True,exist_ok=True)
 BASE=os.environ.get('KOTOBA_TEST_URL','http://127.0.0.1:4173/')
 checks=[];errors=[]
@@ -35,7 +36,7 @@ def seed(p,mode):
 with sync_playwright() as P:
  b=P.chromium.launch(headless=True,args=['--no-sandbox']);c=b.new_context(viewport={'width':390,'height':780},has_touch=True);p=c.new_page();p.on('pageerror',lambda e:errors.append(str(e)))
  try:
-  nav(p,'home');check('app identity and nonblank real UI','코토바' in p.title() and p.locator('.level-progress-grid').count()==1 and p.locator('.fatal,vite-error-overlay').count()==0)
+  nav(p,'home');dismiss_tutorial(p);check('app identity and nonblank real UI','코토바' in p.title() and p.locator('.level-progress-grid').count()==1 and p.locator('.fatal,vite-error-overlay').count()==0)
   f=seed(p,'preview');nav(p,'review');click(p,'preview-start');p.wait_for_selector('.question');s=state(p)
   check('preview button selects future writing instead of the existing due review',s['session']['reviewMode']=='preview' and all(t['skill']=='writing' for t in s['session']['queue']))
   check('both prior sessions remain saved',set(f['ids']).issubset({s['suspendedSession']['id']}|{x['id'] for x in s['parkedSessions']}))

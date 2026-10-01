@@ -1,0 +1,40 @@
+/* A short, record-free tour in the existing visual language. */
+.modal-backdrop:has(.tutorial){align-items:center;padding:16px;}
+.sheet:has(.tutorial){padding:0;width:min(100%,500px);max-width:500px;max-height:calc(100dvh - 32px);overflow:hidden;border-radius:28px;animation:none;}
+.tutorial{display:flex;flex-direction:column;max-height:calc(100dvh - 32px);color:var(--ink,#252936);}
+.tour-top{display:flex;align-items:center;justify-content:space-between;padding:16px 24px 0;gap:8px;font-size:13px;color:#706879;flex-shrink:0;}
+.tour-top .btn{min-height:44px;padding:8px 12px;font-size:13px;}
+.tour-progress{display:flex;align-items:center;gap:14px;padding:12px 24px 0;font-size:12px;color:#65518f;flex-shrink:0;font-variant-numeric:tabular-nums;}
+.tour-progress>div{display:flex;gap:5px;flex:1;}
+.tour-progress i{height:5px;border-radius:5px;background:#eeebf4;flex:1;}
+.tour-progress i.filled{background:#8a70d5;}
+.tour-content{overflow-y:auto;overscroll-behavior:contain;padding:20px 24px 0;min-height:0;scrollbar-width:thin;}
+.tour-content h2{margin:0;font-size:25px;line-height:1.35;letter-spacing:-.7px;word-break:keep-all;overflow-wrap:anywhere;}
+.tour-content h2:focus{outline:none;}
+.tour-content>p{margin:12px 0 18px;font-size:15px;line-height:1.7;word-break:keep-all;overflow-wrap:anywhere;}
+.tour-preview{min-height:158px;border:1px solid #e9e2f6;border-radius:22px;background:linear-gradient(140deg,#f9f7ff,#f2effb);padding:20px;color:#493a68;pointer-events:none;}
+.tour-word{font-size:54px;line-height:1.1;text-align:center;}
+.tour-word small{display:block;font-size:14px;margin:8px 0 18px;color:#6e657d;}
+.tour-demo-chips{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;font-size:12px;}
+.tour-demo-chips>span{display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 11px;border-radius:12px;background:#fff;color:#5f5670;}
+.tour-demo-chips .icon{width:16px;height:16px;}
+.tour-preview .picked{background:#e6defa;color:#544091;font-weight:700;}
+.tour-writing{display:flex;align-items:center;justify-content:center;gap:6px;margin:14px 0 24px;}
+.tour-writing span{font-size:25px;background:#fff;padding:12px 8px;border-radius:12px;white-space:nowrap;}
+.tour-writing i{font-style:normal;font-size:17px;}
+.tour-resume{display:flex;align-items:center;gap:12px;margin:12px 0 22px;}
+.tour-resume>.icon{width:26px;height:26px;flex-shrink:0;}
+.tour-resume b,.tour-resume small{display:block;}.tour-resume b{font-size:15px;}.tour-resume small{font-size:11px;margin-top:5px;}
+.tour-resume>span{margin-left:auto;white-space:nowrap;font-size:12px;padding:9px;background:#fff;border-radius:12px;}
+.tour-book-word{display:flex;align-items:center;gap:10px;margin:5px 0 20px;}.tour-book-word b{font-size:27px;}.tour-book-word>span{font-size:15px;}.tour-book-word small{margin-left:auto;font-size:12px;}
+.tour-folder{display:flex;justify-content:space-between;font-size:12px;margin:20px 0 0;}.tour-folder>span{color:#6c588f;}
+.tour-tools{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:5px 0 22px;}.tour-tools>div{display:flex;align-items:center;gap:10px;}.tour-tools .icon{width:24px;height:24px;flex-shrink:0;}.tour-tools span{font-size:16px;font-weight:700;}.tour-tools small{display:block;font-size:11px;font-weight:400;margin-top:6px;}
+.tour-content .tour-note{font-size:13px;color:#696373;margin:16px 0 20px;line-height:1.6;}
+.tour-footer{display:flex;gap:12px;flex-shrink:0;padding:16px 24px max(18px,env(safe-area-inset-bottom));border-top:1px solid #f0edf5;background:#fff;}
+.tour-footer .btn{min-height:48px;font-size:15px;border-radius:15px;}.tour-footer .primary{flex:1;}.tour-footer .soft{min-width:80px;}
+.tour-storage-status:empty{display:none;}.tour-storage-status{font-size:12px;line-height:1.5;color:#934129;padding:0 24px 10px;margin:0;}
+.tutorial .btn:focus-visible{outline:3px solid #6448b5;outline-offset:3px;}
+.tutorial-replay{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;text-align:left;}.tutorial-replay>.icon{width:23px;height:23px;}.tutorial-replay span{flex:1;}.tutorial-replay small{display:block;font-weight:400;font-size:12px;margin-top:5px;}
+@media(max-width:360px){.tour-top,.tour-progress{padding-left:18px;padding-right:18px;}.tour-content{padding:18px 18px 0;}.tour-footer{padding-left:18px;padding-right:18px;}.tour-content h2{font-size:23px;}.tour-content>p{font-size:14px;}.tour-preview{padding:16px;}.tour-writing span{font-size:23px;}}
+@media(max-height:530px){.tour-preview{min-height:100px;padding:14px;}.tour-content{padding-top:12px;}.tour-top{padding-top:6px;}.tour-progress{padding-top:4px;}.tour-footer{padding-top:10px;padding-bottom:10px;}}
+@media(prefers-reduced-motion:reduce){.tutorial *{animation:none!important;transition:none!important;}}

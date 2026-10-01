@@ -4,6 +4,7 @@ Browser plugin absent; local navigation is blocked by administrator policy, so C
 import os,json,traceback,time
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from qa_tutorial import dismiss_tutorial
 ROOT=Path(__file__).resolve().parents[1];OUT=Path(os.environ.get('KOTOBA_EVIDENCE_DIR','/tmp/kotoba040-qa'))/'suite040';OUT.mkdir(parents=True,exist_ok=True)
 BASE=os.environ.get('KOTOBA_TEST_URL','http://127.0.0.1:4173/');BANK=json.loads((ROOT/'data/strokes.json').read_text())['characters'];checks=[];errors=[];console=[];requests=[]
 TTS="""window.__spoken=[];Object.defineProperty(window,'SpeechSynthesisUtterance',{configurable:true,value:class{constructor(t){this.text=t;}}});Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{getVoices:()=>[{lang:'ja-JP',localService:true},{lang:'ko-KR',localService:true}],speak(u){window.__spoken.push({text:u.text,lang:u.lang,rate:u.rate});setTimeout(()=>{u.onstart?.();u.onend?.()},80);},cancel(){},addEventListener(){},removeEventListener(){}}});"""
@@ -32,7 +33,7 @@ def screenshot(p,name):p.wait_for_timeout(250);p.screenshot(path=str(OUT/name),f
 with sync_playwright() as P:
  b=P.chromium.launch(headless=True,args=['--no-sandbox']);c=b.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2);c.add_init_script(TTS);p=c.new_page();p.on('pageerror',lambda e:errors.append(str(e)));p.on('console',lambda m:console.append(m.text) if m.type=='error' else None);p.on('request',lambda r:requests.append(r.url))
  try:
-  navigate(p,'home');check('page identity, meaningful content and no error overlay','코토바' in p.title() and p.locator('.study-entry').count()>0 and p.locator('.fatal,vite-error-overlay').count()==0)
+  navigate(p,'home');dismiss_tutorial(p);check('page identity, meaningful content and no error overlay','코토바' in p.title() and p.locator('.study-entry').count()>0 and p.locator('.fatal,vite-error-overlay').count()==0)
   p.locator('.appbar [data-action="settings"]').click();p.locator('[data-setting="intensity"]').select_option('veryeasy');p.wait_for_timeout(200)
   check('intensity persists and explains zero listening writing',state(p)['settings']['intensity']=='veryeasy' and '쓰기 0문제' in p.locator('#intensity-description').inner_text())
   screenshot(p,'intensity.png');click(p,'close-modal');p.locator('[data-action="start-course"]').first.click();p.wait_for_selector('.survey-card')
@@ -40,13 +41,24 @@ with sync_playwright() as P:
   s=state(p);check('very easy actual class contains no audio or writing',all(t['skill'] not in ['audio','trace','writing','listening'] for t in s['session']['queue']))
   fixture(p,"s.session=E.createTargetReview(s,all,[{wordId:w.id,skill:'writing'}],{label:'쓰기 검증'});s.uiRoute='lesson';",'lesson')
   check('two character prompt starts masked',p.locator('#writing-word-progress').inner_text()=='□□')
+  check('writing auto advance is visible and on by default',p.locator('[data-action="writing-auto-advance"]').get_attribute('aria-checked')=='true')
   draw(p,'#ink-canvas',BANK['学']);p.wait_for_function("document.querySelector('#writing-word-progress').textContent==='学□'")
-  check('completed first character remains in original prompt',p.locator('#writing-word-progress').inner_text()=='学□');screenshot(p,'writing-first.png');click(p,'snap-next')
+  check('completed first character remains in original prompt',p.locator('#writing-word-progress').inner_text()=='学□')
+  second=p.locator('[data-action="character"][data-index="1"]')
+  for _ in range(30):
+   if 'active' in (second.get_attribute('class') or ''):break
+   p.wait_for_timeout(50)
+  check('completed first character automatically advances to the second','active' in (second.get_attribute('class') or '') and state(p)['session']['ink']['active']==1);screenshot(p,'writing-first.png')
   draw(p,'#ink-canvas',BANK['校']);p.wait_for_function("document.querySelector('#writing-word-progress').textContent==='学校'")
   check('second completion reveals full word in place',p.locator('#writing-word-progress').inner_text()=='学校');screenshot(p,'writing-complete.png');click(p,'ink-done');p.wait_for_selector('.example-card')
   check('first grading event survives real save validation',len(state(p)['study']['events'])==1)
   check('completed writing glyphs are not checkmark placeholders','学' in p.locator('.big-japanese').first.inner_text() or '学校' in p.locator('#app').inner_text())
   check('curated example target is highlighted',p.locator('mark.vocab-highlight').count()>0);screenshot(p,'examples.png')
+  fixture(p,"s.session=E.createTargetReview(s,all,[{wordId:w.id,skill:'writing'}],{label:'쓰기 검증'});s.uiRoute='lesson';",'lesson')
+  p.locator('[data-action="writing-auto-advance"]').click();p.wait_for_timeout(180)
+  check('writing auto advance can be turned off from the writing screen',p.locator('[data-action="writing-auto-advance"]').get_attribute('aria-checked')=='false' and state(p)['settings']['writingAutoAdvance'] is False)
+  draw(p,'#ink-canvas',BANK['学']);p.wait_for_function("document.querySelector('#writing-word-progress').textContent==='学□'");p.wait_for_timeout(450)
+  check('auto advance off keeps focus on the completed character',state(p)['session']['ink']['active']==0)
   fixture(p,"s.session=E.createClass(s,C.courses(all,'N5')[0],all);s.memory[E.keyOf(w.id,'writing')]={stage:1,due:Date.now()+86400000,lapses:4,successes:3,consecutive:2,lastAt:Date.now()-86400000,lastSession:'old',method:'stroke-snap',recent:[0,0,1,1],independentFailures:4};s.suspendedSession=E.createTargetReview(s,all,[{wordId:w.id,skill:'meaning'}],{label:'이전 복습'});s.encountered[w.id]=Date.now();s.study.strokes['学']=[{attempts:3,misses:2}];",'home')
   ids=[state(p)['session']['id'],state(p)['suspendedSession']['id']];click(p,'hub-open');p.locator('[data-action="weak-category"][data-category="history"]').click();check('historical misses remain available despite recent correct streak',p.locator('.weak-item').count()==1)
   screenshot(p,'weakness.png');click(p,'weak-target-start');s=state(p);check('weak-only test selects writing and preserves both prior sessions',all(t['skill']=='writing' for t in s['session']['queue']) and set(ids).issubset({s['suspendedSession']['id']}|{x['id'] for x in s['parkedSessions']}))

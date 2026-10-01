@@ -4,6 +4,7 @@ No authenticated browser/Play Console automation. Test adapters never ship with 
 import json,os,math,re,traceback
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from qa_tutorial import dismiss_tutorial
 ROOT=Path(__file__).resolve().parents[1];OUT=Path(os.environ.get('KOTOBA_EVIDENCE_DIR','/tmp/kotoba036-qa'));OUT.mkdir(parents=True,exist_ok=True)
 BASE=os.environ.get('KOTOBA_TEST_URL','http://127.0.0.1:4173/')
 BANK=json.loads((ROOT/'data/strokes.json').read_text())['characters'];checks=[];errors=[]
@@ -34,7 +35,7 @@ with sync_playwright() as P:
  b=P.chromium.launch(executable_path=os.environ.get('KOTOBA_CHROMIUM') or None,headless=True,args=['--no-sandbox','--disable-dev-shm-usage','--autoplay-policy=no-user-gesture-required'])
  c=b.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2);c.add_init_script("window.__deviceTestSpeech=[];Object.defineProperty(window,'SpeechSynthesisUtterance',{configurable:true,value:class{constructor(t){this.text=t;}}});Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{getVoices:()=>[{lang:'ja-JP',localService:true}],speak(u){window.__deviceTestSpeech.push(u.text);setTimeout(()=>u.onend?.(),50)},cancel(){}}});");p=c.new_page();p.on('pageerror',lambda e:errors.append(str(e)))
  try:
-  p.goto(BASE);p.wait_for_selector('.level-progress-grid',timeout=15000)
+  p.goto(BASE);p.wait_for_selector('.level-progress-grid',timeout=15000);dismiss_tutorial(p)
   check('all five level summaries render',p.locator('.level-progress').count()==5)
   for width,height in [(320,740),(390,780),(412,846),(768,900),(1440,900)]:
    p.set_viewport_size({'width':width,'height':height});p.wait_for_timeout(100);check('home fits '+str(width),p.evaluate('document.documentElement.scrollWidth<=innerWidth+1'))

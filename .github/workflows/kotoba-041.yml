@@ -1,0 +1,124 @@
+name: Kotoba 041 onboarding and full regression
+on:
+  push:
+    branches: [feat/kotoba-041-onboarding]
+    paths: [jlpt-quest/**, kotoba-android/**, release/tutorial041.py, release/tutorial041-tests.py, release/package041.py, .github/workflows/kotoba-041.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: kotoba041
+  cancel-in-progress: true
+defaults:
+  run:
+    shell: bash
+env:
+  KOTOBA_EVIDENCE_DIR: /tmp/kotoba041-qa
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/feat/kotoba-041-onboarding'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Integrate tutorial into preserved source
+        run: |
+          mkdir -p /tmp/kotoba041-qa
+          python release/tutorial041.py
+          python release/tutorial041-tests.py
+          node jlpt-quest/scripts/build-study040.mjs
+      - name: All unit regressions and complete static assets
+        working-directory: jlpt-quest
+        run: |
+          npm test 2>&1 | tee /tmp/kotoba041-qa/node.txt
+          node scripts/verify-bundled-assets.mjs 2>&1 | tee /tmp/kotoba041-qa/assets.txt
+      - name: Install test browser
+        run: |
+          pip install playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Real Chromium tutorial and every previous scenario suite
+        working-directory: jlpt-quest
+        timeout-minutes: 10
+        run: |
+          python -m http.server 4173 --bind 127.0.0.1 > /tmp/kotoba041-qa/http.txt 2>&1 &
+          SERVER=$!
+          trap 'kill $SERVER || true' EXIT
+          STATUS=0
+          for SUITE in tutorial041 continuation040 autopronounce041 advanced040 personal039 release038 examples038 release037 release036; do
+            python "tests/${SUITE}-browser.py" > "/tmp/kotoba041-qa/${SUITE}-run.txt" 2>&1 || STATUS=1
+            cat "/tmp/kotoba041-qa/${SUITE}-run.txt"
+          done
+          exit "$STATUS"
+      - name: Keep public release approval blocked
+        working-directory: jlpt-quest
+        run: |
+          set +e
+          npm run release:check > /tmp/kotoba041-qa/release-gate.txt 2>&1
+          STATUS=$?
+          set -e
+          test "$STATUS" -ne 0
+          grep -q 'RELEASE BLOCKED' /tmp/kotoba041-qa/release-gate.txt
+      - name: Sync verified web assets
+        working-directory: jlpt-quest
+        run: npm run android:sync
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: false
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+      - name: APK AAB native tests and lint
+        working-directory: kotoba-android
+        timeout-minutes: 10
+        run: gradle --no-daemon assembleDebug bundleDebug assembleDebugAndroidTest testDebugUnitTest lintDebug 2>&1 | tee /tmp/kotoba041-qa/gradle.txt
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Actual Android rotation playback and tutorial recreation
+        timeout-minutes: 18
+        run: python release/android040-check.py
+      - name: Inspect APK identity and package tested source
+        run: |
+          python release/package041.py
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs /tmp/kotoba041-build/kotoba-v0.4.1-internal.apk > /tmp/kotoba041-qa/signature.txt
+      - name: Preserve actual tested source on feature branch only
+        run: |
+          test "$(git ls-remote origin refs/heads/feat/kotoba-041-onboarding | cut -f1)" = "$GITHUB_SHA"
+          git add -- jlpt-quest/src jlpt-quest/tests jlpt-quest/tutorial.css jlpt-quest/index.html jlpt-quest/package.json jlpt-quest/sw.js jlpt-quest/scripts/sync-android.mjs kotoba-android/app/build.gradle kotoba-android/app/src/main/java/com/studio501/kotoba/MainActivity.java kotoba-android/app/src/androidTest
+          git add -f -- jlpt-quest/data/study040-seed.js
+          git config user.name '501-Studio'
+          git config user.email '501.dingerlab@gmail.com'
+          if ! git diff --cached --quiet; then
+            git commit -m 'feat(kotoba): preserve tested 041 onboarding source [skip ci]'
+            git push origin HEAD:feat/kotoba-041-onboarding
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kotoba041-internal-build
+          path: /tmp/kotoba041-build/
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kotoba041-verification
+          path: |
+            /tmp/kotoba041-qa/
+            kotoba-android/app/build/reports/
+            kotoba-android/app/build/outputs/androidTest-results/
+            kotoba-android/app/build/test-results/
+          retention-days: 30

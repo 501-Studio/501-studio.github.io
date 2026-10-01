@@ -161,7 +161,7 @@ public final class MainActivity extends ComponentActivity {
                 case "commerceManage": commerce.manage(reply);break;
                 case "commerceScreen": {
                     String screen=body.optString("screen",""),completion=body.optString("completionId","");
-                    if(!java.util.Arrays.asList("home","words","course","profile","review","lesson","completed").contains(screen))screen="lesson";
+                    if(!java.util.Arrays.asList("home","words","course","profile","review","lesson","completed","tutorial").contains(screen))screen="lesson";
                     if(completion.length()>100)completion="";
                     ads.screen(screen,completion);respond(p,new JSONObject(),null);break;
                 }

@@ -2,6 +2,7 @@
 import os,json,traceback,time
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from qa_tutorial import dismiss_tutorial
 ROOT=Path(__file__).resolve().parents[1];OUT=Path(os.environ.get('KOTOBA_EVIDENCE_DIR','/tmp/kotoba037-qa'))/'learning037';OUT.mkdir(parents=True,exist_ok=True)
 BASE=os.environ.get('KOTOBA_TEST_URL','http://127.0.0.1:4173/')
 BANK=json.loads((ROOT/'data/strokes.json').read_text())['characters'];checks=[];errors=[]
@@ -26,7 +27,7 @@ with sync_playwright() as P:
  b=P.chromium.launch(executable_path=os.environ.get('KOTOBA_CHROMIUM')or None,headless=True,args=['--no-sandbox','--autoplay-policy=no-user-gesture-required'])
  c=b.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2);c.add_init_script("window.__deviceTestSpeech=[];Object.defineProperty(window,'SpeechSynthesisUtterance',{configurable:true,value:class{constructor(t){this.text=t;}}});Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{getVoices:()=>[{lang:'ja-JP',localService:true}],speak(u){window.__deviceTestSpeech.push(u.text);setTimeout(()=>u.onend?.(),50)},cancel(){}}});");p=c.new_page();p.on('pageerror',lambda e:errors.append(str(e)))
  try:
-  p.goto(BASE);p.wait_for_selector('.kana-entry')
+  p.goto(BASE);p.wait_for_selector('.kana-entry');dismiss_tutorial(p)
   check('kana course appears before N5 level cards',p.locator('.kana-entry').bounding_box()['y']<p.locator('.levels-panel').bounding_box()['y'])
   p.locator('[data-action="kana-open"]').click();p.wait_for_selector('.kana-grid');check('18 hiragana rows available',p.locator('.kana-lesson').count()==18)
   p.locator('[data-action="kana-script"][data-script="k"]').click();p.wait_for_timeout(200);check('katakana rows use katakana','ア イ ウ エ オ'in p.locator('.kana-grid').inner_text())

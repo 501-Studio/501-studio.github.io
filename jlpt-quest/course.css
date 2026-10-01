@@ -24,7 +24,7 @@
 .chapter-library{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 22px;align-items:start}.chapter-library .chapter-book{margin:0;min-height:205px}
 .survey-card{position:relative;background:white;border:1px solid #ececf2;border-radius:28px;padding:48px 24px 28px;min-height:350px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:0 12px 28px rgba(42,46,75,.06)}
 .survey-card>strong{font-family:'Noto Sans CJK JP','Yu Gothic',sans-serif;font-size:68px;font-weight:650;line-height:1.35;word-break:break-all}.survey-count{position:absolute;right:20px;top:18px;font-size:12px;color:#9aa1ad}.survey-reading{font-size:20px;color:#817a94;margin-top:8px}.survey-meaning{font-size:22px;font-weight:700;margin-top:22px;overflow-wrap:anywhere}.survey-placeholder{font-size:13px;color:#a2a7b1;margin-top:24px}
-.survey-reveals{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin-top:28px}.survey-reveals button{min-height:48px;border-radius:14px;background:#f5f3fb;color:#6e638f;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:7px}.survey-reveals button.active{background:#ebe6ff;color:#5d4ad1}.survey-reveals .icon{width:18px;height:18px}
+.survey-manual-audio{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:18px}.survey-listen-button{min-height:46px;min-width:148px;border-radius:14px;padding:0 18px}.survey-listen-button .icon{width:18px;height:18px}.survey-audio-status{min-height:18px;margin:0;color:#8a8198;font-size:11px}.survey-reveals{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin-top:18px}.survey-reveals button{min-height:48px;border-radius:14px;background:#f5f3fb;color:#6e638f;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:7px}.survey-reveals button.active{background:#ebe6ff;color:#5d4ad1}.survey-reveals .icon{width:18px;height:18px}
 .survey-footer{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}.survey-footer .btn{width:100%;min-width:0}.survey-footer .unknown{color:#675c80;background:#f1eef7}.survey-footer .known{background:#6754e8}
 .options{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px!important;margin-top:14px!important}.answer-option{min-height:64px!important;padding:11px 12px!important;display:flex!important;align-items:center!important;gap:9px!important}.answer-option b{font-size:14px!important;line-height:1.35!important;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.answer-option>span{width:24px;height:24px;display:grid;place-items:center;border-radius:7px;background:#f0eef8;font-size:11px;flex:0 0 auto}
 .session-label{flex-wrap:wrap;gap:4px 12px}.session-label>span:first-child{font-weight:700;color:#5d6270}
@@ -36,3 +36,11 @@
 @media(max-width:350px){.survey-card>strong{font-size:51px}.survey-reveals button{font-size:10px}.survey-footer{gap:8px}.survey-footer .btn{font-size:12px;padding:10px 6px}.answer-option b{font-size:11px!important}}
 
 .audio-button-label{font-size:12px;font-weight:800;line-height:1;color:currentColor}.legal-links{display:flex;flex-direction:column;gap:4px;margin-top:12px}
+
+
+.character-tabs .writing-auto-toggle{margin-left:auto;display:inline-flex;align-items:center;justify-content:center;gap:5px;min-width:82px;min-height:36px;padding:5px 7px 5px 9px;border:1px solid #e8e4f2;border-radius:999px;background:#f7f5fb;color:#6f6780;font-size:11px;font-weight:750;white-space:nowrap;flex:0 0 auto}
+.character-tabs .writing-auto-toggle>span{white-space:nowrap}
+.character-tabs .writing-auto-toggle b{display:inline-flex;align-items:center;justify-content:center;min-width:28px;padding:4px 6px;border-radius:999px;background:#ebe8f0;color:#81798d;font-size:10px;letter-spacing:.2px}
+.character-tabs .writing-auto-toggle.active{border-color:#cdbef3;background:#f1ecff;color:#5f49b3;box-shadow:none}
+.character-tabs .writing-auto-toggle.active b{background:#8065df;color:#fff}
+.character-tabs .writing-auto-toggle:focus-visible{outline:3px solid #6c52c3;outline-offset:2px}

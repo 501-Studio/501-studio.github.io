@@ -5,6 +5,7 @@ Browser plugin absent; local Chromium unavailable, so CI runs standard Playwrigh
 import os,json,traceback
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from qa_tutorial import dismiss_tutorial
 ROOT=Path(__file__).resolve().parents[1];OUT=Path(os.environ.get('KOTOBA_EVIDENCE_DIR','/tmp/kotoba039-qa'))/'personal039';OUT.mkdir(parents=True,exist_ok=True)
 BASE=os.environ.get('KOTOBA_TEST_URL','http://127.0.0.1:4173/')
 BANK=json.loads((ROOT/'data/strokes.json').read_text())['characters'];checks=[];errors=[];requests=[];console_messages=[] # console health capture
@@ -25,7 +26,7 @@ def accepted(p,n):p.wait_for_function('n=>document.querySelector("#practice-canv
 with sync_playwright() as P:
  b=P.chromium.launch(headless=True,args=['--no-sandbox']);c=b.new_context(viewport={'width':360,'height':680},has_touch=True,device_scale_factor=2);c.add_init_script(TTS);p=c.new_page();p.on('pageerror',lambda e:errors.append(str(e)));p.on('request',lambda r:requests.append(r.url));p.on('console',lambda m:console_messages.append({'type':m.type,'text':m.text}) if m.type in ['error','warning'] else None)
  try:
-  p.goto(BASE);p.wait_for_selector('.level-progress-grid');check('page identity and meaningful render','코토바' in p.title() and p.url.startswith(BASE));check('no startup error overlay',not p.locator('.fatal, vite-error-overlay, nextjs-portal').count())
+  p.goto(BASE);p.wait_for_selector('.level-progress-grid');dismiss_tutorial(p);check('page identity and meaningful render','코토바' in p.title() and p.url.startswith(BASE));check('no startup error overlay',not p.locator('.fatal, vite-error-overlay, nextjs-portal').count())
   p.locator('.appbar [data-action="settings"]').click();p.wait_for_selector('.setting-switch')
   check('daily goal and voice selector removed',p.locator('[data-setting="goal"],[data-setting="audioEngine"]').count()==0)
   for setting in ['furigana','motion','kanjiOnlyPractice','reviewNotifications']:
@@ -50,6 +51,7 @@ with sync_playwright() as P:
   check('wordbook has three direct actions',row.locator('.wordbook-actions button').count()==3);row.locator('[data-action="word-example-audio"]').click();p.wait_for_timeout(180);check('row example playback updates status','완료' in row.locator('.word-audio-status').inner_text())
   p.wait_for_timeout(500);p.screenshot(path=str(OUT/'wordbook.png'));before=state(p);row.locator('[data-action="practice-options"]').click();p.wait_for_selector('.repeat-options');check('repeat choices visible',p.locator('.repeat-options button').count()==5)
   p.locator('#practice-repeats').fill('2');check('custom count clears unrelated preset selection',p.locator('.repeat-options [aria-pressed="true"]').count()==0);p.wait_for_timeout(500);p.screenshot(path=str(OUT/'repeats.png'));p.locator('[data-action="practice-start"]').click();p.wait_for_selector('#practice-canvas')
+  check('wordbook writing also exposes the auto-advance switch',p.locator('[data-action="writing-auto-advance"]').get_attribute('aria-checked')=='true')
   s=state(p);check('writing preserves both unfinished sessions',s['session']['id']==before['session']['id'] and s['suspendedSession']['id']==before['suspendedSession']['id']);check('custom repetition saved',s['wordPractice']['repeats']==2)
   draw(p,[BANK['山'][0]]);accepted(p,1);p.locator('[data-action="practice-exit"]').click();p.wait_for_selector('[data-action="practice-resume"]');p.reload();p.wait_for_selector('[data-action="practice-resume"]');p.locator('[data-action="practice-resume"]').click();accepted(p,1);check('real accepted ink survives exit reload resume',state(p)['wordPractice']['ink']['characters'][0]!=[])
   # settled screenshot and first-viewport help reachability

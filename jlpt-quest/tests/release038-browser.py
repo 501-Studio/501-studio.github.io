@@ -4,6 +4,7 @@ Voice controls use a clearly identified offline-voice mock; actual device audibi
 import os,json,traceback,time
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from qa_tutorial import dismiss_tutorial
 ROOT=Path(__file__).resolve().parents[1];OUT=Path(os.environ.get('KOTOBA_EVIDENCE_DIR','/tmp/kotoba038-qa'))/'study038';OUT.mkdir(parents=True,exist_ok=True)
 BASE=os.environ.get('KOTOBA_TEST_URL','http://127.0.0.1:4173/');BANK=json.loads((ROOT/'data/strokes.json').read_text())['characters'];checks=[];errors=[]
 def check(name,value):
@@ -25,7 +26,7 @@ def accepted(p,n):p.wait_for_function('n=>document.querySelector("#ink-canvas")?
 with sync_playwright() as P:
  b=P.chromium.launch(headless=True,args=['--no-sandbox','--autoplay-policy=no-user-gesture-required']);c=b.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2);p=c.new_page();p.on('pageerror',lambda e:errors.append(str(e)))
  try:
-  p.goto(BASE);p.wait_for_selector('.kana-entry');seed(p)
+  p.goto(BASE);p.wait_for_selector('.kana-entry');dismiss_tutorial(p);seed(p)
   check('unanswered exam keeps examples hidden',p.locator('[data-action="examples"]').count()==0 and p.locator('.example-card').count()==0)
   answer=p.evaluate("async()=>{const S=await import('./src/storage.js');const s=await S.loadState();return s.session.wordSnapshots.find(w=>w.id===s.session.queue[s.session.index].wordId).meaning;}")
   p.locator('.answer-option').filter(has_text=answer).first.click();p.locator('[data-action="answer"]').click();p.wait_for_selector('.example-card');check('grading replaces answer choices with inline example',p.locator('.answer-option').count()==0)
