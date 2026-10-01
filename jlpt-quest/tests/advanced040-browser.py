@@ -44,8 +44,11 @@ with sync_playwright() as P:
   check('writing auto advance is visible and on by default',p.locator('[data-action="writing-auto-advance"]').get_attribute('aria-checked')=='true')
   draw(p,'#ink-canvas',BANK['学']);p.wait_for_function("document.querySelector('#writing-word-progress').textContent==='学□'")
   check('completed first character remains in original prompt',p.locator('#writing-word-progress').inner_text()=='学□')
-  p.wait_for_function("document.querySelector('[data-action=\"character\"][data-index=\"1\"]')?.classList.contains('active')")
-  check('completed first character automatically advances to the second',state(p)['session']['ink']['active']==1);screenshot(p,'writing-first.png')
+  second=p.locator('[data-action="character"][data-index="1"]')
+  for _ in range(30):
+   if 'active' in (second.get_attribute('class') or ''):break
+   p.wait_for_timeout(50)
+  check('completed first character automatically advances to the second','active' in (second.get_attribute('class') or '') and state(p)['session']['ink']['active']==1);screenshot(p,'writing-first.png')
   draw(p,'#ink-canvas',BANK['校']);p.wait_for_function("document.querySelector('#writing-word-progress').textContent==='学校'")
   check('second completion reveals full word in place',p.locator('#writing-word-progress').inner_text()=='学校');screenshot(p,'writing-complete.png');click(p,'ink-done');p.wait_for_selector('.example-card')
   check('first grading event survives real save validation',len(state(p)['study']['events'])==1)
