@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Generate reviewable Korean legal drafts and Play/AdMob form drafts, not console writes."""
+"""Historical 0.3.6 draft generator; current reviewed release files are maintained directly."""
+raise SystemExit('Archived 0.3.6 generator: do not overwrite the current reviewed privacy, terms, licenses or release metadata.')
 from pathlib import Path
 import json,html,re
 ROOT=Path(__file__).resolve().parents[1]

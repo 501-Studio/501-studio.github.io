@@ -159,7 +159,9 @@ jobs:
           grep -q 'GOOGLE_OAUTH_CLIENT_ID = "";' "$CONFIG"
           grep -q 'PLAY_INTEGRITY_CLOUD_PROJECT_NUMBER = 0L;' "$CONFIG"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify "$APK"
-          jarsigner -verify app/build/outputs/bundle/playTest/app-playTest.aab
+          LC_ALL=C jarsigner -verify -strict -keystore "$KOTOBA_UPLOAD_KEYSTORE" -storepass:env KOTOBA_UPLOAD_STORE_PASSWORD app/build/outputs/bundle/playTest/app-playTest.aab "$KOTOBA_UPLOAD_KEY_ALIAS" | tee /tmp/kotoba042-qa/play-test-aab-signature.txt
+          grep -qx 'jar verified\.' /tmp/kotoba042-qa/play-test-aab-signature.txt
+          cp "$APK" /tmp/kotoba-play-test-smoke.apk
       - name: Enable emulator acceleration for this runner
         run: |
           test -c /dev/kvm
@@ -174,7 +176,20 @@ jobs:
           profile: pixel_6
           disable-animations: true
           working-directory: kotoba-android
-          script: gradle --no-daemon connectedDebugAndroidTest
+          script: |
+            adb install -r /tmp/kotoba-play-test-smoke.apk
+            adb logcat -c
+            adb shell am start -W -n com.studio501.kotoba/.MainActivity > /tmp/kotoba042-qa/optimized-launch.txt
+            grep -q 'Status: ok' /tmp/kotoba042-qa/optimized-launch.txt
+            adb shell sleep 5
+            adb shell dumpsys activity activities > /tmp/kotoba042-qa/optimized-activity.txt
+            grep -E 'mResumedActivity|topResumedActivity' /tmp/kotoba042-qa/optimized-activity.txt | grep -q 'com.studio501.kotoba/.MainActivity'
+            adb logcat -d -b crash > /tmp/kotoba042-qa/optimized-crash.txt
+            test ! -s /tmp/kotoba042-qa/optimized-crash.txt
+            adb exec-out screencap -p > /tmp/kotoba042-qa/optimized-home.png
+            adb uninstall com.studio501.kotoba
+            rm -f /tmp/kotoba-play-test-smoke.apk
+            gradle --no-daemon connectedDebugAndroidTest
       - uses: actions/upload-artifact@v4
         with:
           name: jlpt-kotoba-042-internal

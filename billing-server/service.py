@@ -70,6 +70,43 @@ class BillingService:
         with self.store.transaction() as db:
             return self._refresh(db, product, token, owner)
 
+    def assert_account(self, owner):
+        with self.store.transaction() as db:
+            self.store.assert_account(db, owner)
+
+    def delete_account(self, owner):
+        with self.store.transaction() as db:
+            return self.store.delete_account(db, owner, int(self.clock()))
+
+    def issue_lease(self, product, token, owner, issuer):
+        # Sign while holding the same write lock as deletion. A lease issued before deletion
+        # may remain valid for its bounded offline TTL, but none can be issued after it commits.
+        with self.store.transaction() as db:
+            self.store.assert_account(db, owner)
+            result = self._refresh(db, product, token, owner)
+            self.store.assert_account(db, owner)
+            return issuer(result)
+
+    def _deleted_result(self, product):
+        return {'active': False, 'kind': 'subscription' if product == SUB else 'lifetime',
+                'until': 0, 'ackNeeded': False, 'accountDeleted': True}
+
+    def _linked_deleted(self, db, token, linked, owner):
+        if not valid_token(linked) or linked == token:
+            raise BillingError('invalid_linked_purchase')
+        old = self.store.purchase(db, linked)
+        if old and old['account_deleted']:
+            return True
+        self.store.assert_owner(db, linked, SUB, owner)
+        if old is None or not old['owner']:
+            # An unobserved old token must not be rebound from the new token alone.
+            previous_owner = receipt_owner(SUB, self.play.lookup(SUB, linked))
+            if self.store.account_deleted(db, previous_owner):
+                return True
+            if not previous_owner or previous_owner != owner:
+                raise BillingError('purchase_account_mismatch', 403)
+        return False
+
     def _refresh(self, db, product, token, expected_owner=None):
         now = int(self.clock())
         old = self.store.purchase(db, token)
@@ -77,9 +114,16 @@ class BillingService:
             self.store.assert_owner(db, token, product, expected_owner)
         elif old and old['product'] != product:
             raise BillingError('purchase_product_mismatch', 403)
+        if old and old['account_deleted']:
+            return self._deleted_result(product)
         receipt = self.play.lookup(product, token)
         result = decision(product, receipt, now)
         owner = receipt_owner(product, receipt)
+        if self.store.account_deleted(db, owner):
+            if expected_owner:
+                raise BillingError('purchase_unavailable', 403)
+            self.store.erase_purchase(db, token, product, receipt_order(product, receipt), now)
+            return self._deleted_result(product)
         if expected_owner and owner and owner != expected_owner:
             raise BillingError('purchase_account_mismatch', 403)
         if old and old['owner'] and owner and old['owner'] != owner:
@@ -94,9 +138,11 @@ class BillingService:
             result = dict(result, active=False, ackNeeded=False)
         linked = receipt.get('linkedPurchaseToken') if product == SUB else None
         if result['active'] and linked:
-            if not valid_token(linked) or linked == token:
-                raise BillingError('invalid_linked_purchase')
-            self.store.assert_owner(db, linked, SUB, owner)
+            if self._linked_deleted(db, token, linked, owner):
+                if expected_owner:
+                    raise BillingError('purchase_unavailable', 403)
+                self.store.erase_purchase(db, token, product, current_order, now)
+                return self._deleted_result(product)
         if result['ackNeeded']:
             self.play.acknowledge(product, token)
             rechecked = self.play.lookup(product, token)
@@ -109,9 +155,11 @@ class BillingService:
                 result = dict(result, active=False, ackNeeded=False)
             linked = receipt.get('linkedPurchaseToken') if product == SUB else None
             if result['active'] and linked:
-                if not valid_token(linked) or linked == token:
-                    raise BillingError('invalid_linked_purchase')
-                self.store.assert_owner(db, linked, SUB, owner)
+                if self._linked_deleted(db, token, linked, owner):
+                    if expected_owner:
+                        raise BillingError('purchase_unavailable', 403)
+                    self.store.erase_purchase(db, token, product, current_order, now)
+                    return self._deleted_result(product)
         if result['active'] and linked:
             self.store.supersede(db, linked, owner, now)
         if receipt or old:
@@ -143,6 +191,7 @@ class BillingService:
             if self.store.message_seen(db, subscription, message_id, digest):
                 return 'duplicate'
             status = 'processed'
+            token, owner, order, deleted = None, None, notice.get('orderId'), False
             if kind == 'pendingRefundReviewNotification':
                 # Monetary decisions require operator evidence; never auto-refund.
                 if (not valid_token(notice.get('pendingRefundToken'))
@@ -150,6 +199,13 @@ class BillingService:
                         or type(notice.get('refundReason')) is not int or not 1 <= notice['refundReason'] <= 255):
                     raise BillingError('invalid_refund_review')
                 status = 'operator_refund_review_required'
+                value = notice.get('obfuscatedAccountId')
+                owner = value if isinstance(value, str) and re.fullmatch(r'[a-f0-9]{64}', value) else None
+                purchase = db.execute('SELECT owner,account_deleted FROM purchases WHERE current_order=?',
+                                      (notice['orderId'],)).fetchone()
+                if purchase:
+                    owner = owner or purchase['owner']
+                deleted = bool(self.store.account_deleted(db, owner) or purchase and purchase['account_deleted'])
             elif kind != 'testNotification':
                 token = notice.get('purchaseToken')
                 if not valid_token(token):
@@ -160,8 +216,16 @@ class BillingService:
                     if notice.get('sku') != LIFE:
                         raise BillingError('unsupported_product')
                     product = LIFE
-                self._refresh(db, product, token)
-            self.store.message_done(db, subscription, message_id, digest, raw, status, int(self.clock()))
+                refreshed = self._refresh(db, product, token)
+                purchase = self.store.purchase(db, token)
+                owner = purchase['owner'] if purchase else None
+                order = receipt_order(product, {}) if not purchase else purchase['current_order']
+                deleted = bool(refreshed.get('accountDeleted'))
+                if deleted:
+                    status = 'account_deleted'
+            self.store.message_done(db, subscription, message_id, digest, raw, status, int(self.clock()),
+                                    purchase_token=token, owner=owner, order_id=order,
+                                    data_deleted=deleted)
             return status
 
     def _review_view(self, row, detail=False):
@@ -170,7 +234,7 @@ class BillingService:
         result = {'messageId': row['message_id'], 'orderId': notice['orderId'],
                   'refundReason': notice['refundReason'], 'eventTimeMillis': payload['eventTimeMillis'],
                   'receivedAt': row['processed_at'], 'responseDueAt': row['processed_at'] + 86400,
-                  'state': 'external_response_recorded' if row['record_cipher'] else 'needs_operator',
+                  'state': 'external_response_recorded' if row['recorded_at'] is not None else 'needs_operator',
                   'googleSubmissionVerified': False}
         if detail:
             result['pendingRefundToken'] = notice['pendingRefundToken']
@@ -179,6 +243,8 @@ class BillingService:
                     result[key] = notice[key]
             result['externalResponseRecord'] = (json.loads(self.store.decrypt(row['record_cipher']))
                                                 if row['record_cipher'] else None)
+        if row['data_deleted']:
+            result['accountDataDeleted'] = True
         return result
 
     def refund_reviews(self, subscription, state='open', after='', limit=50):

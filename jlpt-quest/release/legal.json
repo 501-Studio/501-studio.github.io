@@ -6,9 +6,12 @@
   "publicPrivacyUrl": null,
   "publicTermsUrl": null,
   "targetAudience": "13세 이상 (13–15, 16–17, 18세 이상)",
-  "distributionCountries": ["KR"],
+  "distributionCountries": [
+    "KR"
+  ],
   "applicationId": "com.studio501.kotoba",
   "storeDeveloperNameMustMatchPrivacyPolicy": true,
   "ownerConfirmedOn": "2026-10-03",
-  "publicationStatus": "DRAFT_PENDING_VERIFIED_PUBLIC_POLICY"
+  "publicationStatus": "DRAFT_PENDING_VERIFIED_PUBLIC_POLICY",
+  "publicDataDeletionUrl": null
 }

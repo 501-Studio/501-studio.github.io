@@ -16,8 +16,8 @@ def tidy(s):
 
 def main():
     keyed={};pairs={};review=[]
-    allwords=[w for level in ['N5','N4','N3','N2','N1'] for w in json.loads((ROOT/'data'/f'{level}.json').read_text())['words']]
-    payload=json.loads((ROOT/'editorial/overrides036.json').read_text())
+    allwords=[w for level in ['N5','N4','N3','N2','N1'] for w in json.loads((ROOT/'data'/f'{level}.json').read_text(encoding='utf-8'))['words']]
+    payload=json.loads((ROOT/'editorial/overrides036.json').read_text(encoding='utf-8'))
     revision=payload['revision']
     digest=hashlib.sha256('\n'.join(w['id'] for w in allwords).encode()).hexdigest()
     if digest!=payload['baseVocabularyIdsSha256']:raise ValueError('Source vocabulary order changed; reconcile editorial overrides first.')
@@ -42,12 +42,9 @@ def main():
     for index,meaning in payload['corrections']:
         w=dict(allwords[index]);w['meaning']=meaning
         keyed[w['id']]=w;pairs.setdefault(w['word']+'|'+w['reading'],w)
-    # Explicit lexical correction, not a generic phrase substitution.
-    for w in keyed.values():
-        if w['word']=='だめ':w['meaning']='안 됨, 소용없음'
     total=0;changed=0;semantic=0;propagated=0;flags=[];levels={};layer={}
     for level in ['N5','N4','N3','N2','N1']:
-        path=ROOT/'data'/f'{level}.json';pack=json.loads(path.read_text());nchange=nreview=nprop=0
+        path=ROOT/'data'/f'{level}.json';pack=json.loads(path.read_text(encoding='utf-8'));nchange=nreview=nprop=0
         for w in pack['words']:
             corrected=by_id[w['id']]
             if 'pre036Word' in corrected:
@@ -80,13 +77,13 @@ def main():
             layer[w['id']]=text
         level_complete=nreview==len(pack['words']) and not any(f['id'].startswith(level+'-') for f in flags)
         pack.update(contentRevision=revision,koreanOnly=True,semanticReviewComplete=level_complete)
-        path.write_text(json.dumps(pack,ensure_ascii=False,separators=(',',':')))
+        path.write_text(json.dumps(pack,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
         levels[level]={'words':len(pack['words']),'changed':nchange,'semanticReviewed':nreview,'propagatedSameLexeme':nprop}
         total+=len(pack['words']);changed+=nchange;semantic+=nreview;propagated+=nprop
     complete=semantic==total and not flags
-    korean=json.loads((ROOT/'data/korean-glosses.json').read_text());korean.update(glosses=layer,contentRevision=revision,semanticReviewComplete=complete,semanticReviewed=semantic)
-    (ROOT/'data/korean-glosses.json').write_text(json.dumps(korean,ensure_ascii=False,separators=(',',':')))
-    coverage=json.loads((ROOT/'data/coverage.json').read_text());coverage.update(contentRevision=revision,semanticReviewComplete=complete,semanticReviewed=semantic)
+    korean=json.loads((ROOT/'data/korean-glosses.json').read_text(encoding='utf-8'));korean.update(glosses=layer,contentRevision=revision,semanticReviewComplete=complete,semanticReviewed=semantic)
+    (ROOT/'data/korean-glosses.json').write_text(json.dumps(korean,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
+    coverage=json.loads((ROOT/'data/coverage.json').read_text(encoding='utf-8'));coverage.update(contentRevision=revision,semanticReviewComplete=complete,semanticReviewed=semantic)
     for level,info in levels.items():coverage['levels'][level].update(english=0,korean=info['words'],semanticReviewed=info['semanticReviewed'])
     dumps(ROOT/'data/coverage.json',coverage)
     report={'contentRevision':revision,'total':total,'changed':changed,'semanticReviewed':semantic,'propagatedSameLexeme':propagated,'remainingSemanticReview':total-semantic,'englishDisplay':0,'semanticReviewComplete':complete,'reviewer':'assistant; not external human review','levels':levels,'remainingAutomaticFlags':len(flags),'note':'Comma formatting is applied to all entries. Formatting-only changes are NOT counted as semantic review.'}

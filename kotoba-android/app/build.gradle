@@ -122,7 +122,7 @@ tasks.configureEach { task ->
         def approvalFile = rootProject.file('../release-approval.json')
         if(!approvalFile.exists()) throw new GradleException('Production QA approval has not been recorded.')
         def approval = new groovy.json.JsonSlurper().parse(approvalFile)
-        ['physicalDeviceInk','physicalDeviceAudio','offlineRestore','accessibility','contentEditorialReview','privacyAndDataSafety','contentRating','storeListing','signedBundle','playAppSigning','closedTesting','legalDocsPublished','billingSandbox','consentAndAdFree','rtdnAndRefunds'].each { key ->
+        ['physicalDeviceInk','physicalDeviceAudio','offlineRestore','accessibility','contentEditorialReview','privacyAndDataSafety','contentRating','storeListing','signedBundle','playAppSigning','closedTesting','legalDocsPublished','billingSandbox','consentAndAdFree','rtdnAndRefunds','accountDeletion'].each { key ->
             if(approval[key] != true) throw new GradleException('Release gate missing: '+key)
         }
     }

@@ -1,7 +1,9 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
+import {createHash} from 'node:crypto';
 import {fresh,createClass,classifySurvey,current,submit,next,validateState,unresolved,createReview} from '../src/course-engine.js';
 import {STARTERS,courses,validateStoredPack} from '../src/catalog.js';
 import {PLANS,mergeProducts} from '../src/commerce.js';
+import {CONTENT_REVISION,REVIEWED_IDENTITIES} from '../src/reviewed-identities.js';
 const read=p=>fs.readFileSync(new URL(p,import.meta.url),'utf8');
 const pack=JSON.parse(read('../data/N5.json'));
 test('reported policeman gloss is concise and not a mistranslated source explanation',()=>{const w=pack.words.find(w=>w.word==='おまわりさん');assert.equal(w.meaning,'경찰관, 순경');});
@@ -33,7 +35,76 @@ test('corrupted Japanese readings are corrected without changing saved vocabular
  }
  const tampered=structuredClone(pack);tampered.words.find(w=>w.id==='N3-1d6ofkx').reading='さんせん';assert.throws(()=>validateStoredPack(tampered));
 });
-test('editorial audit distinguishes reviewed meanings from punctuation-only changes',()=>{const a=JSON.parse(read('../editorial/audit.json'));assert.equal(a.total,8451);assert.ok(a.semanticReviewed>=2404);assert.equal(a.semanticReviewed+a.remainingSemanticReview,a.total);assert.equal(a.semanticReviewComplete,false);assert.equal(a.levels.N5.semanticReviewed,669);assert.equal(a.levels.N4.semanticReviewed,655);});
+const reviewedCounts={N5:669,N4:655,N3:1798,N2:1844,N1:3485};
+const allReviewedWords=()=>Object.keys(reviewedCounts).flatMap(level=>JSON.parse(read(`../data/${level}.json`)).words);
+const displayGloss=text=>[...new Set(text.replace(/\s*[·•;]\s*/g,', ').split(',').map(x=>x.trim()).filter(Boolean))].join(', ');
+test('full editorial review preserves exact counts and stable IDs with evidence for every approval',()=>{
+ const audit=JSON.parse(read('../editorial/audit.json')),coverage=JSON.parse(read('../data/coverage.json')),
+  layer=JSON.parse(read('../data/korean-glosses.json')),overrides=JSON.parse(read('../editorial/overrides036.json')),words=allReviewedWords();
+ assert.equal(words.length,8451);assert.equal(new Set(words.map(w=>w.id)).size,8451);
+ const stableIdsHash=createHash('sha256').update(words.map(w=>w.id).join('\n')).digest('hex');
+ assert.equal(stableIdsHash,'d4f8851d628c4b9b367b571bf38766dd323d1dce87049edc8069472d06a7faa6');
+ assert.equal(overrides.baseVocabularyIdsSha256,stableIdsHash);
+ for(const report of [audit,coverage,layer]){
+  assert.equal(report.contentRevision,'042-editorial-1');assert.equal(report.semanticReviewComplete,true);assert.equal(report.semanticReviewed,8451);
+ }
+ assert.equal(audit.total,8451);assert.equal(audit.remainingSemanticReview,0);assert.equal(audit.remainingAutomaticFlags,0);
+ assert.equal(audit.englishDisplay,0);assert.deepEqual(JSON.parse(read('../editorial/remaining-flags.json')),[]);
+ assert.equal(audit.reviewer,'assistant; not external human review');assert.match(audit.note,/Formatting-only changes are NOT counted/);
+ assert.equal(overrides.corrections.length,8396);assert.equal(audit.propagatedSameLexeme,55);
+ const explicit=new Map(),sameLexeme=new Map();
+ for(const [index,meaning] of overrides.corrections){
+  assert.ok(Number.isInteger(index)&&index>=0&&index<words.length);assert.ok(!explicit.has(index),'duplicate editorial index '+index);
+  explicit.set(index,displayGloss(meaning));const w=words[index],key=w.word+'|'+w.reading;
+  if(!sameLexeme.has(key))sameLexeme.set(key,displayGloss(meaning));
+ }
+ for(const [index,w] of words.entries()){
+  const direct=explicit.has(index),expected=direct?explicit.get(index):sameLexeme.get(w.word+'|'+w.reading);
+  assert.ok(expected,'no semantic evidence for '+w.id);assert.equal(w.meaning,expected,w.id);
+  assert.equal(w.glossReview,direct?'assistant-reviewed':'assistant-reviewed-same-lexeme',w.id);
+  assert.equal(w.language,'ko',w.id);assert.equal(w.contentRevision,'042-editorial-1',w.id);assert.equal(layer.glosses[w.id],w.meaning,w.id);
+ }
+ assert.equal(Object.keys(layer.glosses).length,8451);
+ for(const [level,count] of Object.entries(reviewedCounts)){
+  const p=JSON.parse(read(`../data/${level}.json`));assert.equal(validateStoredPack(p),p);
+  assert.equal(p.words.length,count);assert.equal(p.semanticReviewComplete,true);
+  assert.equal(audit.levels[level].words,count);assert.equal(audit.levels[level].semanticReviewed,count);
+  assert.equal(coverage.levels[level].words,count);assert.equal(coverage.levels[level].korean,count);assert.equal(coverage.levels[level].english,0);
+  assert.equal(coverage.levels[level].semanticReviewed,count);
+ }
+});
+test('new review artifacts cover all 6037 assigned cards without unresolved or silently replaced meanings',()=>{
+ const words=new Map(allReviewedWords().map(w=>[w.id,w])),seen=new Set();
+ for(const [file,count] of [['n3-semantic-review.json',1528],['n2-semantic-review.json',1554],['n1-first-semantic-review.json',1500],['n1-second-semantic-review.json',1455]]){
+  const review=JSON.parse(read('../editorial/review042/'+file));assert.equal(review.reviewed.length,count,file);assert.deepEqual(review.unresolved,[],file);
+  assert.ok(review.sources.length>0,file);
+  for(const entry of review.reviewed){
+   assert.ok(!seen.has(entry.id),'duplicate review '+entry.id);seen.add(entry.id);
+   const w=words.get(entry.id);assert.ok(w,'missing reviewed card '+entry.id);
+   assert.equal(w.word,entry.word,entry.id);assert.equal(w.reading,entry.reading,entry.id);assert.equal(w.meaning,displayGloss(entry.meaning),entry.id);
+   assert.equal(w.glossReview,'assistant-reviewed',entry.id);
+  }
+ }
+ assert.equal(seen.size,6037);
+ const kana=words.get('N1-1lrtn57');assert.equal(kana.word,'し');assert.equal(kana.reading,'し');assert.equal(kana.meaning,'자(10^24의 수 단위)');
+});
+test('generated identity aliases accept only the 35 explicit corrections and retain legacy progress IDs',()=>{
+ const overrides=JSON.parse(read('../editorial/overrides036.json')),words=new Map(allReviewedWords().map(w=>[w.id,w]));
+ assert.equal(overrides.lexicalCorrections.length,33);assert.equal(overrides.readingCorrections.length,2);assert.equal(CONTENT_REVISION,overrides.revision);
+ const expected=Object.fromEntries([...overrides.readingCorrections,...overrides.lexicalCorrections].map(e=>[e.id,[e.word,e.reading]]));
+ assert.equal(Object.keys(expected).length,35);assert.deepEqual(REVIEWED_IDENTITIES,expected);assert.ok(!('N1-1lrtn57' in REVIEWED_IDENTITIES));
+ for(const [id,[word,reading]] of Object.entries(expected)){
+  const w=words.get(id);assert.ok(w,id);assert.equal(w.word,word,id);assert.equal(w.reading,reading,id);
+  const valid={level:w.level,words:[w]};assert.equal(validateStoredPack(valid),valid);
+  assert.throws(()=>validateStoredPack({level:w.level,words:[{...w,reading:reading+'あ'}]}),id+' must reject an unreviewed reading');
+  assert.throws(()=>validateStoredPack({level:w.level,words:[{...w,word:word+'あ'}]}),id+' must reject an unreviewed headword');
+ }
+ for(const change of overrides.lexicalCorrections){
+  const entry=JSON.parse(read('../editorial/'+change.evidence.split(':')[0])).reviewed.find(w=>w.id===change.id);
+  assert.ok(entry,'missing lexical evidence '+change.id);assert.equal(entry.word,change.word);assert.equal(entry.reading,change.reading);
+ }
+ const lowerGrade=words.get('N1-141w1w3');assert.equal(lowerGrade.reading,'げひん');assert.equal(lowerGrade.meaning,'천함, 품위 없음');
+});
 test('unknown words receive three writing repetitions before the actual exam',()=>{
  const state=fresh(),c=courses(STARTERS,'N5')[0];state.session=createClass(state,c,STARTERS);const id=c.wordIds[0];while(current(state.session)?.phase==='survey')classifySurvey(state,current(state.session).id,current(state.session).wordId!==id,STARTERS);
  const training=state.session.queue.filter(t=>t.phase==='learn'&&t.wordId===id);assert.deepEqual(training.map(t=>t.skill),['study','audio','trace','trace','trace']);assert.deepEqual(training.filter(t=>t.skill==='trace').map(t=>[t.practiceIndex,t.practiceTotal,t.guided]),[[1,3,true],[2,3,true],[3,3,false]]);

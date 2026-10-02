@@ -1,1 +1,71 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>코토바 오픈소스 및 콘텐츠 고지</title><style>body{font:15px/1.8 system-ui,sans-serif;color:#343c4b;max-width:800px;margin:40px auto;padding:0 24px;background:#f5f6f9}h1{font-size:28px}h2{font-size:20px;margin-top:32px}code{word-break:break-all}a{color:#6352ce}.card{background:white;padding:20px;border-radius:16px;margin:15px 0}</style></head><body><a href="./index.html">← 코토바로 돌아가기</a><h1>오픈소스 및 콘텐츠 고지</h1><p>코토바는 자체 코드와 함께 다음 공개 자료의 파생 데이터를 사용합니다. 아래 고지는 해당 권리자의 앱에 대한 보증 또는 후원을 의미하지 않습니다.</p><div class="card"><h2>어휘 데이터</h2><p><strong>OpenJLPT / EDRDG JMdict·EDICT / Jonathan Waller JLPT 분류</strong></p><p>고정 OpenJLPT 커밋: <code>c42fd9fa3777bfc1775446f7c418d549dfd6e4cf</code></p><p>파생 어휘 데이터 라이선스: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0). 코토바는 표기 정규화, 중복 병합, 자체 한국어 시작 어휘 추가, 원자료 예문 제외, 챕터 메타데이터 추가 등의 변경을 했습니다.</p><p><a href="https://github.com/evanclan/OpenJLPT">OpenJLPT</a> · <a href="https://www.edrdg.org/edrdg/licence.html">EDRDG licence</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a></p></div><div class="card"><h2>한자·가나 획 데이터</h2><p><strong>KanjiVG — Ulrich Apel 및 contributors</strong></p><p>고정 커밋: <code>422b5538595676da918c288a4230cb5e22a1ee7e</code></p><p>라이선스: CC BY-SA 3.0. 코토바는 커리큘럼에 필요한 문자를 선택하고 SVG 경로를 순서대로 샘플링·단순화·정규화해 APK 내장 획 데이터로 변환했습니다.</p><p><a href="https://kanjivg.tagaini.net/">KanjiVG</a> · <a href="./data/licenses/KanjiVG-COPYING.txt">원문 라이선스</a> · <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a></p></div><div class="card"><h2>이전 0.3.6 일본어 발음 출처</h2><p>이전 버전의 발음 파일은 빌드 시 <strong>Open JTalk</strong>와 <strong>HTS Voice “NIT ATR503 M001” version 1.05</strong>를 사용하여 생성합니다.</p><p>HTS Voice 저작권: Copyright © 2003–2012 Nagoya Institute of Technology, Department of Computer Science; © 2003–2008 Tokyo Institute of Technology, Interdisciplinary Graduate School of Science and Engineering.</p><p>HTS Voice 라이선스: Creative Commons Attribution 3.0 (CC BY 3.0). 생성된 음성의 이용 시 이 출처와 라이선스를 함께 고지합니다.</p><p>Open JTalk의 빌드 도구 및 NAIST Japanese Dictionary는 빌드 환경에서만 사용하며, 설치 앱에는 실행 엔진이나 사전 바이너리를 포함하지 않습니다.</p><p><a href="https://open-jtalk.sourceforge.net/readme_hts_voice_nitech_jp_atr503_m001.php">HTS Voice 고지</a> · <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a></p></div><h2>상표 및 비제휴</h2><p>JLPT/Japanese-Language Proficiency Test 관련 명칭은 각 권리자에게 귀속됩니다. 코토바는 국제교류기금 또는 JEES의 공식 앱이 아니며, Duolingo의 자산·캐릭터·콘텐츠를 사용하지 않습니다.</p><div class="card"><h2>한국어 뜻 생성 보조</h2><p>전체 단어팩에서 사람이 직접 편집한 한국어 뜻이 없는 항목은 출시 준비 과정에서 <strong>facebook/m2m100_418M</strong> 다국어 번역 모델을 사용해 한국어 표시 뜻 초안을 생성합니다. 모델은 설치 앱에 포함되지 않으며 실행 중 사용되지 않습니다.</p><p>모델 라이선스: MIT. 고정 revision: <code>55c2e61bbf05dfb8d7abccdc3fae6fc8512fd636</code>. 자동 생성 뜻은 정식 출시 전에 교육 검수가 필요합니다.</p><p><a href="https://huggingface.co/facebook/m2m100_418M">M2M100 418M</a></p></div><h2>0.3.6 앱 의존성</h2><p>AndroidX Activity/WebKit 및 관련 라이브러리는 Apache License 2.0 조건으로 사용합니다. Google Play Billing, Google Mobile Ads, User Messaging Platform에는 Google이 정한 SDK 약관이 적용됩니다. 광고·결제 서비스 가입 및 운영 동의는 계정 소유자가 별도로 완료해야 합니다.</p><h2>뜻 교정 기록</h2><p>0.3.6은 어휘 뜻의 쉼표 구분을 정리하고 N5·N4 및 다수의 오역·반복문을 교정했습니다. 교정 범위와 원본은 소스의 editorial 폴더에 기록하며, 전체 어휘의 독립적 교육 검수 완료를 주장하지 않습니다. 어휘 및 획 파생 데이터의 기존 동일조건변경허락 라이선스는 유지됩니다.</p><div class="card"><h2>0.3.7 일본어 음성과 자체 예문</h2><p>새 내장 발음은 Kokoro-82M v1.0 · jf_alpha로 미리 합성했습니다. 모델·음성 가중치는 Apache-2.0으로 공개되어 있습니다. 모델 자체는 앱에 포함하지 않습니다. Google·Samsung 음성 파일을 복제해 배포하지 않습니다.</p><p><a href="./data/licenses/Kokoro-Apache-2.0.txt">Apache-2.0 원문</a> · <a href="./data/licenses/Kokoro-NOTICE.md">음성 출처·생성 방식</a></p><p>예문 164개와 한국어 번역은 이번 프로젝트용으로 새로 작성했습니다. 외부 교재·사전 예문을 복사하지 않았습니다. 독립적인 원어민 감수는 아직 하지 않았습니다.</p><p>추가 가나 15자의 획은 기존과 동일한 KanjiVG 리비전에서 가져왔으며, CC BY-SA 3.0 고지를 유지합니다.</p></div><section class="card" id="examples038"><h2>0.3.8 전체 어휘 예문</h2><p>일본어 용례: Tatoeba 기여자, CC BY 2.0 FR. 어휘 연결: EDRDG JMdict, CC BY-SA 4.0. 각 예문에 출처를 표시합니다.</p><p>한국어 자동번역은 검수 전 초안이며 오역 가능성이 있어 기본적으로 접혀 있습니다. 코토바 작성·수정 문장과 자동 생성 읽기에도 독립적인 원어민 전체 검수가 필요합니다.</p><p>번역은 OPUS-MT와 M2M100으로 빌드 시 생성합니다. 앱은 번역 모델을 포함하거나 학습 기록을 외부 번역 서비스에 보내지 않습니다. 예문 듣기에는 기기의 일본어 오프라인 음성을 사용합니다.</p><a href="data/licenses/Examples-038-NOTICE.md">상세 출처·라이선스·수정 내역</a></section><section class="card"><h2>0.3.9 음성 변경</h2><p>현재 버전은 기기 일본어 TTS만 사용합니다. 이전 버전의 사전 생성 음원은 APK에 포함하지 않습니다. 예문 원문·번역의 출처 및 검수 상태는 유지합니다.</p></section></body></html>
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JLPT 단어장 - 코토바 오픈소스 및 콘텐츠 고지</title>
+<style>body{font:15px/1.8 system-ui,sans-serif;color:#343c4b;max-width:800px;margin:40px auto;padding:0 24px;background:#f5f6f9}h1{font-size:28px}h2{font-size:20px;margin-top:32px}code{word-break:break-all}a{color:#6352ce}.card{background:white;padding:20px;border-radius:16px;margin:15px 0}</style>
+</head>
+<body>
+<a href="./index.html">← 코토바로 돌아가기</a>
+<h1>오픈소스 및 콘텐츠 고지</h1>
+<p>JLPT 단어장 - 코토바는 자체 코드와 함께 다음 공개 자료의 파생 데이터를 사용합니다. 아래 고지는 해당 권리자의 앱에 대한 보증 또는 후원을 의미하지 않습니다. 기준 버전: 0.4.2 · 2026-10-03.</p>
+<section class="card">
+<h2>어휘 데이터</h2>
+<p><strong>OpenJLPT / EDRDG JMdict·EDICT / Jonathan Waller JLPT 분류</strong></p>
+<p>고정 OpenJLPT 커밋: <code>c42fd9fa3777bfc1775446f7c418d549dfd6e4cf</code>. JMdict·EDICT 저작권: James William Breen 및 Electronic Dictionary Research and Development Group.</p>
+<p>파생 어휘 데이터와 한국어 뜻 계층의 라이선스는 <strong>Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)</strong>입니다. 자체 앱 코드의 라이선스와는 구분됩니다.</p>
+<p>원자료 8,334개에서 중복 1개를 병합하고 자체 시작 어휘 118개를 추가하여 현재 <strong>8,451개 급수별 항목</strong>을 포함합니다. N5 669개, N4 655개, N3 1,798개, N2 1,844개, N1 3,485개입니다. 급수 간 같은 어휘가 있을 수 있으며, 공식 JLPT 전체 출제 목록을 의미하지 않습니다.</p>
+<p>변경 내역: 표기 정규화, 중복 병합, 자체 한국어 시작 어휘, 한국어 뜻 작성·교정, 원자료 어휘 예문 제외, 챕터 메타데이터 추가, 깨진 표제어·읽기 교정. 학습 기록을 유지하도록 기존 단어 ID를 보존했습니다.</p>
+<p><a href="https://github.com/evanclan/OpenJLPT">OpenJLPT</a> · <a href="https://www.edrdg.org/edrdg/licence.html">EDRDG 저작권·라이선스</a> · <a href="https://www.tanos.co.uk/jlpt/">Jonathan Waller 급수 분류</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a></p>
+</section>
+<section class="card">
+<h2>한국어 뜻과 검수 범위</h2>
+<p>현재 8,451개 항목에 한국어 또는 숫자·기호 뜻을 표시하며 영어 표시 뜻은 0개입니다. 초기 자료의 한국어 뜻 397개와 영어 뜻 8,054개는 과거 입력 자료의 수치입니다.</p>
+<p><code>042-editorial-1</code>에서 8,396개는 단어 ID별 의미 판단 기록을 적용했고, 55개는 동일한 일본어 표기와 읽기에 한해 검수된 뜻을 연결했습니다. 이번 추가 검수는 이전에 남아 있던 6,037개 카드를 각각 읽고 판단한 기록입니다. 일반 어휘는 일본어·한국어 어휘 지식으로 판단하고 불확실한 뜻·표기·읽기는 JMdict 등 일차 사전을 대조했습니다. 쉼표 정리만 한 작업은 의미 검수로 세지 않습니다.</p>
+<p>어휘 뜻 검수 잔여 항목과 자동 점검 경고는 모두 0개입니다. <strong>이 검수는 AI 어시스턴트 검수이며, 외부 사람이나 원어민의 독립적인 전체 감수를 뜻하지 않습니다.</strong> 예문·문맥별 읽기·발음·JLPT 급수 분류의 전체 정확성을 인증하는 것도 아닙니다.</p>
+<p>교정 전 뜻과 근거는 소스의 <code>editorial/overrides036.json</code>, <code>editorial/review042/</code>, <code>editorial/change-log.json</code> 및 원자료 필드에 보존합니다. <a href="./editorial/audit.json">검수 집계</a> · <a href="./data/coverage.json">어휘 수·출처 해시</a></p>
+</section>
+<section class="card">
+<h2>한국어 뜻 초안 생성 보조</h2>
+<p>이전에 편집된 한국어 뜻이 없던 항목은 출시 준비 중 <strong>facebook/m2m100_418M</strong>으로 영어 뜻에서 한국어 초안을 생성했습니다. 모델은 설치 앱에 포함되지 않으며 앱 실행 중 사용되지 않습니다.</p>
+<p>모델 라이선스: MIT. 고정 revision: <code>55c2e61bbf05dfb8d7abccdc3fae6fc8512fd636</code>. 현재 표시 뜻에는 이후의 어휘 의미 검수와 명시적인 교정이 적용되어 있습니다. 모델 라이선스는 파생 어휘 데이터의 CC BY-SA 4.0을 대체하지 않습니다.</p>
+<p><a href="https://huggingface.co/facebook/m2m100_418M">M2M100 418M</a></p>
+</section>
+<section class="card">
+<h2>한자·가나 획 데이터</h2>
+<p><strong>KanjiVG — Ulrich Apel 및 contributors</strong></p>
+<p>고정 커밋: <code>422b5538595676da918c288a4230cb5e22a1ee7e</code>. 라이선스: CC BY-SA 3.0.</p>
+<p>코토바는 커리큘럼 문자를 선택하고 SVG 경로를 순서대로 샘플링·단순화·정규화하여 내장 획 데이터로 변환했습니다. 현재 묶음은 2,258자·22,653획이며 커리큘럼의 누락 문자는 0개입니다. 0.3.7에서 추가한 가나도 같은 원자료와 라이선스를 사용하며, 현재 수치는 0.4.2 커리큘럼에 맞춰 다시 구성한 결과입니다.</p>
+<p><a href="https://kanjivg.tagaini.net/">KanjiVG</a> · <a href="./data/licenses/KanjiVG-COPYING.txt">원문 라이선스</a> · <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a> · <a href="./data/stroke-coverage.json">획 집계·해시</a></p>
+</section>
+<section class="card">
+<h2>현재 일본어 발음</h2>
+<p>0.3.9 이후 현재 앱은 기기에 설치되어 있고 오프라인 사용 가능으로 보고되는 일본어 TTS 음성을 요청합니다. 사용할 수 있는 일본어 음성이 설치되어 있어야 하며, 엔진이나 음성이 없으면 재생할 수 없습니다.</p>
+<p>현재 APK에는 미리 생성한 Ogg 음원, Open JTalk 엔진, Kokoro 모델 가중치 또는 복제한 Google·Samsung 음성 파일을 포함하지 않습니다. 어휘와 획 데이터는 기기에 저장되어 있으며, 광고·결제·관련 계정 서비스는 활성화되면 네트워크를 사용합니다.</p>
+</section>
+<section class="card">
+<h2>이전 0.3.6 일본어 발음 출처</h2>
+<p>이전 0.3.6 음원은 빌드 준비 중 <strong>Open JTalk</strong>와 <strong>HTS Voice “NIT ATR503 M001” version 1.05</strong>를 사용하여 생성했습니다. 현재 앱에는 해당 음원을 포함하지 않으며 출처 기록을 유지합니다.</p>
+<p>HTS Voice 저작권: Copyright © 2003–2012 Nagoya Institute of Technology, Department of Computer Science; © 2003–2008 Tokyo Institute of Technology, Interdisciplinary Graduate School of Science and Engineering.</p>
+<p>음원 라이선스: Creative Commons Attribution 3.0 (CC BY 3.0). 기존 생성 과정에서 무음을 다듬고 mono 16 kHz Ogg Opus로 변환했습니다. Open JTalk 및 NAIST Japanese Dictionary는 당시 빌드 환경에서만 사용했습니다.</p>
+<p><a href="https://open-jtalk.sourceforge.net/readme_hts_voice_nitech_jp_atr503_m001.php">HTS Voice 고지</a> · <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a></p>
+</section>
+<section class="card">
+<h2>이전 0.3.7 일본어 음성과 자체 예문</h2>
+<p>0.3.7 음원은 Kokoro-82M v1.0 · jf_alpha로 합성했습니다. 모델·음성 가중치는 Apache-2.0으로 공개되었으며 모델 자체는 앱에 포함하지 않았습니다. 0.3.9의 기기 TTS 전환 후 해당 음원도 현재 APK에서 제외했습니다. 과거 합성 발음 전체에 대한 독립적인 원어민 검수는 하지 않았습니다.</p>
+<p><a href="./data/licenses/Kokoro-Apache-2.0.txt">Apache-2.0 원문</a> · <a href="./data/licenses/Kokoro-NOTICE.md">이전 음성 출처·생성 방식</a></p>
+<p>이전 프로젝트용 자체 예문 164개와 한국어 번역은 새로 작성했으며 외부 교재·사전 예문을 복사하지 않았습니다. 독립적인 원어민 전체 감수는 하지 않았습니다.</p>
+</section>
+<section class="card" id="examples038">
+<h2>확장 어휘 예문의 출처와 검수 범위</h2>
+<p>일본어 원문: <a href="https://tatoeba.org/">Tatoeba 기여자</a>, <a href="https://creativecommons.org/licenses/by/2.0/fr/">CC BY 2.0 FR</a>. 어휘 연결: EDRDG JMdict, CC BY-SA 4.0. 각 예문에 출처를 표시하며 프로젝트 작성·수정 문장은 구분해 기록합니다.</p>
+<p>한국어 자동번역 초안과 문맥별 읽기에는 오역·오독 가능성이 있으며 전체 예문에 대한 독립적인 원어민 검수는 아직 완료하지 않았습니다. 어휘 뜻 검수 완료와 예문 검수 상태는 구분됩니다. 번역 초안은 기본적으로 접힌 안내에서 확인할 수 있습니다.</p>
+<p>번역은 빌드 시 OPUS-MT와 M2M100으로, 읽기는 별도 표시가 없으면 pykakasi로 생성했습니다. 앱에는 번역 모델이 포함되지 않으며 사용자 학습 기록을 외부 번역 서비스로 보내지 않습니다. 예문 듣기에는 기기의 일본어 오프라인 음성을 사용합니다.</p>
+<p><a href="./data/licenses/Examples-038-NOTICE.md">상세 출처·라이선스·수정 내역</a></p>
+</section>
+<h2>앱 의존성</h2>
+<p>AndroidX Activity/WebKit 및 관련 라이브러리는 Apache License 2.0 조건으로 사용합니다. Google Play Billing, Google Mobile Ads, User Messaging Platform에는 Google이 정한 SDK 약관이 적용됩니다. 광고·결제 서비스 가입 및 운영 설정은 별도로 완료해야 합니다.</p>
+<h2>상표 및 비제휴</h2>
+<p>JLPT/Japanese-Language Proficiency Test 관련 명칭은 각 권리자에게 귀속됩니다. 코토바는 국제교류기금 또는 JEES의 공식 앱이 아니며, Duolingo의 자산·캐릭터·콘텐츠를 사용하지 않습니다.</p>
+</body>
+</html>

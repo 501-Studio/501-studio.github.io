@@ -139,18 +139,20 @@ public final class PlayCommerce implements PurchasesUpdatedListener {
    if(destroyed)return;
    if(error!=null){identityBusy=false;onChanged.run();next.done(error);return;}
    io.execute(()->{
-    String owner=null;boolean failure=false;
+    String owner=null;boolean failure=false,accountDeleted=false;
     try{
      JSONObject request=new JSONObject().put("packageName",activity.getPackageName()).put("installationId",prefs.getString("installation",""));
      owner=post(request,chosen,true).optString("obfuscatedAccountId","");
      if(!PurchaseProof.isAccountId(owner))throw new IllegalArgumentException();
      prepareIntegrity();
      if(!chosen.usable())throw new IllegalStateException();
-    }catch(Exception unavailable){failure=true;}
-    final String verifiedOwner=owner;final boolean failed=failure;
+    }catch(DeletedAccountException deleted){failure=true;accountDeleted=true;}
+    catch(Exception unavailable){failure=true;}
+    final String verifiedOwner=owner;final boolean failed=failure,deleted=accountDeleted;
     activity.runOnUiThread(()->{
      if(destroyed||generation!=accountGeneration)return;
      identityBusy=false;
+     if(deleted){clearDeletedAccount();onChanged.run();next.done("삭제된 계정의 연결 정보를 지웠어요. 무료 학습은 계속할 수 있어요.");return;}
      if(failed){session=null;onChanged.run();next.done("계정과 구매 확인 서비스에 연결하지 못했어요. 연결 후 다시 시도해 주세요.");return;}
      SharedPreferences.Editor editor=prefs.edit().putString("account",verifiedOwner);
      if(PurchaseProof.shouldClearLease(accountId(),verifiedOwner)){editor.remove("lease");lease=new JSONObject();uncertain=true;}
@@ -196,7 +198,7 @@ public final class PlayCommerce implements PurchasesUpdatedListener {
   }
  }
  private void verify(List<Purchase> purchases){final PurchaseIdentity.Session currentSession=session;final String owner=accountId();final long generation=accountGeneration;io.execute(()->{
-  JSONObject best=null;String signed=null;boolean confirmedInactive=false;String error=null;
+  JSONObject best=null;String signed=null;boolean confirmedInactive=false,accountDeleted=false;String error=null;
   for(Purchase purchase:purchases){try{
    String product=purchase.getProducts().contains(LIFE)?LIFE:SUB;
    JSONObject request=new JSONObject().put("packageName",activity.getPackageName()).put("productId",product).put("purchaseToken",purchase.getPurchaseToken()).put("installationId",prefs.getString("installation",""));
@@ -207,24 +209,40 @@ public final class PlayCommerce implements PurchasesUpdatedListener {
    JSONObject response=post(request,currentSession,false);String raw=response.optString("lease","");JSONObject decoded=decodeLease(raw);
    if(decoded.optBoolean("active")){if(best==null||"lifetime".equals(decoded.optString("kind"))){best=decoded;signed=raw;}}
    else confirmedInactive=true;
-  }catch(Exception failure){error="구매 확인을 완료하지 못했어요. 연결 후 구매 복원을 눌러 주세요.";}}
-  final JSONObject selected=best;final String jwt=signed,problem=error;final boolean inactive=confirmedInactive;
+  }catch(DeletedAccountException deleted){accountDeleted=true;break;}
+  catch(Exception failure){error="구매 확인을 완료하지 못했어요. 연결 후 구매 복원을 눌러 주세요.";}}
+  final JSONObject selected=best;final String jwt=signed,problem=error;final boolean inactive=confirmedInactive,deleted=accountDeleted;
   activity.runOnUiThread(()->{if(destroyed||generation!=accountGeneration||!owner.equals(accountId()))return;refreshing=false;
+   if(deleted){clearDeletedAccount();flushRestore("삭제된 계정의 연결·이용권 정보를 지웠어요. 무료 학습은 계속할 수 있어요.");onChanged.run();return;}
    if(selected!=null){lease=selected;prefs.edit().putString("lease",jwt).apply();uncertain=false;flushRestore(null);}
    else if(problem==null&&inactive){lease=new JSONObject();prefs.edit().remove("lease").apply();uncertain=false;flushRestore(null);}
    else flushRestore(problem);
    onChanged.run();
   });
  });}
+ private static final class DeletedAccountException extends Exception {}
+ private void clearDeletedAccount(){
+  accountGeneration++;session=null;integrityProvider=null;lease=new JSONObject();uncertain=false;
+  prefs.edit().remove("account").remove("lease").apply();
+ }
+ private JSONObject readResponse(java.io.InputStream in)throws Exception{
+  if(in==null)throw new IllegalStateException();
+  try(java.io.InputStream stream=in;java.io.ByteArrayOutputStream out=new java.io.ByteArrayOutputStream()){
+   byte[] buf=new byte[4096];int n;while((n=stream.read(buf))!=-1){if(out.size()+n>65536)throw new IllegalStateException();out.write(buf,0,n);}return new JSONObject(out.toString("UTF-8"));
+  }
+ }
  private JSONObject post(JSONObject body,PurchaseIdentity.Session auth,boolean account)throws Exception{
   if(!identity.eligible()||auth==null||!auth.usable())throw new IllegalStateException();
   URI uri=URI.create(BuildConfig.VERIFICATION_URL);if(!"https".equals(uri.getScheme())||uri.getHost()==null||uri.getUserInfo()!=null||uri.getFragment()!=null||uri.getQuery()!=null)throw new IllegalArgumentException();
   if(account)uri=uri.resolve("account");
   HttpURLConnection c=(HttpURLConnection)new URL(uri.toString()).openConnection();c.setRequestMethod("POST");c.setInstanceFollowRedirects(false);c.setConnectTimeout(10000);c.setReadTimeout(15000);c.setDoOutput(true);c.setRequestProperty("Content-Type","application/json");c.setRequestProperty("Authorization","Bearer "+auth.token);
   byte[] bytes=body.toString().getBytes(StandardCharsets.UTF_8);c.setFixedLengthStreamingMode(bytes.length);
-  try{try(java.io.OutputStream out=c.getOutputStream()){out.write(bytes);}if(c.getResponseCode()!=200)throw new IllegalStateException();
-   try(java.io.InputStream in=c.getInputStream();java.io.ByteArrayOutputStream out=new java.io.ByteArrayOutputStream()){
-    byte[] buf=new byte[4096];int n;while((n=in.read(buf))!=-1){if(out.size()+n>65536)throw new IllegalStateException();out.write(buf,0,n);}return new JSONObject(out.toString("UTF-8"));}
+  try{try(java.io.OutputStream out=c.getOutputStream()){out.write(bytes);}int status=c.getResponseCode();
+   if(status!=200){
+    if(status==410&&PurchaseProof.isDeletedAccountResponse(status,readResponse(c.getErrorStream()).optString("error")))throw new DeletedAccountException();
+    throw new IllegalStateException();
+   }
+   return readResponse(c.getInputStream());
   }finally{c.disconnect();}
  }
  private JSONObject decodeLease(String jwt)throws Exception{

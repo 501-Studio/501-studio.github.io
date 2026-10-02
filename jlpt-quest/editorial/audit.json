@@ -1,12 +1,12 @@
 {
-  "contentRevision": "036-editorial-1",
+  "contentRevision": "042-editorial-1",
   "total": 8451,
-  "changed": 5290,
-  "semanticReviewed": 2414,
+  "changed": 7356,
+  "semanticReviewed": 8451,
   "propagatedSameLexeme": 55,
-  "remainingSemanticReview": 6037,
+  "remainingSemanticReview": 0,
   "englishDisplay": 0,
-  "semanticReviewComplete": false,
+  "semanticReviewComplete": true,
   "reviewer": "assistant; not external human review",
   "levels": {
     "N5": {
@@ -23,20 +23,20 @@
     },
     "N3": {
       "words": 1798,
-      "changed": 1148,
-      "semanticReviewed": 270,
+      "changed": 1522,
+      "semanticReviewed": 1798,
       "propagatedSameLexeme": 44
     },
     "N2": {
       "words": 1844,
-      "changed": 1007,
-      "semanticReviewed": 290,
+      "changed": 1633,
+      "semanticReviewed": 1844,
       "propagatedSameLexeme": 7
     },
     "N1": {
       "words": 3485,
-      "changed": 2210,
-      "semanticReviewed": 530,
+      "changed": 3276,
+      "semanticReviewed": 3485,
       "propagatedSameLexeme": 4
     }
   },

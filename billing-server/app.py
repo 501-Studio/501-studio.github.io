@@ -2,15 +2,17 @@
 import hashlib
 import os
 import re
+import secrets
 import time
 from pathlib import Path
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, make_response, render_template
 from werkzeug.middleware.proxy_fix import ProxyFix
 from entitlements import SUB, LIFE, claims, sign
 from persistence import Store
 from play_api import PlayClient
 from security import BillingError, bearer, google_identity, account_id, request_hash, check_integrity
 from service import BillingService, valid_token
+from deletion import COOKIE, MAX_AGE, web_origin, challenge, check_confirmation, check_fresh_identity
 
 
 def configuration():
@@ -18,7 +20,8 @@ def configuration():
         'RECEIPT_VERIFICATION_ENABLED', 'PLAY_PACKAGE', 'ENTITLEMENT_KEY_FILE', 'SQLITE_PATH',
         'TOKEN_ENCRYPTION_KEY', 'ACCOUNT_HMAC_KEY', 'GOOGLE_OAUTH_CLIENT_ID', 'PLAY_SIGNING_CERT_SHA256',
         'PUBSUB_AUDIENCE', 'PUBSUB_SERVICE_ACCOUNT_EMAIL', 'PUBSUB_SUBSCRIPTION',
-        'OPS_AUDIENCE', 'OPS_SERVICE_ACCOUNT_EMAIL', 'TRUST_PROXY_HOPS')}
+        'OPS_AUDIENCE', 'OPS_SERVICE_ACCOUNT_EMAIL', 'TRUST_PROXY_HOPS',
+        'ACCOUNT_DELETION_ENABLED', 'ACCOUNT_DELETION_WEB_ORIGIN')}
 
 
 def configured(config):
@@ -43,6 +46,7 @@ def create_app(config=None, *, service=None, verify_identity=google_identity):
     config = configuration() if config is None else dict(config)
     package = config.get('PLAY_PACKAGE') or 'com.studio501.kotoba'
     ready = configured(config)
+    deletion_origin = web_origin(config)
     if config.get('TRUST_PROXY_HOPS') == '1':
         # Enable only behind a trusted ingress whose raw backend is inaccessible externally.
         server.wsgi_app = ProxyFix(server.wsgi_app, x_proto=1)
@@ -81,9 +85,14 @@ def create_app(config=None, *, service=None, verify_identity=google_identity):
         if not ready or service is None:
             raise BillingError('service_not_configured', 503)
 
+    def user_identity():
+        return verify_identity(bearer(request.headers.get('Authorization')), config['GOOGLE_OAUTH_CLIENT_ID'])
+
     def authenticate_user():
-        info = verify_identity(bearer(request.headers.get('Authorization')), config['GOOGLE_OAUTH_CLIENT_ID'])
-        return account_id(info['sub'], config['ACCOUNT_HMAC_KEY'])
+        info = user_identity()
+        owner = account_id(info['sub'], config['ACCOUNT_HMAC_KEY'])
+        service.assert_account(owner)
+        return owner
 
     def authenticate_service(prefix):
         return verify_identity(bearer(request.headers.get('Authorization')), config[prefix+'_AUDIENCE'],
@@ -108,6 +117,58 @@ def create_app(config=None, *, service=None, verify_identity=google_identity):
         except Exception:
             raise BillingError('authentication_temporarily_unavailable', 503) from None
 
+    def require_deletion_configuration():
+        require_configuration()
+        if not deletion_origin:
+            raise BillingError('account_deletion_not_configured', 503)
+        if request.host_url.rstrip('/') != deletion_origin:
+            raise BillingError('invalid_deletion_origin', 403)
+
+    @server.get('/account/delete')
+    def deletion_page():
+        require_deletion_configuration()
+        if request.args:
+            raise BillingError('invalid_request')
+        nonce, cookie = challenge(config['ACCOUNT_HMAC_KEY'], package)
+        script_nonce = secrets.token_urlsafe(24)
+        response = make_response(render_template('account-delete.html',
+            client_id=config['GOOGLE_OAUTH_CLIENT_ID'], confirmation_nonce=nonce, script_nonce=script_nonce))
+        response.set_cookie(COOKIE, cookie, max_age=MAX_AGE, path='/account/',
+                            secure=True, httponly=True, samesite='Strict')
+        response.headers['Content-Security-Policy'] = (
+            "default-src 'none'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; "
+            f"script-src 'nonce-{script_nonce}' https://accounts.google.com/gsi/client; "
+            "style-src 'unsafe-inline' https://accounts.google.com/gsi/style; "
+            "connect-src 'self' https://accounts.google.com/gsi/; frame-src https://accounts.google.com/gsi/; "
+            "img-src data: https://accounts.google.com https://www.gstatic.com https://*.googleusercontent.com; form-action 'none'")
+        response.headers['Referrer-Policy'] = 'no-referrer'
+        response.headers['Cross-Origin-Opener-Policy'] = 'same-origin-allow-popups'
+        return response
+
+    @server.post('/account/deletion')
+    def delete_account():
+        require_deletion_configuration()
+        if (request.headers.get('Origin') != deletion_origin
+                or request.headers.get('Sec-Fetch-Site') == 'cross-site'):
+            raise BillingError('invalid_deletion_origin', 403)
+        body = request.get_json(silent=True)
+        if (request.args or not isinstance(body, dict) or set(body) != {'confirmDeletion', 'nonce'}
+                or body['confirmDeletion'] is not True):
+            raise BillingError('explicit_deletion_confirmation_required')
+        issued = check_confirmation(request.cookies.get(COOKIE), body['nonce'],
+                                    config['ACCOUNT_HMAC_KEY'], package)
+        try:
+            info = user_identity()
+            check_fresh_identity(info, body['nonce'], issued)
+            owner = account_id(info['sub'], config['ACCOUNT_HMAC_KEY'])
+            response = jsonify(service.delete_account(owner))
+            response.delete_cookie(COOKIE, path='/account/', secure=True, httponly=True, samesite='Strict')
+            return response
+        except BillingError:
+            raise
+        except Exception:
+            raise BillingError('deletion_temporarily_unavailable', 503) from None
+
     @server.post('/verify')
     def receipt():
         require_configuration()
@@ -128,9 +189,10 @@ def create_app(config=None, *, service=None, verify_identity=google_identity):
             check_integrity(payload, package, expected_hash, config['PLAY_SIGNING_CERT_SHA256'].split(','))
             if not service.synchronized():
                 raise BillingError('refund_reconciliation_required', 503)
-            result = service.refresh(product, token, owner)
-            lease = claims(package, installation, product, result, int(time.time()), account=owner)
-            return jsonify(lease=sign(lease, Path(config['ENTITLEMENT_KEY_FILE']).read_bytes()))
+            def issuer(result):
+                lease = claims(package, installation, product, result, int(time.time()), account=owner)
+                return sign(lease, Path(config['ENTITLEMENT_KEY_FILE']).read_bytes())
+            return jsonify(lease=service.issue_lease(product, token, owner, issuer))
         except BillingError:
             raise
         except Exception:

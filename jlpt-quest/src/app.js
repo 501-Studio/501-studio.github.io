@@ -16,7 +16,7 @@ import {configureAudio} from './audio.js';
 import {fitHeadwords} from './fit-text.js';
 import {premiumScreen,refreshCommerce,commerceStatus,handleCommerceAction,notifyScreen} from './commerce.js';
 import {LEVELS,TITLES,courses,writingChars,writingPattern} from './catalog.js';
-import {CONTENT_REVISION} from './reviewed-identities.js';
+import {refreshSessionContent} from './content-migration.js';
 import {fresh,current,createClass,classifySurvey,createReview,submit,next,remediate,unresolved,levelStats,dueItems,dueLabel,dayKey,streak,keyOf,validateState,courseLaps} from './course-engine.js';
 import {openStore,loadState,commit,rawState,replaceBackup,ConflictError} from './storage.js';
 import {packs,catalog,initializePacks,packInfo} from './packs.js';
@@ -41,23 +41,7 @@ const advancedContext=()=>({state,words,save,render,toast,go,openModal,closeModa
 const W=id=>lookup.get(id)||state.session?.wordSnapshots?.find(w=>w.id===id)||state.suspendedSession?.wordSnapshots?.find(w=>w.id===id);
 function mergeWords(){
  words=catalog();lookup=new Map(words.map(w=>[w.id,w]));
- for(const session of [state.session,state.suspendedSession].filter(Boolean)){
-  const old=new Map((session.wordSnapshots||[]).map(w=>[w.id,w]));
-  if(session.contentRevision!==CONTENT_REVISION){
-   for(const t of session.queue){
-    if(t.phase==='quiz'&&t.skill==='meaning'){
-     const replacements=new Map();for(const [id,w]of old){if(lookup.has(id))replacements.set(w.meaning,lookup.get(id).meaning);}
-     t.options=(t.options||[]).map(x=>replacements.get(x)||x);
-     const correct=lookup.get(t.wordId)?.meaning;
-     if(correct&&!t.options.includes(correct))t.options[0]=correct;
-     t.options=[...new Set(t.options)];
-     if(t.options.length<4){for(const w of words){if(w.level===W(t.wordId)?.level&&!t.options.includes(w.meaning))t.options.push(w.meaning);if(t.options.length===4)break;}}
-    }
-   }
-   session.selection=null;session.contentRevision=CONTENT_REVISION;
-  }
-  session.wordSnapshots=session.wordIds.map(id=>lookup.get(id)||old.get(id)).filter(Boolean);
- }
+ refreshSessionContent(state,words);
 }
 function toast(text){const t=document.querySelector('#toast');t.textContent=text;t.className='on show';clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.className='',4500);}
 function save(){
@@ -245,7 +229,7 @@ function handleTutorialAction(action){
 function switchSetting(key,label,description=''){
  return `<div class="setting-row"><div><b>${label}</b>${description?`<small>${description}</small>`:''}</div><label class="setting-switch"><input type="checkbox" role="switch" data-setting="${key}" aria-label="${label}" ${state.settings[key]?'checked':''}><span class="switch-track" aria-hidden="true"><i></i></span></label></div>`;
 }
-function settings(){openModal(`${modalHead('설정')}<button class="premium-entry" data-action="premium">${icon('spark')}<div><b>광고 없이 사용</b><small>코토바 프리미엄</small></div>${icon('next')}</button><section class="settings-section"><button type="button" class="btn soft tutorial-replay" data-action="tutorial-open">${icon('book')}<span>튜토리얼 다시 보기<small>학습·복습·단어장 사용법</small></span>${icon('next')}</button></section>${switchSetting('furigana','히라가나 표시')}${switchSetting('motion','애니메이션')}<div class="setting-row"><b>듣기 속도</b><select data-setting="rate" aria-label="듣기 속도">${[.7,.85,1].map(n=>`<option value="${n}" ${n===state.settings.rate?'selected':''}>${n}×</option>`).join('')}</select></div><div class="setting-row"><b>펜 굵기</b><select data-setting="penWidth" aria-label="펜 굵기">${[4,6,8].map(n=>`<option value="${n}" ${n===state.settings.penWidth?'selected':''}>${n===4?'보통':n===6?'굵게':'더 굵게'}</option>`).join('')}</select></div><section class="settings-section"><h3>학습 강도</h3><select data-setting="intensity" aria-label="학습 강도">${Object.entries(INTENSITIES).map(([k,p])=>`<option value="${k}" ${state.settings.intensity===k?'selected':''}>${p.label}</option>`).join('')}</select><p id="intensity-description" class="fine">${policyDescription(state.settings.intensity)}</p><p class="fine">모르는 단어 기준입니다. 새 회차부터 적용하며 진행 중인 수업은 바꾸지 않습니다.</p>${switchSetting('adaptiveSRS','개인별 복습 간격')}<p class="fine">자동 채점 기록에 따라 간격을 조절합니다. 이미 정해진 복습일은 다음 채점 전까지 유지됩니다.</p></section><section class="settings-section"><h3>쓰기 연습</h3>${switchSetting('kanjiOnlyPractice','한자만 쓰기 연습','수업에서 가나만 있는 단어의 따라 쓰기를 생략합니다. 쓰기 시험은 유지합니다.')}</section><section class="settings-section"><h3>일본어 음성</h3><p class="setting-note">단어·예문·가나는 기기의 일본어 음성으로 재생합니다. 일본어 오프라인 음성이 설치되어 있어야 합니다.</p>${btn('speech-settings','기기 음성 설정','soft')}${btn('speech-test','음성 테스트','text')}</section><section class="settings-section"><h3>알림</h3>${switchSetting('reviewNotifications','복습 알림','오전 9시~오후 10시 · 하루 최대 2회')}${btn('reminder-permission','알림 권한 확인','text')}</section><div class="modal-actions">${btn('export','기록 백업','soft')}${btn('import','백업 가져오기','soft')}</div><input id="backup-file" type="file" accept="application/json,.json" class="sr-only"><div class="legal-links">${btn('restore-purchases','구매 복원','text')}${btn('manage-subscription','구독 관리','text')}${btn('privacy-options','광고 개인정보 선택','text')}<a href="./privacy.html">개인정보처리방침</a><a href="./terms.html">이용약관</a><a href="./licenses.html">오픈소스·저작권</a></div><div class="spaced">${btn('reset','학습 기록 초기화','text danger')}</div><p class="fine">코토바 0.4.2 · 내부 테스트</p>`);}
+function settings(){openModal(`${modalHead('설정')}<button class="premium-entry" data-action="premium">${icon('spark')}<div><b>광고 없이 사용</b><small>코토바 프리미엄</small></div>${icon('next')}</button><section class="settings-section"><button type="button" class="btn soft tutorial-replay" data-action="tutorial-open">${icon('book')}<span>튜토리얼 다시 보기<small>학습·복습·단어장 사용법</small></span>${icon('next')}</button></section>${switchSetting('furigana','히라가나 표시')}${switchSetting('motion','애니메이션')}<div class="setting-row"><b>듣기 속도</b><select data-setting="rate" aria-label="듣기 속도">${[.7,.85,1].map(n=>`<option value="${n}" ${n===state.settings.rate?'selected':''}>${n}×</option>`).join('')}</select></div><div class="setting-row"><b>펜 굵기</b><select data-setting="penWidth" aria-label="펜 굵기">${[4,6,8].map(n=>`<option value="${n}" ${n===state.settings.penWidth?'selected':''}>${n===4?'보통':n===6?'굵게':'더 굵게'}</option>`).join('')}</select></div><section class="settings-section"><h3>학습 강도</h3><select data-setting="intensity" aria-label="학습 강도">${Object.entries(INTENSITIES).map(([k,p])=>`<option value="${k}" ${state.settings.intensity===k?'selected':''}>${p.label}</option>`).join('')}</select><p id="intensity-description" class="fine">${policyDescription(state.settings.intensity)}</p><p class="fine">모르는 단어 기준입니다. 새 회차부터 적용하며 진행 중인 수업은 바꾸지 않습니다.</p>${switchSetting('adaptiveSRS','개인별 복습 간격')}<p class="fine">자동 채점 기록에 따라 간격을 조절합니다. 이미 정해진 복습일은 다음 채점 전까지 유지됩니다.</p></section><section class="settings-section"><h3>쓰기 연습</h3>${switchSetting('kanjiOnlyPractice','한자만 쓰기 연습','수업에서 가나만 있는 단어의 따라 쓰기를 생략합니다. 쓰기 시험은 유지합니다.')}</section><section class="settings-section"><h3>일본어 음성</h3><p class="setting-note">단어·예문·가나는 기기의 일본어 음성으로 재생합니다. 일본어 오프라인 음성이 설치되어 있어야 합니다.</p>${btn('speech-settings','기기 음성 설정','soft')}${btn('speech-test','음성 테스트','text')}</section><section class="settings-section"><h3>알림</h3>${switchSetting('reviewNotifications','복습 알림','오전 9시~오후 10시 · 하루 최대 2회')}${btn('reminder-permission','알림 권한 확인','text')}</section><div class="modal-actions">${btn('export','기록 백업','soft')}${btn('import','백업 가져오기','soft')}</div><input id="backup-file" type="file" accept="application/json,.json" class="sr-only"><div class="legal-links">${btn('restore-purchases','구매 복원','text')}${btn('manage-subscription','구독 관리','text')}${btn('privacy-options','광고 개인정보 선택','text')}<a href="./privacy.html">개인정보처리방침</a><a href="./terms.html">이용약관</a><a href="./licenses.html">오픈소스·저작권</a><a href="./data-deletion.html">계정 연결·데이터 삭제 요청</a></div><div class="spaced">${btn('reset','학습 기록 초기화','text danger')}</div><p class="fine">코토바 0.4.2 · 내부 테스트</p>`);}
 function detail(id){
  const w=W(id);if(!w)return;
  const rows=['meaning','writing','listening'].map(k=>{const v=wordStatus(state,id,k);return `<div class="memory-row"><b>${{meaning:'뜻',writing:'쓰기',listening:'듣기'}[k]}</b><span>${v.kind==='tested'?dueLabel(v.record.due):v.kind==='known'?'아는 단어로 분류 · 시험 전':'시험 기록 없음'}</span></div>`;}).join('');

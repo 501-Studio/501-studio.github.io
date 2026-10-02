@@ -1,0 +1,9425 @@
+{
+  "reviewed": [
+    {
+      "id": "N1-e2oeyg",
+      "word": "概念",
+      "reading": "がいねん",
+      "meaning": "개념"
+    },
+    {
+      "id": "N1-hsdhsq",
+      "word": "根拠",
+      "reading": "こんきょ",
+      "meaning": "근거"
+    },
+    {
+      "id": "N1-1tqqqik",
+      "word": "矛盾",
+      "reading": "むじゅん",
+      "meaning": "모순"
+    },
+    {
+      "id": "N1-1j368gi",
+      "word": "配慮",
+      "reading": "はいりょ",
+      "meaning": "배려"
+    },
+    {
+      "id": "N1-19a4ftu",
+      "word": "妥協",
+      "reading": "だきょう",
+      "meaning": "타협"
+    },
+    {
+      "id": "N1-1j4x4pa",
+      "word": "把握",
+      "reading": "はあく",
+      "meaning": "파악"
+    },
+    {
+      "id": "N1-p21g6m",
+      "word": "認識",
+      "reading": "にんしき",
+      "meaning": "인식"
+    },
+    {
+      "id": "N1-wdylfg",
+      "word": "洞察",
+      "reading": "どうさつ",
+      "meaning": "통찰"
+    },
+    {
+      "id": "N1-nv5zz2",
+      "word": "推測",
+      "reading": "すいそく",
+      "meaning": "추측"
+    },
+    {
+      "id": "N1-n5l9km",
+      "word": "推進",
+      "reading": "すいしん",
+      "meaning": "추진"
+    },
+    {
+      "id": "N1-1ki08wf",
+      "word": "展開",
+      "reading": "てんかい",
+      "meaning": "전개"
+    },
+    {
+      "id": "N1-2qyzjp",
+      "word": "過程",
+      "reading": "かてい",
+      "meaning": "과정"
+    },
+    {
+      "id": "N1-1npy2ar",
+      "word": "経緯",
+      "reading": "けいい",
+      "meaning": "경위"
+    },
+    {
+      "id": "N1-cksl26",
+      "word": "背景",
+      "reading": "はいけい",
+      "meaning": "배경"
+    },
+    {
+      "id": "N1-1jpwl2z",
+      "word": "実態",
+      "reading": "じったい",
+      "meaning": "실태"
+    },
+    {
+      "id": "N1-1p6n5qo",
+      "word": "実践",
+      "reading": "じっせん",
+      "meaning": "실천"
+    },
+    {
+      "id": "N1-1a9ajul",
+      "word": "遂行",
+      "reading": "すいこう",
+      "meaning": "수행"
+    },
+    {
+      "id": "N1-qxgo52",
+      "word": "達成",
+      "reading": "たっせい",
+      "meaning": "달성"
+    },
+    {
+      "id": "N1-5xb1qu",
+      "word": "促進",
+      "reading": "そくしん",
+      "meaning": "촉진"
+    },
+    {
+      "id": "N1-6xbuig",
+      "word": "抑制",
+      "reading": "よくせい",
+      "meaning": "억제"
+    },
+    {
+      "id": "N1-1pni8z4",
+      "word": "是正",
+      "reading": "ぜせい",
+      "meaning": "시정"
+    },
+    {
+      "id": "N1-2tr4af",
+      "word": "緩和",
+      "reading": "かんわ",
+      "meaning": "완화"
+    },
+    {
+      "id": "N1-1grew1z",
+      "word": "排除",
+      "reading": "はいじょ",
+      "meaning": "배제"
+    },
+    {
+      "id": "N1-1abw2n1",
+      "word": "撤回",
+      "reading": "てっかい",
+      "meaning": "철회"
+    },
+    {
+      "id": "N1-6p7z9q",
+      "word": "妨害",
+      "reading": "ぼうがい",
+      "meaning": "방해"
+    },
+    {
+      "id": "N1-psyd7u",
+      "word": "貢献",
+      "reading": "こうけん",
+      "meaning": "공헌"
+    },
+    {
+      "id": "N1-1nxtws4",
+      "word": "献身",
+      "reading": "けんしん",
+      "meaning": "헌신"
+    },
+    {
+      "id": "N1-lbtukh",
+      "word": "奉仕",
+      "reading": "ほうし",
+      "meaning": "봉사"
+    },
+    {
+      "id": "N1-j8lsx7",
+      "word": "依存",
+      "reading": "いぞん",
+      "meaning": "의존"
+    },
+    {
+      "id": "N1-ponapp",
+      "word": "執着",
+      "reading": "しゅうちゃく",
+      "meaning": "집착"
+    },
+    {
+      "id": "N1-14ir3zk",
+      "word": "柔軟",
+      "reading": "じゅうなん",
+      "meaning": "유연함"
+    },
+    {
+      "id": "N1-lvp2t8",
+      "word": "厳密",
+      "reading": "げんみつ",
+      "meaning": "엄밀함"
+    },
+    {
+      "id": "N1-pd69nb",
+      "word": "精密",
+      "reading": "せいみつ",
+      "meaning": "정밀함"
+    },
+    {
+      "id": "N1-1srzjdk",
+      "word": "緻密",
+      "reading": "ちみつ",
+      "meaning": "치밀함"
+    },
+    {
+      "id": "N1-8dhtzm",
+      "word": "巧妙",
+      "reading": "こうみょう",
+      "meaning": "교묘함"
+    },
+    {
+      "id": "N1-7gosv3",
+      "word": "顕著",
+      "reading": "けんちょ",
+      "meaning": "현저함"
+    },
+    {
+      "id": "N1-1c6w5m6",
+      "word": "著しい",
+      "reading": "いちじるしい",
+      "meaning": "현저하다"
+    },
+    {
+      "id": "N1-4ql5my",
+      "word": "著名",
+      "reading": "ちょめい",
+      "meaning": "저명함"
+    },
+    {
+      "id": "N1-craiha",
+      "word": "膨大",
+      "reading": "ぼうだい",
+      "meaning": "방대함"
+    },
+    {
+      "id": "N1-o1n3xk",
+      "word": "莫大",
+      "reading": "ばくだい",
+      "meaning": "막대함"
+    },
+    {
+      "id": "N1-10zt62j",
+      "word": "疎か",
+      "reading": "おろそか",
+      "meaning": "소홀함"
+    },
+    {
+      "id": "N1-qccu46",
+      "word": "曖昧",
+      "reading": "あいまい",
+      "meaning": "애매함"
+    },
+    {
+      "id": "N1-1nxu29h",
+      "word": "漠然",
+      "reading": "ばくぜん",
+      "meaning": "막연함"
+    },
+    {
+      "id": "N1-12riou6",
+      "word": "的確",
+      "reading": "てきかく",
+      "meaning": "정확함, 적확함"
+    },
+    {
+      "id": "N1-l81dhn",
+      "word": "妥当",
+      "reading": "だとう",
+      "meaning": "타당함"
+    },
+    {
+      "id": "N1-1t49lky",
+      "word": "均衡",
+      "reading": "きんこう",
+      "meaning": "균형"
+    },
+    {
+      "id": "N1-1kx4am3",
+      "word": "秩序",
+      "reading": "ちつじょ",
+      "meaning": "질서"
+    },
+    {
+      "id": "N1-1a73wrf",
+      "word": "規範",
+      "reading": "きはん",
+      "meaning": "규범"
+    },
+    {
+      "id": "N1-qzu2xr",
+      "word": "倫理",
+      "reading": "りんり",
+      "meaning": "윤리"
+    },
+    {
+      "id": "N1-sv4scx",
+      "word": "尊厳",
+      "reading": "そんげん",
+      "meaning": "존엄"
+    },
+    {
+      "id": "N1-8qbo2m",
+      "word": "享受",
+      "reading": "きょうじゅ",
+      "meaning": "향유"
+    },
+    {
+      "id": "N1-1cp1xwa",
+      "word": "継承",
+      "reading": "けいしょう",
+      "meaning": "계승"
+    },
+    {
+      "id": "N1-n89sia",
+      "word": "蓄積",
+      "reading": "ちくせき",
+      "meaning": "축적"
+    },
+    {
+      "id": "N1-zq6qs2",
+      "word": "繁栄",
+      "reading": "はんえい",
+      "meaning": "번영"
+    },
+    {
+      "id": "N1-6qn9hh",
+      "word": "衰退",
+      "reading": "すいたい",
+      "meaning": "쇠퇴"
+    },
+    {
+      "id": "N1-1h44hby",
+      "word": "覆す",
+      "reading": "くつがえす",
+      "meaning": "뒤집다"
+    },
+    {
+      "id": "N1-cnmdqo",
+      "word": "損なう",
+      "reading": "そこなう",
+      "meaning": "손상시키다"
+    },
+    {
+      "id": "N1-m1dw3m",
+      "word": "賄う",
+      "reading": "まかなう",
+      "meaning": "충당하다"
+    },
+    {
+      "id": "N1-g7adkc",
+      "word": "培う",
+      "reading": "つちかう",
+      "meaning": "기르다, 배양하다"
+    },
+    {
+      "id": "N1-l0sgoz",
+      "word": "阻む",
+      "reading": "はばむ",
+      "meaning": "가로막다"
+    },
+    {
+      "id": "N1-106f189",
+      "word": "アイデア",
+      "reading": "あいであ",
+      "meaning": "아이디어"
+    },
+    {
+      "id": "N1-608lfl",
+      "word": "アクセル",
+      "reading": "あくせる",
+      "meaning": "가속 페달"
+    },
+    {
+      "id": "N1-g2xzbf",
+      "word": "あくどい",
+      "reading": "あくどい",
+      "meaning": "악랄하다, 지나치게 자극적이다"
+    },
+    {
+      "id": "N1-148x10f",
+      "word": "あっさり",
+      "reading": "あっさり",
+      "meaning": "간단히, 담백하게"
+    },
+    {
+      "id": "N1-xjidr7",
+      "word": "アップ",
+      "reading": "あっぷ",
+      "meaning": "상승, 증가; 클로즈업"
+    },
+    {
+      "id": "N1-11gil6n",
+      "word": "アプローチ",
+      "reading": "あぷろーち",
+      "meaning": "접근, 접근 방식; 어프로치 샷"
+    },
+    {
+      "id": "N1-1f4jzf5",
+      "word": "あべこべ",
+      "reading": "あべこべ",
+      "meaning": "반대, 거꾸로"
+    },
+    {
+      "id": "N1-xm1h8r",
+      "word": "アマチュア",
+      "reading": "あまちゅあ",
+      "meaning": "아마추어"
+    },
+    {
+      "id": "N1-1bm7p45",
+      "word": "あやふや",
+      "reading": "あやふや",
+      "meaning": "모호하다, 불확실하다"
+    },
+    {
+      "id": "N1-zswi39",
+      "word": "あら",
+      "reading": "あら",
+      "meaning": "어머, 아(놀람을 나타내는 감탄사)"
+    },
+    {
+      "id": "N1-gzsd43",
+      "word": "アラブ",
+      "reading": "あらぶ",
+      "meaning": "아랍, 아랍인"
+    },
+    {
+      "id": "N1-1yr3ju7",
+      "word": "あられ",
+      "reading": "あられ",
+      "meaning": "싸라기눈, 우박; 쌀과자"
+    },
+    {
+      "id": "N1-1x88bqz",
+      "word": "アルカリ",
+      "reading": "あるかり",
+      "meaning": "알칼리"
+    },
+    {
+      "id": "N1-cfa4hv",
+      "word": "アルミ",
+      "reading": "あるみ",
+      "meaning": "알루미늄"
+    },
+    {
+      "id": "N1-rzbadz",
+      "word": "アワー",
+      "reading": "あわー",
+      "meaning": "시간"
+    },
+    {
+      "id": "N1-1xkoupz",
+      "word": "アンケート",
+      "reading": "あんけーと",
+      "meaning": "설문 조사"
+    },
+    {
+      "id": "N1-shqem7",
+      "word": "アンコール",
+      "reading": "あんこーる",
+      "meaning": "앙코르, 재청"
+    },
+    {
+      "id": "N1-1aoofcm",
+      "word": "いい加減",
+      "reading": "いいかげん",
+      "meaning": "대충이다, 무책임하다; 이제 그만"
+    },
+    {
+      "id": "N1-hvurej",
+      "word": "イエス",
+      "reading": "いえす",
+      "meaning": "예, 그렇습니다(긍정의 대답); 예수(그리스도)"
+    },
+    {
+      "id": "N1-en1ysj",
+      "word": "いざ",
+      "reading": "いざ",
+      "meaning": "자, 그럼; 막상, 정작"
+    },
+    {
+      "id": "N1-p10s9n",
+      "word": "いっそ",
+      "reading": "いっそ",
+      "meaning": "차라리"
+    },
+    {
+      "id": "N1-djcrff",
+      "word": "いやに",
+      "reading": "いやに",
+      "meaning": "이상할 만큼, 몹시"
+    },
+    {
+      "id": "N1-1xoqvh5",
+      "word": "インターチェンジ",
+      "reading": "いんたーちぇんじ",
+      "meaning": "입체 교차로, 인터체인지"
+    },
+    {
+      "id": "N1-anp8hz",
+      "word": "インターナショナル",
+      "reading": "いんたーなしょなる",
+      "meaning": "국제적인"
+    },
+    {
+      "id": "N1-ooslzz",
+      "word": "インターフォン",
+      "reading": "いんたーふぉん",
+      "meaning": "인터폰, 구내 전화"
+    },
+    {
+      "id": "N1-1vj8sa3",
+      "word": "インフォメーション",
+      "reading": "いんふぉめーしょん",
+      "meaning": "정보"
+    },
+    {
+      "id": "N1-syn3n3",
+      "word": "インフレ",
+      "reading": "いんふれ",
+      "meaning": "인플레이션, 물가 상승"
+    },
+    {
+      "id": "N1-b71pij",
+      "word": "ウェートレス",
+      "reading": "うぇーとれす",
+      "meaning": "웨이트리스, 여성 종업원"
+    },
+    {
+      "id": "N1-kp4dv1",
+      "word": "うんざり",
+      "reading": "うんざり",
+      "meaning": "진절머리 남, 지긋지긋함"
+    },
+    {
+      "id": "N1-1f4c523",
+      "word": "エアメール",
+      "reading": "えあめーる",
+      "meaning": "항공 우편"
+    },
+    {
+      "id": "N1-1i3xr3n",
+      "word": "えい",
+      "reading": "えい",
+      "meaning": "가오리"
+    },
+    {
+      "id": "N1-4wkwer",
+      "word": "エレガント",
+      "reading": "えれがんと",
+      "meaning": "우아한"
+    },
+    {
+      "id": "N1-tzmnh7",
+      "word": "エンジニア",
+      "reading": "えんじにあ",
+      "meaning": "엔지니어"
+    },
+    {
+      "id": "N1-1tbgil7",
+      "word": "おおい",
+      "reading": "おおい",
+      "meaning": "어이!, 이봐!"
+    },
+    {
+      "id": "N1-16sz4sr",
+      "word": "オートマチック",
+      "reading": "おーとまちっく",
+      "meaning": "자동의, 자동식"
+    },
+    {
+      "id": "N1-s9bdtb",
+      "word": "オープン",
+      "reading": "おーぷん",
+      "meaning": "개장, 개방; 개방적인"
+    },
+    {
+      "id": "N1-1cib653",
+      "word": "おっかない",
+      "reading": "おっかない",
+      "meaning": "무섭다, 두렵다"
+    },
+    {
+      "id": "N1-kyhedn",
+      "word": "オリエンテーション",
+      "reading": "おりえんてーしょん",
+      "meaning": "오리엔테이션, 사전 안내"
+    },
+    {
+      "id": "N1-fidy89",
+      "word": "オレンジ",
+      "reading": "おれんじ",
+      "meaning": "오렌지, 주황색"
+    },
+    {
+      "id": "N1-1mcc6h7",
+      "word": "オンライン",
+      "reading": "おんらいん",
+      "meaning": "온라인"
+    },
+    {
+      "id": "N1-1tj36c3",
+      "word": "お蔭",
+      "reading": "おかげ",
+      "meaning": "덕분, 도움"
+    },
+    {
+      "id": "N1-pt3fae",
+      "word": "お蔭様で",
+      "reading": "おかげさまで",
+      "meaning": "덕분에, 덕택에"
+    },
+    {
+      "id": "N1-dc666s",
+      "word": "お願いします",
+      "reading": "おねがいします",
+      "meaning": "부탁드립니다"
+    },
+    {
+      "id": "N1-j2dct",
+      "word": "お休み",
+      "reading": "おやすみ",
+      "meaning": "잘 자요; 휴식, 휴일"
+    },
+    {
+      "id": "N1-h5lggc",
+      "word": "お宮",
+      "reading": "おみや",
+      "meaning": "신사(신토 사당)"
+    },
+    {
+      "id": "N1-svxqmm",
+      "word": "お供",
+      "reading": "おとも",
+      "meaning": "동반자"
+    },
+    {
+      "id": "N1-1u65a3k",
+      "word": "お菜",
+      "reading": "おかず",
+      "meaning": "반찬"
+    },
+    {
+      "id": "N1-1tpt7do",
+      "word": "お産",
+      "reading": "おさん",
+      "meaning": "출산"
+    },
+    {
+      "id": "N1-s3a61j",
+      "word": "お使い",
+      "reading": "おつかい",
+      "meaning": "심부름"
+    },
+    {
+      "id": "N1-d24tk8",
+      "word": "お邪魔します",
+      "reading": "おじゃまします",
+      "meaning": "실례하겠습니다(방문할 때)"
+    },
+    {
+      "id": "N1-v14xga",
+      "word": "お手上げ",
+      "reading": "おてあげ",
+      "meaning": "손쓸 도리가 없음, 속수무책"
+    },
+    {
+      "id": "N1-1ve5ztj",
+      "word": "お出でになる",
+      "reading": "おいでになる",
+      "meaning": "계시다, 오시다, 가시다"
+    },
+    {
+      "id": "N1-8eodyn",
+      "word": "お巡りさん",
+      "reading": "おまわりさん",
+      "meaning": "경찰관(친근한 표현)"
+    },
+    {
+      "id": "N1-2e8two",
+      "word": "お世辞",
+      "reading": "おせじ",
+      "meaning": "아첨, 빈말"
+    },
+    {
+      "id": "N1-16ppj31",
+      "word": "お先に",
+      "reading": "おさきに",
+      "meaning": "먼저; 먼저 실례하겠습니다"
+    },
+    {
+      "id": "N1-1xnkvgj",
+      "word": "お祖父さん",
+      "reading": "おじいさん",
+      "meaning": "할아버지"
+    },
+    {
+      "id": "N1-1taumbk",
+      "word": "お祖母さん",
+      "reading": "おばあさん",
+      "meaning": "할머니"
+    },
+    {
+      "id": "N1-o50nsn",
+      "word": "お早う",
+      "reading": "おはよう",
+      "meaning": "좋은 아침입니다"
+    },
+    {
+      "id": "N1-13qqwbb",
+      "word": "お大事に",
+      "reading": "おだいじに",
+      "meaning": "몸조리 잘하세요"
+    },
+    {
+      "id": "N1-1kav9on",
+      "word": "お喋り",
+      "reading": "おしゃべり",
+      "meaning": "수다, 수다쟁이"
+    },
+    {
+      "id": "N1-s86ico",
+      "word": "お八つ",
+      "reading": "おやつ",
+      "meaning": "간식, 오후 간식"
+    },
+    {
+      "id": "N1-ufgbmx",
+      "word": "お目出度う",
+      "reading": "おめでとう",
+      "meaning": "축하합니다"
+    },
+    {
+      "id": "N1-xv8k0",
+      "word": "お洒落",
+      "reading": "おしゃれ",
+      "meaning": "멋내기, 세련됨"
+    },
+    {
+      "id": "N1-4kd2m3",
+      "word": "カーペット",
+      "reading": "かーぺっと",
+      "meaning": "카펫"
+    },
+    {
+      "id": "N1-1m8s6q3",
+      "word": "ガイド",
+      "reading": "がいど",
+      "meaning": "안내, 안내원"
+    },
+    {
+      "id": "N1-1mpko8l",
+      "word": "ガイドブック",
+      "reading": "がいどぶっく",
+      "meaning": "안내서, 가이드북"
+    },
+    {
+      "id": "N1-hxbj0h",
+      "word": "カクテル",
+      "reading": "かくてる",
+      "meaning": "칵테일"
+    },
+    {
+      "id": "N1-1fsahen",
+      "word": "がっくり",
+      "reading": "がっくり",
+      "meaning": "맥이 풀려, 낙담하여"
+    },
+    {
+      "id": "N1-xjfyen",
+      "word": "がっしり",
+      "reading": "がっしり",
+      "meaning": "튼튼하게, 단단하게"
+    },
+    {
+      "id": "N1-rpeytn",
+      "word": "がっちり",
+      "reading": "がっちり",
+      "meaning": "단단히, 빈틈없이"
+    },
+    {
+      "id": "N1-ypqf0f",
+      "word": "カット",
+      "reading": "かっと",
+      "meaning": "절단, 삭감; 컷"
+    },
+    {
+      "id": "N1-13wubbv",
+      "word": "カテゴリー",
+      "reading": "かてごりー",
+      "meaning": "범주, 분류"
+    },
+    {
+      "id": "N1-7njw4z",
+      "word": "カムバック",
+      "reading": "かむばっく",
+      "meaning": "복귀"
+    },
+    {
+      "id": "N1-1d3uvaj",
+      "word": "カメラマン",
+      "reading": "かめらまん",
+      "meaning": "사진사, 촬영 기사"
+    },
+    {
+      "id": "N1-1xevhxl",
+      "word": "かも知れない",
+      "reading": "かもしれない",
+      "meaning": "일지도 모른다"
+    },
+    {
+      "id": "N1-5ar5ix",
+      "word": "がる",
+      "reading": "がる",
+      "meaning": "~한 기색을 보이다, ~인 척하다"
+    },
+    {
+      "id": "N1-1ye94df",
+      "word": "カルテ",
+      "reading": "かるて",
+      "meaning": "진료 기록, 진료 카드"
+    },
+    {
+      "id": "N1-1s0pej7",
+      "word": "ガレージ",
+      "reading": "がれーじ",
+      "meaning": "차고"
+    },
+    {
+      "id": "N1-ngzq0r",
+      "word": "カンニング",
+      "reading": "かんにんぐ",
+      "meaning": "부정행위, 커닝(시험)"
+    },
+    {
+      "id": "N1-h5zzsd",
+      "word": "きちっと",
+      "reading": "きちっと",
+      "meaning": "단정히, 정확히"
+    },
+    {
+      "id": "N1-1mejdu5",
+      "word": "きっかり",
+      "reading": "きっかり",
+      "meaning": "정확히, 딱"
+    },
+    {
+      "id": "N1-1fsglzh",
+      "word": "きっちり",
+      "reading": "きっちり",
+      "meaning": "정확하게"
+    },
+    {
+      "id": "N1-ovewh9",
+      "word": "きっぱり",
+      "reading": "きっぱり",
+      "meaning": "딱 잘라, 단호히"
+    },
+    {
+      "id": "N1-14d1dfn",
+      "word": "キャッチ",
+      "reading": "きゃっち",
+      "meaning": "잡기, 포착"
+    },
+    {
+      "id": "N1-8vnbfb",
+      "word": "キャリア",
+      "reading": "きゃりあ",
+      "meaning": "경력, 직업 경력; 고급 공무원"
+    },
+    {
+      "id": "N1-1q1wtyr",
+      "word": "クイズ",
+      "reading": "くいず",
+      "meaning": "퀴즈"
+    },
+    {
+      "id": "N1-1knusj1",
+      "word": "くっきり",
+      "reading": "くっきり",
+      "meaning": "또렷하게, 뚜렷하게"
+    },
+    {
+      "id": "N1-lqb5ob",
+      "word": "ぐっと",
+      "reading": "ぐっと",
+      "meaning": "힘껏; 훨씬, 크게"
+    },
+    {
+      "id": "N1-1ohwkfd",
+      "word": "くっ付く",
+      "reading": "くっつく",
+      "meaning": "달라붙다, 붙다"
+    },
+    {
+      "id": "N1-1yrfbef",
+      "word": "くっ付ける",
+      "reading": "くっつける",
+      "meaning": "붙이다, 부착하다"
+    },
+    {
+      "id": "N1-847if7",
+      "word": "ぐらい",
+      "reading": "ぐらい",
+      "meaning": "정도, 쯤"
+    },
+    {
+      "id": "N1-13kcvxz",
+      "word": "クラブ",
+      "reading": "くらぶ",
+      "meaning": "클럽, 동아리; 게(동물)"
+    },
+    {
+      "id": "N1-1u6j6dj",
+      "word": "グラフ",
+      "reading": "ぐらふ",
+      "meaning": "그래프"
+    },
+    {
+      "id": "N1-jr54ij",
+      "word": "グレー",
+      "reading": "ぐれー",
+      "meaning": "회색"
+    },
+    {
+      "id": "N1-ed114b",
+      "word": "クレーン",
+      "reading": "くれーん",
+      "meaning": "크레인"
+    },
+    {
+      "id": "N1-ze88sn",
+      "word": "ゲスト",
+      "reading": "げすと",
+      "meaning": "손님"
+    },
+    {
+      "id": "N1-1j19arz",
+      "word": "げっそり",
+      "reading": "げっそり",
+      "meaning": "몹시 수척해지다, 낙담하다"
+    },
+    {
+      "id": "N1-xlwepo",
+      "word": "ヶ月",
+      "reading": "かげつ",
+      "meaning": "개월(달을 세는 단위)"
+    },
+    {
+      "id": "N1-151gl6c",
+      "word": "この間",
+      "reading": "このあいだ",
+      "meaning": "얼마 전, 요전"
+    },
+    {
+      "id": "N1-kcwcql",
+      "word": "この頃",
+      "reading": "このごろ",
+      "meaning": "최근에"
+    },
+    {
+      "id": "N1-1v3dfln",
+      "word": "コマーシャル",
+      "reading": "こまーしゃる",
+      "meaning": "광고, 방송 광고"
+    },
+    {
+      "id": "N1-1eeqnrj",
+      "word": "コミュニケーション",
+      "reading": "こみゅにけーしょん",
+      "meaning": "의사소통, 소통"
+    },
+    {
+      "id": "N1-1xdyfxp",
+      "word": "コメント",
+      "reading": "こめんと",
+      "meaning": "의견, 논평"
+    },
+    {
+      "id": "N1-7ds92z",
+      "word": "コンタクト",
+      "reading": "こんたくと",
+      "meaning": "접촉, 연락; 콘택트렌즈"
+    },
+    {
+      "id": "N1-d8733z",
+      "word": "コンテスト",
+      "reading": "こんてすと",
+      "meaning": "경연 대회, 콘테스트"
+    },
+    {
+      "id": "N1-pr4awb",
+      "word": "コントラスト",
+      "reading": "こんとらすと",
+      "meaning": "대조"
+    },
+    {
+      "id": "N1-13fjzdz",
+      "word": "コントロール",
+      "reading": "こんとろーる",
+      "meaning": "통제"
+    },
+    {
+      "id": "N1-de5yb",
+      "word": "コンパス",
+      "reading": "こんぱす",
+      "meaning": "컴퍼스(제도 도구), 나침반"
+    },
+    {
+      "id": "N1-99dfaw",
+      "word": "ご苦労様",
+      "reading": "ごくろうさま",
+      "meaning": "수고하셨습니다"
+    },
+    {
+      "id": "N1-1e130eq",
+      "word": "ご座います",
+      "reading": "ございます",
+      "meaning": "있습니다, 입니다"
+    },
+    {
+      "id": "N1-ay8zb8",
+      "word": "ご馳走",
+      "reading": "ごちそう",
+      "meaning": "맛있는 음식, 진수성찬; 음식 대접"
+    },
+    {
+      "id": "N1-1l1k3bm",
+      "word": "ご馳走さま",
+      "reading": "ごちそうさま",
+      "meaning": "잘 먹었습니다"
+    },
+    {
+      "id": "N1-cxv7in",
+      "word": "ご無沙汰",
+      "reading": "ごぶさた",
+      "meaning": "오랫동안 연락하지 않음, 소식이 뜸함"
+    },
+    {
+      "id": "N1-13dabmp",
+      "word": "サイクル",
+      "reading": "さいくる",
+      "meaning": "주기, 순환"
+    },
+    {
+      "id": "N1-jcgq83",
+      "word": "サイズ",
+      "reading": "さいず",
+      "meaning": "크기"
+    },
+    {
+      "id": "N1-48w6vf",
+      "word": "さっと",
+      "reading": "さっと",
+      "meaning": "재빨리, 갑자기"
+    },
+    {
+      "id": "N1-1j82b93",
+      "word": "さん",
+      "reading": "さん",
+      "meaning": "~씨, ~님(이름 뒤의 존칭)"
+    },
+    {
+      "id": "N1-142ubp7",
+      "word": "サンキュー",
+      "reading": "さんきゅー",
+      "meaning": "감사합니다"
+    },
+    {
+      "id": "N1-hvigdf",
+      "word": "サンタクロース",
+      "reading": "さんたくろーす",
+      "meaning": "산타클로스"
+    },
+    {
+      "id": "N1-1lrtn57",
+      "word": "し",
+      "reading": "し",
+      "meaning": "자(10^24의 수 단위)"
+    },
+    {
+      "id": "N1-h7tn5n",
+      "word": "シート",
+      "reading": "しーと",
+      "meaning": "좌석; 시트, 종이·천 한 장"
+    },
+    {
+      "id": "N1-wsvnsn",
+      "word": "ジーパン",
+      "reading": "じーぱん",
+      "meaning": "청바지"
+    },
+    {
+      "id": "N1-1pu2cir",
+      "word": "しんと",
+      "reading": "しんと",
+      "meaning": "쥐 죽은 듯 조용히"
+    },
+    {
+      "id": "N1-ilg2yj",
+      "word": "システム",
+      "reading": "しすてむ",
+      "meaning": "시스템"
+    },
+    {
+      "id": "N1-19c1onb",
+      "word": "じっくり",
+      "reading": "じっくり",
+      "meaning": "차분히, 시간을 들여 충분히"
+    },
+    {
+      "id": "N1-1wp8sbd",
+      "word": "シナリオ",
+      "reading": "しなりお",
+      "meaning": "시나리오, 각본"
+    },
+    {
+      "id": "N1-1k7nmjh",
+      "word": "しまった",
+      "reading": "しまった",
+      "meaning": "아차!, 이런!"
+    },
+    {
+      "id": "N1-116c8db",
+      "word": "ジャズ",
+      "reading": "じゃず",
+      "meaning": "재즈"
+    },
+    {
+      "id": "N1-19mjayf",
+      "word": "ジャンパー",
+      "reading": "じゃんぱー",
+      "meaning": "점퍼, 잠바"
+    },
+    {
+      "id": "N1-1q6lrd9",
+      "word": "ジャンプ",
+      "reading": "じゃんぷ",
+      "meaning": "점프"
+    },
+    {
+      "id": "N1-a2grfv",
+      "word": "ジャンボ",
+      "reading": "じゃんぼ",
+      "meaning": "대형의, 초대형"
+    },
+    {
+      "id": "N1-1p2ywh9",
+      "word": "ジャンル",
+      "reading": "じゃんる",
+      "meaning": "장르, 분야"
+    },
+    {
+      "id": "N1-17xyy5o",
+      "word": "じゃん拳",
+      "reading": "じゃんけん",
+      "meaning": "가위바위보"
+    },
+    {
+      "id": "N1-r8q35n",
+      "word": "ショック",
+      "reading": "しょっく",
+      "meaning": "충격"
+    },
+    {
+      "id": "N1-18o1goh",
+      "word": "しょっちゅう",
+      "reading": "しょっちゅう",
+      "meaning": "자주, 늘"
+    },
+    {
+      "id": "N1-v9pya3",
+      "word": "スタジオ",
+      "reading": "すたじお",
+      "meaning": "스튜디오"
+    },
+    {
+      "id": "N1-6r29mj",
+      "word": "スチーム",
+      "reading": "すちーむ",
+      "meaning": "증기, 스팀"
+    },
+    {
+      "id": "N1-tcjs43",
+      "word": "ストライキ",
+      "reading": "すとらいき",
+      "meaning": "파업"
+    },
+    {
+      "id": "N1-2ifii3",
+      "word": "ストレス",
+      "reading": "すとれす",
+      "meaning": "스트레스"
+    },
+    {
+      "id": "N1-ne5jej",
+      "word": "ストロー",
+      "reading": "すとろー",
+      "meaning": "빨대"
+    },
+    {
+      "id": "N1-17ss6xn",
+      "word": "ストロボ",
+      "reading": "すとろぼ",
+      "meaning": "스트로보, 사진용 섬광등"
+    },
+    {
+      "id": "N1-10hu2hr",
+      "word": "すばしこい",
+      "reading": "すばしこい",
+      "meaning": "재빠르다, 민첩하다"
+    },
+    {
+      "id": "N1-1mtv18b",
+      "word": "ずばり",
+      "reading": "ずばり",
+      "meaning": "딱 잘라, 정확히"
+    },
+    {
+      "id": "N1-1wqc8gz",
+      "word": "スピード",
+      "reading": "すぴーど",
+      "meaning": "속도"
+    },
+    {
+      "id": "N1-bb6e60",
+      "word": "ずぶ濡れ",
+      "reading": "ずぶぬれ",
+      "meaning": "흠뻑 젖음"
+    },
+    {
+      "id": "N1-1lhslz",
+      "word": "スペース",
+      "reading": "すぺーす",
+      "meaning": "공간"
+    },
+    {
+      "id": "N1-140vz9p",
+      "word": "スポーツカー",
+      "reading": "すぽーつかー",
+      "meaning": "스포츠카"
+    },
+    {
+      "id": "N1-htjnjz",
+      "word": "スラックス",
+      "reading": "すらっくす",
+      "meaning": "슬랙스, 양복 바지"
+    },
+    {
+      "id": "N1-j0encb",
+      "word": "ずるずる",
+      "reading": "ずるずる",
+      "meaning": "질질, 미적미적; 후루룩"
+    },
+    {
+      "id": "N1-k2d35v",
+      "word": "ずれる",
+      "reading": "ずれる",
+      "meaning": "어긋나다, 빗나가다; 미끄러지다"
+    },
+    {
+      "id": "N1-d1b51b",
+      "word": "すんなり",
+      "reading": "すんなり",
+      "meaning": "순조롭게, 무리 없이"
+    },
+    {
+      "id": "N1-dr8l7",
+      "word": "セール",
+      "reading": "せーる",
+      "meaning": "판매, 할인 판매"
+    },
+    {
+      "id": "N1-iccjpf",
+      "word": "セクション",
+      "reading": "せくしょん",
+      "meaning": "부문, 구획, 부서"
+    },
+    {
+      "id": "N1-16po31n",
+      "word": "セックス",
+      "reading": "せっくす",
+      "meaning": "성관계"
+    },
+    {
+      "id": "N1-c1bzd7",
+      "word": "セレモニー",
+      "reading": "せれもにー",
+      "meaning": "의식, 행사"
+    },
+    {
+      "id": "N1-l77l7r",
+      "word": "センス",
+      "reading": "せんす",
+      "meaning": "감각, 센스"
+    },
+    {
+      "id": "N1-irpf1n",
+      "word": "ソース",
+      "reading": "そーす",
+      "meaning": "정보의 출처, 소스 코드"
+    },
+    {
+      "id": "N1-n20g5n",
+      "word": "ソックス",
+      "reading": "そっくす",
+      "meaning": "양말"
+    },
+    {
+      "id": "N1-yij6l7",
+      "word": "その為",
+      "reading": "そのため",
+      "meaning": "그 때문에, 그래서"
+    },
+    {
+      "id": "N1-5wcqpd",
+      "word": "その外",
+      "reading": "そのほか",
+      "meaning": "그 밖에, 나머지"
+    },
+    {
+      "id": "N1-19woxkx",
+      "word": "その上",
+      "reading": "そのうえ",
+      "meaning": "게다가, 그 위에"
+    },
+    {
+      "id": "N1-b8i5s5",
+      "word": "その内",
+      "reading": "そのうち",
+      "meaning": "머지않아, 언젠가; 그중"
+    },
+    {
+      "id": "N1-1resjv7",
+      "word": "ソロ",
+      "reading": "そろ",
+      "meaning": "독주, 독창; 혼자"
+    },
+    {
+      "id": "N1-1yniedl",
+      "word": "ぞんざい",
+      "reading": "ぞんざい",
+      "meaning": "거칠다, 무성의하다"
+    },
+    {
+      "id": "N1-4zhypn",
+      "word": "ダース",
+      "reading": "だーす",
+      "meaning": "다스(열두 개)"
+    },
+    {
+      "id": "N1-17msvcr",
+      "word": "タイトル",
+      "reading": "たいとる",
+      "meaning": "제목"
+    },
+    {
+      "id": "N1-171le83",
+      "word": "タイピスト",
+      "reading": "たいぴすと",
+      "meaning": "타자수, 타이피스트"
+    },
+    {
+      "id": "N1-c4blrl",
+      "word": "タイマー",
+      "reading": "たいまー",
+      "meaning": "타이머, 시간 조절 장치"
+    },
+    {
+      "id": "N1-1hyavsr",
+      "word": "タイミング",
+      "reading": "たいみんぐ",
+      "meaning": "적절한 시점, 타이밍"
+    },
+    {
+      "id": "N1-ujurjf",
+      "word": "タイム",
+      "reading": "たいむ",
+      "meaning": "시간; 경기 중 타임"
+    },
+    {
+      "id": "N1-4lai5r",
+      "word": "タイムリー",
+      "reading": "たいむりー",
+      "meaning": "시기적절한; 적시타(야구)"
+    },
+    {
+      "id": "N1-qiicyj",
+      "word": "タイヤ",
+      "reading": "たいや",
+      "meaning": "타이어"
+    },
+    {
+      "id": "N1-1bbwoor",
+      "word": "タイル",
+      "reading": "たいる",
+      "meaning": "타일"
+    },
+    {
+      "id": "N1-hyqc9b",
+      "word": "ダウン",
+      "reading": "だうん",
+      "meaning": "내려감, 하락; 쓰러짐"
+    },
+    {
+      "id": "N1-qv4s37",
+      "word": "たった",
+      "reading": "たった",
+      "meaning": "겨우, 단지, 고작"
+    },
+    {
+      "id": "N1-myko9b",
+      "word": "ダブる",
+      "reading": "だぶる",
+      "meaning": "겹치다, 중복되다; 유급하다(학년을 되풀이하다)"
+    },
+    {
+      "id": "N1-q0h3uf",
+      "word": "だらけ",
+      "reading": "だらけ",
+      "meaning": "~투성이, ~로 가득함"
+    },
+    {
+      "id": "N1-1o7p39v",
+      "word": "タレント",
+      "reading": "たれんと",
+      "meaning": "연예인, 방송인"
+    },
+    {
+      "id": "N1-1iavul3",
+      "word": "タワー",
+      "reading": "たわー",
+      "meaning": "탑, 타워"
+    },
+    {
+      "id": "N1-1xmcc6f",
+      "word": "ダンプ",
+      "reading": "だんぷ",
+      "meaning": "덤프, 덤프트럭"
+    },
+    {
+      "id": "N1-1kou2gx",
+      "word": "チームワーク",
+      "reading": "ちーむわーく",
+      "meaning": "팀워크"
+    },
+    {
+      "id": "N1-1wu4b89",
+      "word": "チェンジ",
+      "reading": "ちぇんじ",
+      "meaning": "변경, 교체"
+    },
+    {
+      "id": "N1-eyokqn",
+      "word": "チャイム",
+      "reading": "ちゃいむ",
+      "meaning": "차임벨, 종소리"
+    },
+    {
+      "id": "N1-10mlqcv",
+      "word": "チャンネル",
+      "reading": "ちゃんねる",
+      "meaning": "채널"
+    },
+    {
+      "id": "N1-l32jlv",
+      "word": "ちょくちょく",
+      "reading": "ちょくちょく",
+      "meaning": "자주, 이따금"
+    },
+    {
+      "id": "N1-stogmd",
+      "word": "ちらっと",
+      "reading": "ちらっと",
+      "meaning": "힐끗, 얼핏"
+    },
+    {
+      "id": "N1-1dxwhnf",
+      "word": "ティッシュペーパー",
+      "reading": "てぃっしゅぺーぱー",
+      "meaning": "티슈, 화장지"
+    },
+    {
+      "id": "N1-hf0yyj",
+      "word": "データ",
+      "reading": "でーた",
+      "meaning": "데이터"
+    },
+    {
+      "id": "N1-7kkspj",
+      "word": "でかい",
+      "reading": "でかい",
+      "meaning": "크다, 거대하다"
+    },
+    {
+      "id": "N1-1ky4z4z",
+      "word": "デコレーション",
+      "reading": "でこれーしょん",
+      "meaning": "장식"
+    },
+    {
+      "id": "N1-1p989v1",
+      "word": "デザート",
+      "reading": "でざーと",
+      "meaning": "디저트"
+    },
+    {
+      "id": "N1-azqm6f",
+      "word": "デザイン",
+      "reading": "でざいん",
+      "meaning": "디자인"
+    },
+    {
+      "id": "N1-1cmi74v",
+      "word": "てっきり",
+      "reading": "てっきり",
+      "meaning": "틀림없이, 당연히"
+    },
+    {
+      "id": "N1-1tyoiz7",
+      "word": "デッサン",
+      "reading": "でっさん",
+      "meaning": "데생, 밑그림"
+    },
+    {
+      "id": "N1-1ia3twb",
+      "word": "デモンストレーション",
+      "reading": "でもんすとれーしょん",
+      "meaning": "시위; 시연, 데모"
+    },
+    {
+      "id": "N1-nidkxn",
+      "word": "テレックス",
+      "reading": "てれっくす",
+      "meaning": "텔렉스(가입 전신 교환)"
+    },
+    {
+      "id": "N1-11yxoor",
+      "word": "てんで",
+      "reading": "てんで",
+      "meaning": "전혀, 완전히"
+    },
+    {
+      "id": "N1-v0715n",
+      "word": "と",
+      "reading": "と",
+      "meaning": "~하면, ~할 때(조건을 나타내는 조사)"
+    },
+    {
+      "id": "N1-i8nvow",
+      "word": "どうぞ宜しく",
+      "reading": "どうぞよろしく",
+      "meaning": "잘 부탁드립니다, 만나서 반갑습니다"
+    },
+    {
+      "id": "N1-1caixzp",
+      "word": "どうにか",
+      "reading": "どうにか",
+      "meaning": "어떻게든, 간신히"
+    },
+    {
+      "id": "N1-pggva7",
+      "word": "ドライ",
+      "reading": "どらい",
+      "meaning": "건조한"
+    },
+    {
+      "id": "N1-l0gzvf",
+      "word": "ドライクリーニング",
+      "reading": "どらいくりーにんぐ",
+      "meaning": "드라이클리닝"
+    },
+    {
+      "id": "N1-4iloav",
+      "word": "ドライバー",
+      "reading": "どらいばー",
+      "meaning": "운전사; 드라이버(공구)"
+    },
+    {
+      "id": "N1-zfa38h",
+      "word": "ドライブイン",
+      "reading": "どらいぶいん",
+      "meaning": "드라이브인, 자동차 이용자를 위한 휴게 시설"
+    },
+    {
+      "id": "N1-1v73par",
+      "word": "トラブル",
+      "reading": "とらぶる",
+      "meaning": "문제, 곤란; 고장"
+    },
+    {
+      "id": "N1-1thto8r",
+      "word": "トランジスター",
+      "reading": "とらんじすたー",
+      "meaning": "트랜지스터"
+    },
+    {
+      "id": "N1-10phgaz",
+      "word": "ドリル",
+      "reading": "どりる",
+      "meaning": "드릴(공구), 반복 연습"
+    },
+    {
+      "id": "N1-laec6j",
+      "word": "とんだ",
+      "reading": "とんだ",
+      "meaning": "뜻밖의, 터무니없는"
+    },
+    {
+      "id": "N1-1tzm1ih",
+      "word": "ナイター",
+      "reading": "ないたー",
+      "meaning": "야간 경기"
+    },
+    {
+      "id": "N1-ik4nrx",
+      "word": "ナプキン",
+      "reading": "なぷきん",
+      "meaning": "냅킨; 생리대"
+    },
+    {
+      "id": "N1-25u75n",
+      "word": "なんか",
+      "reading": "なんか",
+      "meaning": "~따위, ~같은 것; 뭔가"
+    },
+    {
+      "id": "N1-ris3ff",
+      "word": "ナンセンス",
+      "reading": "なんせんす",
+      "meaning": "무의미한 말, 터무니없음"
+    },
+    {
+      "id": "N1-23nej5",
+      "word": "なんだかんだ",
+      "reading": "なんだかんだ",
+      "meaning": "이러니저러니, 이것저것"
+    },
+    {
+      "id": "N1-1big5sc",
+      "word": "にも拘らず",
+      "reading": "にもかかわらず",
+      "meaning": "그럼에도 불구하고"
+    },
+    {
+      "id": "N1-1rmhcdv",
+      "word": "ニュアンス",
+      "reading": "にゅあんす",
+      "meaning": "뉘앙스"
+    },
+    {
+      "id": "N1-1c19lnf",
+      "word": "ニュー",
+      "reading": "にゅー",
+      "meaning": "새로운"
+    },
+    {
+      "id": "N1-vmpvmp",
+      "word": "ネガ",
+      "reading": "ねが",
+      "meaning": "사진의 네거티브(음화)"
+    },
+    {
+      "id": "N1-10605jg",
+      "word": "ねじ回し",
+      "reading": "ねじまわし",
+      "meaning": "드라이버(나사를 돌리는 공구)"
+    },
+    {
+      "id": "N1-121g1dv",
+      "word": "ノイローゼ",
+      "reading": "のいろーぜ",
+      "meaning": "신경증"
+    },
+    {
+      "id": "N1-r9vyn7",
+      "word": "パジャマ",
+      "reading": "ぱじゃま",
+      "meaning": "파자마, 잠옷"
+    },
+    {
+      "id": "N1-17wdccj",
+      "word": "パチンコ",
+      "reading": "ぱちんこ",
+      "meaning": "파친코(일본식 구슬 게임); 새총"
+    },
+    {
+      "id": "N1-1rd135n",
+      "word": "バッジ",
+      "reading": "ばっじ",
+      "meaning": "배지"
+    },
+    {
+      "id": "N1-1f0g9i3",
+      "word": "バット",
+      "reading": "ばっと",
+      "meaning": "방망이(야구 등)"
+    },
+    {
+      "id": "N1-1hqzovv",
+      "word": "パトカー",
+      "reading": "ぱとかー",
+      "meaning": "경찰 순찰차"
+    },
+    {
+      "id": "N1-rs7319",
+      "word": "ビールス",
+      "reading": "びーるす",
+      "meaning": "바이러스"
+    },
+    {
+      "id": "N1-1azu2f9",
+      "word": "ビジネス",
+      "reading": "びじねす",
+      "meaning": "사업"
+    },
+    {
+      "id": "N1-1dpjc9f",
+      "word": "びっしょり",
+      "reading": "びっしょり",
+      "meaning": "흠뻑 젖어"
+    },
+    {
+      "id": "N1-s5n913",
+      "word": "ひょっと",
+      "reading": "ひょっと",
+      "meaning": "혹시, 우연히"
+    },
+    {
+      "id": "N1-1hn5ohx",
+      "word": "びり",
+      "reading": "びり",
+      "meaning": "꼴찌, 맨 마지막"
+    },
+    {
+      "id": "N1-jjn8qn",
+      "word": "ヒント",
+      "reading": "ひんと",
+      "meaning": "힌트"
+    },
+    {
+      "id": "N1-2enyb7",
+      "word": "ファイト",
+      "reading": "ふぁいと",
+      "meaning": "투지; 힘내라, 파이팅"
+    },
+    {
+      "id": "N1-z4vx21",
+      "word": "ファイル",
+      "reading": "ふぁいる",
+      "meaning": "파일"
+    },
+    {
+      "id": "N1-1wk5ojz",
+      "word": "ファン",
+      "reading": "ふぁん",
+      "meaning": "팬, 애호가; 선풍기"
+    },
+    {
+      "id": "N1-1oziu77",
+      "word": "フィルター",
+      "reading": "ふぃるたー",
+      "meaning": "필터, 여과 장치"
+    },
+    {
+      "id": "N1-1bxw5vf",
+      "word": "ブーツ",
+      "reading": "ぶーつ",
+      "meaning": "부츠, 장화"
+    },
+    {
+      "id": "N1-1n0927v",
+      "word": "ブーム",
+      "reading": "ぶーむ",
+      "meaning": "붐, 유행; 호황"
+    },
+    {
+      "id": "N1-1d3rwwb",
+      "word": "フェリー",
+      "reading": "ふぇりー",
+      "meaning": "페리"
+    },
+    {
+      "id": "N1-cl03b7",
+      "word": "フォーム",
+      "reading": "ふぉーむ",
+      "meaning": "형식, 동작 자세; 거품"
+    },
+    {
+      "id": "N1-4q0703",
+      "word": "ぶかぶか",
+      "reading": "ぶかぶか",
+      "meaning": "(옷이) 헐렁한 모양"
+    },
+    {
+      "id": "N1-2aqb4b",
+      "word": "ブザー",
+      "reading": "ぶざー",
+      "meaning": "버저, 경보음 장치"
+    },
+    {
+      "id": "N1-146yy7r",
+      "word": "ブルー",
+      "reading": "ぶるー",
+      "meaning": "파란색; 우울함"
+    },
+    {
+      "id": "N1-tmnq4l",
+      "word": "フロント",
+      "reading": "ふろんと",
+      "meaning": "앞면; 호텔 등의 프런트 데스크"
+    },
+    {
+      "id": "N1-1tpjwob",
+      "word": "ベース",
+      "reading": "べーす",
+      "meaning": "기초, 기반; 베이스(악기)"
+    },
+    {
+      "id": "N1-gmc5tz",
+      "word": "ベスト",
+      "reading": "べすと",
+      "meaning": "최고; 조끼"
+    },
+    {
+      "id": "N1-cam0ij",
+      "word": "ベストセラー",
+      "reading": "べすとせらー",
+      "meaning": "베스트셀러"
+    },
+    {
+      "id": "N1-xonetr",
+      "word": "ボイコット",
+      "reading": "ぼいこっと",
+      "meaning": "보이코트"
+    },
+    {
+      "id": "N1-l6p20z",
+      "word": "ポイント",
+      "reading": "ぽいんと",
+      "meaning": "요점; 점수, 포인트"
+    },
+    {
+      "id": "N1-1ywcw6b",
+      "word": "ホース",
+      "reading": "ほーす",
+      "meaning": "호스(관)"
+    },
+    {
+      "id": "N1-129pnc3",
+      "word": "ポーズ",
+      "reading": "ぽーず",
+      "meaning": "일시 정지, 잠깐의 중단"
+    },
+    {
+      "id": "N1-1b2p057",
+      "word": "ホール",
+      "reading": "ほーる",
+      "meaning": "홀, 대강당; 구멍"
+    },
+    {
+      "id": "N1-15zystv",
+      "word": "ポジション",
+      "reading": "ぽじしょん",
+      "meaning": "위치"
+    },
+    {
+      "id": "N1-14mgt3z",
+      "word": "ほっと",
+      "reading": "ほっと",
+      "meaning": "안도의 한숨을 쉬며"
+    },
+    {
+      "id": "N1-1ew1eaj",
+      "word": "ポット",
+      "reading": "ぽっと",
+      "meaning": "주전자, 보온병"
+    },
+    {
+      "id": "N1-1tj535n",
+      "word": "ぼつぼつ",
+      "reading": "ぼつぼつ",
+      "meaning": "조금씩, 점차; 여기저기"
+    },
+    {
+      "id": "N1-shsl8b",
+      "word": "ぼやく",
+      "reading": "ぼやく",
+      "meaning": "투덜거리다, 불평하다"
+    },
+    {
+      "id": "N1-ki4tqz",
+      "word": "ボルト",
+      "reading": "ぼると",
+      "meaning": "볼트(전압 단위·나사)"
+    },
+    {
+      "id": "N1-dwgvov",
+      "word": "ポンプ",
+      "reading": "ぽんぷ",
+      "meaning": "펌프"
+    },
+    {
+      "id": "N1-1trlqhv",
+      "word": "マーク",
+      "reading": "まーく",
+      "meaning": "표시, 기호; 마크"
+    },
+    {
+      "id": "N1-p1vnqh",
+      "word": "まごつく",
+      "reading": "まごつく",
+      "meaning": "당황하다, 갈팡질팡하다"
+    },
+    {
+      "id": "N1-q5z7jt",
+      "word": "マスコミ",
+      "reading": "ますこみ",
+      "meaning": "매스컴, 대중 매체"
+    },
+    {
+      "id": "N1-pze5cf",
+      "word": "マッサージ",
+      "reading": "まっさーじ",
+      "meaning": "마사지"
+    },
+    {
+      "id": "N1-nu9udv",
+      "word": "ミスプリント",
+      "reading": "みすぷりんと",
+      "meaning": "오식, 인쇄 오류"
+    },
+    {
+      "id": "N1-qq5d7z",
+      "word": "ミセス",
+      "reading": "みせす",
+      "meaning": "미시즈(기혼 여성의 존칭)"
+    },
+    {
+      "id": "N1-1rbv7qr",
+      "word": "ミュージック",
+      "reading": "みゅーじっく",
+      "meaning": "음악"
+    },
+    {
+      "id": "N1-8lk2gr",
+      "word": "ムード",
+      "reading": "むーど",
+      "meaning": "분위기, 기분"
+    },
+    {
+      "id": "N1-dyslb7",
+      "word": "メーカー",
+      "reading": "めーかー",
+      "meaning": "제조업체, 제작자"
+    },
+    {
+      "id": "N1-14db4a7",
+      "word": "メッセージ",
+      "reading": "めっせーじ",
+      "meaning": "메시지"
+    },
+    {
+      "id": "N1-1iakuf1",
+      "word": "メディア",
+      "reading": "めでぃあ",
+      "meaning": "미디어"
+    },
+    {
+      "id": "N1-jwwo8r",
+      "word": "メロディー",
+      "reading": "めろでぃー",
+      "meaning": "멜로디"
+    },
+    {
+      "id": "N1-vkpia9",
+      "word": "モーテル",
+      "reading": "もーてる",
+      "meaning": "모텔"
+    },
+    {
+      "id": "N1-exv8qf",
+      "word": "モニター",
+      "reading": "もにたー",
+      "meaning": "모니터, 감시 장치; 평가 참여자"
+    },
+    {
+      "id": "N1-e4qaqn",
+      "word": "もろに",
+      "reading": "もろに",
+      "meaning": "그대로, 완전히"
+    },
+    {
+      "id": "N1-16qnlzl",
+      "word": "やり遂げる",
+      "reading": "やりとげる",
+      "meaning": "끝까지 해내다, 완수하다"
+    },
+    {
+      "id": "N1-19rx263",
+      "word": "ヤング",
+      "reading": "やんぐ",
+      "meaning": "젊은이"
+    },
+    {
+      "id": "N1-io8juj",
+      "word": "ゆとり",
+      "reading": "ゆとり",
+      "meaning": "여유, 시간적·경제적 여유"
+    },
+    {
+      "id": "N1-12x2svv",
+      "word": "ユニーク",
+      "reading": "ゆにーく",
+      "meaning": "독특한"
+    },
+    {
+      "id": "N1-1ktwd4t",
+      "word": "ユニフォーム",
+      "reading": "ゆにふぉーむ",
+      "meaning": "유니폼"
+    },
+    {
+      "id": "N1-fjk2fj",
+      "word": "ラベル",
+      "reading": "らべる",
+      "meaning": "라벨"
+    },
+    {
+      "id": "N1-1920bzj",
+      "word": "ランプ",
+      "reading": "らんぷ",
+      "meaning": "램프, 등"
+    },
+    {
+      "id": "N1-1c4yvoj",
+      "word": "ルーズ",
+      "reading": "るーず",
+      "meaning": "칠칠치 못하다, 헐렁하다"
+    },
+    {
+      "id": "N1-hfexnf",
+      "word": "ルール",
+      "reading": "るーる",
+      "meaning": "규칙"
+    },
+    {
+      "id": "N1-fdsjm3",
+      "word": "レース",
+      "reading": "れーす",
+      "meaning": "경주; 레이스(망사)"
+    },
+    {
+      "id": "N1-1co3kmz",
+      "word": "レギュラー",
+      "reading": "れぎゅらー",
+      "meaning": "정규의; 정규 멤버"
+    },
+    {
+      "id": "N1-76pmf",
+      "word": "レクリエーション",
+      "reading": "れくりえーしょん",
+      "meaning": "레크리에이션, 여가 활동"
+    },
+    {
+      "id": "N1-rz4ac1",
+      "word": "レッスン",
+      "reading": "れっすん",
+      "meaning": "수업, 레슨"
+    },
+    {
+      "id": "N1-3dsye3",
+      "word": "レディー",
+      "reading": "れでぃー",
+      "meaning": "숙녀"
+    },
+    {
+      "id": "N1-mt6bm3",
+      "word": "レンジ",
+      "reading": "れんじ",
+      "meaning": "레인지, 조리용 가열기; 전자레인지"
+    },
+    {
+      "id": "N1-188gbn7",
+      "word": "レンタカー",
+      "reading": "れんたかー",
+      "meaning": "렌터카, 자동차 대여"
+    },
+    {
+      "id": "N1-1yd53n7",
+      "word": "レントゲン",
+      "reading": "れんとげん",
+      "meaning": "엑스레이, 뢴트겐"
+    },
+    {
+      "id": "N1-m8k3r7",
+      "word": "ロープ",
+      "reading": "ろーぷ",
+      "meaning": "밧줄, 로프"
+    },
+    {
+      "id": "N1-zxnzhe",
+      "word": "ローマ字",
+      "reading": "ろーまじ",
+      "meaning": "로마자, 일본어의 로마자 표기"
+    },
+    {
+      "id": "N1-642pgh",
+      "word": "ロマンチック",
+      "reading": "ろまんちっく",
+      "meaning": "낭만적인"
+    },
+    {
+      "id": "N1-1ardw1z",
+      "word": "ワット",
+      "reading": "わっと",
+      "meaning": "와트"
+    },
+    {
+      "id": "N1-jrfn4v",
+      "word": "愛でたい",
+      "reading": "めでたい",
+      "meaning": "경사스럽다, 축하할 만하다"
+    },
+    {
+      "id": "N1-1inaqre",
+      "word": "愛想",
+      "reading": "あいそ",
+      "meaning": "붙임성, 상냥함; 호감"
+    },
+    {
+      "id": "N1-1qziso",
+      "word": "愛憎",
+      "reading": "あいぞう",
+      "meaning": "애증, 사랑과 미움"
+    },
+    {
+      "id": "N1-5ml9es",
+      "word": "悪",
+      "reading": "あく",
+      "meaning": "악, 악행"
+    },
+    {
+      "id": "N1-1p9oo2p",
+      "word": "悪い",
+      "reading": "にくい",
+      "meaning": "밉다, 얄밉다"
+    },
+    {
+      "id": "N1-1rqe6uu",
+      "word": "悪戯",
+      "reading": "いたずら",
+      "meaning": "장난, 짓궂은 행동"
+    },
+    {
+      "id": "N1-16ymzw8",
+      "word": "悪口",
+      "reading": "あっこう",
+      "meaning": "욕설, 험담"
+    },
+    {
+      "id": "N1-y1b4iu",
+      "word": "悪者",
+      "reading": "わるもの",
+      "meaning": "악당, 나쁜 사람"
+    },
+    {
+      "id": "N1-1bg3m38",
+      "word": "悪日",
+      "reading": "あくび",
+      "meaning": "불길한 날, 불운한 날"
+    },
+    {
+      "id": "N1-1o0flba",
+      "word": "葦",
+      "reading": "よし",
+      "meaning": "갈대"
+    },
+    {
+      "id": "N1-t196e",
+      "word": "圧迫",
+      "reading": "あっぱく",
+      "meaning": "압박, 억압"
+    },
+    {
+      "id": "N1-1nf9zql",
+      "word": "圧力",
+      "reading": "あつりょく",
+      "meaning": "압력, 압박"
+    },
+    {
+      "id": "N1-1vd2en9",
+      "word": "扱い",
+      "reading": "あつかい",
+      "meaning": "취급, 대우"
+    },
+    {
+      "id": "N1-1hqfdtu",
+      "word": "宛",
+      "reading": "あて",
+      "meaning": "~에게, ~앞으로(수신인 표시)"
+    },
+    {
+      "id": "N1-wtug3w",
+      "word": "宛てる",
+      "reading": "あてる",
+      "meaning": "(편지 등을) ~에게 보내다"
+    },
+    {
+      "id": "N1-164cpjy",
+      "word": "或いは",
+      "reading": "あるいは",
+      "meaning": "또는, 혹은; 어쩌면"
+    },
+    {
+      "id": "N1-1x7s0l9",
+      "word": "或る",
+      "reading": "ある",
+      "meaning": "어떤, 어느"
+    },
+    {
+      "id": "N1-ecop45",
+      "word": "安っぽい",
+      "reading": "やすっぽい",
+      "meaning": "싸구려 같다, 조잡하다"
+    },
+    {
+      "id": "N1-1mk7u1t",
+      "word": "安静",
+      "reading": "あんせい",
+      "meaning": "안정, 조용히 쉬기"
+    },
+    {
+      "id": "N1-1seem86",
+      "word": "暗殺",
+      "reading": "あんさつ",
+      "meaning": "암살"
+    },
+    {
+      "id": "N1-1i1mb4l",
+      "word": "暗算",
+      "reading": "あんざん",
+      "meaning": "암산"
+    },
+    {
+      "id": "N1-1wvd2nx",
+      "word": "暗示",
+      "reading": "あんじ",
+      "meaning": "암시"
+    },
+    {
+      "id": "N1-13y2wmo",
+      "word": "案じる",
+      "reading": "あんじる",
+      "meaning": "걱정하다, 궁리하다"
+    },
+    {
+      "id": "N1-2huvud",
+      "word": "案の定",
+      "reading": "あんのじょう",
+      "meaning": "예상대로, 아니나 다를까"
+    },
+    {
+      "id": "N1-qv0n8z",
+      "word": "闇",
+      "reading": "やみ",
+      "meaning": "어둠; 암거래"
+    },
+    {
+      "id": "N1-193eq0k",
+      "word": "伊",
+      "reading": "い",
+      "meaning": "이탈리아(한자 약칭)"
+    },
+    {
+      "id": "N1-oi55dn",
+      "word": "位地",
+      "reading": "いち",
+      "meaning": "위치, 지위"
+    },
+    {
+      "id": "N1-12fqyyw",
+      "word": "依",
+      "reading": "い",
+      "meaning": "의지하다, 의존하다(한자의 뜻)"
+    },
+    {
+      "id": "N1-1jyb73f",
+      "word": "依然",
+      "reading": "いぜん",
+      "meaning": "여전히, 아직도"
+    },
+    {
+      "id": "N1-h0jm9o",
+      "word": "依存",
+      "reading": "いそん",
+      "meaning": "의존"
+    },
+    {
+      "id": "N1-19xwx7f",
+      "word": "威力",
+      "reading": "いりょく",
+      "meaning": "위력, 힘"
+    },
+    {
+      "id": "N1-lsvop",
+      "word": "尉",
+      "reading": "じょう",
+      "meaning": "옛 관직명(율령제의 셋째 관등); 노인"
+    },
+    {
+      "id": "N1-1fztycq",
+      "word": "意気込む",
+      "reading": "いきごむ",
+      "meaning": "열의를 보이다, 의욕적으로 나서다"
+    },
+    {
+      "id": "N1-1oahh30",
+      "word": "意向",
+      "reading": "いこう",
+      "meaning": "의향, 의도"
+    },
+    {
+      "id": "N1-18gfmsl",
+      "word": "意図",
+      "reading": "いと",
+      "meaning": "의도, 목적"
+    },
+    {
+      "id": "N1-x6g3j2",
+      "word": "意地",
+      "reading": "いじ",
+      "meaning": "고집, 의지; 기질"
+    },
+    {
+      "id": "N1-3uft1t",
+      "word": "意欲",
+      "reading": "いよく",
+      "meaning": "의욕, 열망"
+    },
+    {
+      "id": "N1-1g5i5rr",
+      "word": "易い",
+      "reading": "やすい",
+      "meaning": "쉽다; ~하기 쉽다"
+    },
+    {
+      "id": "N1-1n8p0vz",
+      "word": "為さる",
+      "reading": "なさる",
+      "meaning": "하시다(하다의 존경 표현)"
+    },
+    {
+      "id": "N1-10h33k7",
+      "word": "為来り",
+      "reading": "しきたり",
+      "meaning": "관습, 관례"
+    },
+    {
+      "id": "N1-57aprz",
+      "word": "畏まりました",
+      "reading": "かしこまりました",
+      "meaning": "알겠습니다(공손한 대답)"
+    },
+    {
+      "id": "N1-jphz01",
+      "word": "異議",
+      "reading": "いぎ",
+      "meaning": "이의, 반대 의견"
+    },
+    {
+      "id": "N1-1eo4gbw",
+      "word": "異見",
+      "reading": "いけん",
+      "meaning": "다른 의견, 반대 의견"
+    },
+    {
+      "id": "N1-15dmxev",
+      "word": "異性",
+      "reading": "いせい",
+      "meaning": "이성(반대 성별)"
+    },
+    {
+      "id": "N1-1r62gk1",
+      "word": "異動",
+      "reading": "いどう",
+      "meaning": "인사이동, 전근"
+    },
+    {
+      "id": "N1-1e51gcr",
+      "word": "異論",
+      "reading": "いろん",
+      "meaning": "반론, 다른 의견"
+    },
+    {
+      "id": "N1-xxv9qv",
+      "word": "移行",
+      "reading": "いこう",
+      "meaning": "이행, 전환"
+    },
+    {
+      "id": "N1-1gnirca",
+      "word": "移住",
+      "reading": "いじゅう",
+      "meaning": "이주, 이민"
+    },
+    {
+      "id": "N1-kbjb8e",
+      "word": "萎びる",
+      "reading": "しなびる",
+      "meaning": "시들다, 쪼그라들다"
+    },
+    {
+      "id": "N1-1ck6qlr",
+      "word": "違える",
+      "reading": "ちがえる",
+      "meaning": "잘못하다, 바꾸다; 약속을 어기다"
+    },
+    {
+      "id": "N1-1tzai5c",
+      "word": "遺跡",
+      "reading": "いせき",
+      "meaning": "유적"
+    },
+    {
+      "id": "N1-nwmg3b",
+      "word": "域外",
+      "reading": "いきがい",
+      "meaning": "역외, 구역 밖"
+    },
+    {
+      "id": "N1-1jvsolo",
+      "word": "育ち",
+      "reading": "そだち",
+      "meaning": "성장, 자란 환경"
+    },
+    {
+      "id": "N1-1egeqef",
+      "word": "育成",
+      "reading": "いくせい",
+      "meaning": "육성, 양성"
+    },
+    {
+      "id": "N1-pnqyfa",
+      "word": "一々",
+      "reading": "いちいち",
+      "meaning": "일일이, 하나하나"
+    },
+    {
+      "id": "N1-9z0joj",
+      "word": "一まず",
+      "reading": "ひとまず",
+      "meaning": "우선, 일단"
+    },
+    {
+      "id": "N1-yqc94k",
+      "word": "一概に",
+      "reading": "いちがいに",
+      "meaning": "일률적으로, 단정적으로"
+    },
+    {
+      "id": "N1-ro41vd",
+      "word": "一括",
+      "reading": "いっかつ",
+      "meaning": "일괄, 한데 묶음"
+    },
+    {
+      "id": "N1-1dpylgk",
+      "word": "一気",
+      "reading": "いっき",
+      "meaning": "단숨에; 한 번에 마시기"
+    },
+    {
+      "id": "N1-eipcjv",
+      "word": "一言",
+      "reading": "いちげん",
+      "meaning": "한마디"
+    },
+    {
+      "id": "N1-1r0yu5b",
+      "word": "一向",
+      "reading": "ひたすら",
+      "meaning": "오로지, 한결같이"
+    },
+    {
+      "id": "N1-kp9sfe",
+      "word": "一頃",
+      "reading": "ひところ",
+      "meaning": "한때, 얼마 전"
+    },
+    {
+      "id": "N1-l9oax6",
+      "word": "一昨昨日",
+      "reading": "さきおととい",
+      "meaning": "그끄저께(3일 전)"
+    },
+    {
+      "id": "N1-19jchxr",
+      "word": "一心",
+      "reading": "いっしん",
+      "meaning": "한마음, 전심"
+    },
+    {
+      "id": "N1-1ri87y0",
+      "word": "一人",
+      "reading": "いちにん",
+      "meaning": "한 사람"
+    },
+    {
+      "id": "N1-1cvbcd3",
+      "word": "一人でに",
+      "reading": "ひとりでに",
+      "meaning": "저절로, 자동으로"
+    },
+    {
+      "id": "N1-148eo40",
+      "word": "一寸",
+      "reading": "ちょっと",
+      "meaning": "조금, 잠깐"
+    },
+    {
+      "id": "N1-1fd581k",
+      "word": "一切",
+      "reading": "いっさい",
+      "meaning": "일체, 전부; 전혀(부정과 함께)"
+    },
+    {
+      "id": "N1-zilq8p",
+      "word": "一息",
+      "reading": "ひといき",
+      "meaning": "한숨(한 번의 호흡), 잠깐의 휴식"
+    },
+    {
+      "id": "N1-1b0ha6a",
+      "word": "一帯",
+      "reading": "いったい",
+      "meaning": "일대, 주변 지역 전체"
+    },
+    {
+      "id": "N1-1t6r7bb",
+      "word": "一同",
+      "reading": "いちどう",
+      "meaning": "모두, 참석자 전원"
+    },
+    {
+      "id": "N1-140zirg",
+      "word": "一敗",
+      "reading": "いっぱい",
+      "meaning": "한 번의 패배"
+    },
+    {
+      "id": "N1-kv3aqu",
+      "word": "一部",
+      "reading": "いちぶ",
+      "meaning": "일부; 한 부(책 등의 단위)"
+    },
+    {
+      "id": "N1-13jcf71",
+      "word": "一部分",
+      "reading": "いちぶぶん",
+      "meaning": "일부분"
+    },
+    {
+      "id": "N1-33vq2o",
+      "word": "一別",
+      "reading": "いちべつ",
+      "meaning": "이별, 작별"
+    },
+    {
+      "id": "N1-vlslmo",
+      "word": "一変",
+      "reading": "いっぺん",
+      "meaning": "완전히 바뀜"
+    },
+    {
+      "id": "N1-1epf4c6",
+      "word": "一面",
+      "reading": "いちめん",
+      "meaning": "한 면, 한 측면; 온통"
+    },
+    {
+      "id": "N1-cr15gm",
+      "word": "一様",
+      "reading": "いちよう",
+      "meaning": "한결같음, 균일함"
+    },
+    {
+      "id": "N1-yh9e2h",
+      "word": "一律",
+      "reading": "いちりつ",
+      "meaning": "일률적임, 획일적임"
+    },
+    {
+      "id": "N1-2tvf26",
+      "word": "一連",
+      "reading": "いちれん",
+      "meaning": "일련, 연속"
+    },
+    {
+      "id": "N1-1jebd3y",
+      "word": "稲光",
+      "reading": "いなびかり",
+      "meaning": "번개, 번갯불"
+    },
+    {
+      "id": "N1-e6y2a4",
+      "word": "印",
+      "reading": "いん",
+      "meaning": "도장, 인장"
+    },
+    {
+      "id": "N1-1eiyfz1",
+      "word": "員",
+      "reading": "いん",
+      "meaning": "회원, 구성원"
+    },
+    {
+      "id": "N1-1gp7vtt",
+      "word": "引き起こす",
+      "reading": "ひきおこす",
+      "meaning": "일으키다, 초래하다"
+    },
+    {
+      "id": "N1-1yu3azo",
+      "word": "引き取る",
+      "reading": "ひきとる",
+      "meaning": "인수하다, 맡아 돌보다; 물러가다"
+    },
+    {
+      "id": "N1-14uqoy1",
+      "word": "引き受ける",
+      "reading": "ひきうける",
+      "meaning": "맡다, 떠맡다, 인수하다"
+    },
+    {
+      "id": "N1-ramz2",
+      "word": "引き上げる",
+      "reading": "ひきあげる",
+      "meaning": "끌어올리다, 인상하다; 철수하다"
+    },
+    {
+      "id": "N1-1sqhvbr",
+      "word": "引き分け",
+      "reading": "ひきわけ",
+      "meaning": "무승부"
+    },
+    {
+      "id": "N1-1u7faxm",
+      "word": "引っ掛ける",
+      "reading": "ひっかける",
+      "meaning": "걸다, 낚아채다; 속이다"
+    },
+    {
+      "id": "N1-16sng3w",
+      "word": "引っ掻く",
+      "reading": "ひっかく",
+      "meaning": "긁다, 할퀴다"
+    },
+    {
+      "id": "N1-7y2szo",
+      "word": "陰気",
+      "reading": "いんき",
+      "meaning": "음침하다, 침울하다"
+    },
+    {
+      "id": "N1-f7k9b7",
+      "word": "隠居",
+      "reading": "いんきょ",
+      "meaning": "은퇴, 은거; 은퇴한 사람"
+    },
+    {
+      "id": "N1-17jr9fw",
+      "word": "雨具",
+      "reading": "あまぐ",
+      "meaning": "우비, 비를 막는 도구"
+    },
+    {
+      "id": "N1-1qot2vb",
+      "word": "雨天",
+      "reading": "うてん",
+      "meaning": "비 오는 날씨"
+    },
+    {
+      "id": "N1-zdio7s",
+      "word": "卯",
+      "reading": "ぼう",
+      "meaning": "묘(십이지의 넷째, 토끼)"
+    },
+    {
+      "id": "N1-1qmjv1v",
+      "word": "渦",
+      "reading": "うず",
+      "meaning": "소용돌이"
+    },
+    {
+      "id": "N1-10km62q",
+      "word": "嘘つき",
+      "reading": "うそつき",
+      "meaning": "거짓말쟁이"
+    },
+    {
+      "id": "N1-ry83j",
+      "word": "云々",
+      "reading": "うんぬん",
+      "meaning": "운운, 등등; 논평"
+    },
+    {
+      "id": "N1-m0y9jb",
+      "word": "運営",
+      "reading": "うんえい",
+      "meaning": "관리, 운영"
+    },
+    {
+      "id": "N1-1evhpdv",
+      "word": "運送",
+      "reading": "うんそう",
+      "meaning": "운송, 배송"
+    },
+    {
+      "id": "N1-jnghvu",
+      "word": "運賃",
+      "reading": "うんちん",
+      "meaning": "운임, 운송 요금"
+    },
+    {
+      "id": "N1-q00uml",
+      "word": "運搬",
+      "reading": "うんぱん",
+      "meaning": "운반, 운송"
+    },
+    {
+      "id": "N1-1j7xbe1",
+      "word": "運命",
+      "reading": "うんめい",
+      "meaning": "운명"
+    },
+    {
+      "id": "N1-dhi9b9",
+      "word": "運輸",
+      "reading": "うんゆ",
+      "meaning": "운수, 운송"
+    },
+    {
+      "id": "N1-6zdm7b",
+      "word": "運用",
+      "reading": "うんよう",
+      "meaning": "운용, 활용"
+    },
+    {
+      "id": "N1-1hxknar",
+      "word": "営む",
+      "reading": "いとなむ",
+      "meaning": "운영하다, 경영하다; 생활을 영위하다"
+    },
+    {
+      "id": "N1-ldi08y",
+      "word": "映える",
+      "reading": "はえる",
+      "meaning": "빛나다, 돋보이다"
+    },
+    {
+      "id": "N1-12iyow",
+      "word": "映写",
+      "reading": "えいしゃ",
+      "meaning": "영사(화면에 비춤)"
+    },
+    {
+      "id": "N1-1dxofis",
+      "word": "映像",
+      "reading": "えいぞう",
+      "meaning": "영상, 화면의 이미지"
+    },
+    {
+      "id": "N1-1f39v5f",
+      "word": "栄える",
+      "reading": "さかえる",
+      "meaning": "번영하다, 번성하다"
+    },
+    {
+      "id": "N1-1voq16x",
+      "word": "英字",
+      "reading": "えいじ",
+      "meaning": "영문자, 알파벳"
+    },
+    {
+      "id": "N1-t4sudg",
+      "word": "英雄",
+      "reading": "えいゆう",
+      "meaning": "영웅"
+    },
+    {
+      "id": "N1-huva9m",
+      "word": "衛生",
+      "reading": "えいせい",
+      "meaning": "위생"
+    },
+    {
+      "id": "N1-16q6w64",
+      "word": "液",
+      "reading": "えき",
+      "meaning": "액체"
+    },
+    {
+      "id": "N1-1wccmls",
+      "word": "益々",
+      "reading": "ますます",
+      "meaning": "점점 더"
+    },
+    {
+      "id": "N1-sq5h5i",
+      "word": "閲覧",
+      "reading": "えつらん",
+      "meaning": "열람, 읽어 봄"
+    },
+    {
+      "id": "N1-pz0o4h",
+      "word": "厭々",
+      "reading": "いやいや",
+      "meaning": "마지못해, 내키지 않는 듯이"
+    },
+    {
+      "id": "N1-uhe1hk",
+      "word": "厭らしい",
+      "reading": "いやらしい",
+      "meaning": "불쾌함, 역겨움; 음란함"
+    },
+    {
+      "id": "N1-1f6iyxu",
+      "word": "円滑",
+      "reading": "えんかつ",
+      "meaning": "원활함, 순조로움"
+    },
+    {
+      "id": "N1-1qh333",
+      "word": "円満",
+      "reading": "えんまん",
+      "meaning": "원만함, 화목함"
+    },
+    {
+      "id": "N1-x03on2",
+      "word": "園",
+      "reading": "えん",
+      "meaning": "정원, 동산; 유치원"
+    },
+    {
+      "id": "N1-7tlrut",
+      "word": "延いては",
+      "reading": "ひいては",
+      "meaning": "나아가, 더 나아가서는"
+    },
+    {
+      "id": "N1-w4dgth",
+      "word": "延べ",
+      "reading": "のべ",
+      "meaning": "누계, 총합"
+    },
+    {
+      "id": "N1-16tkhxg",
+      "word": "沿い",
+      "reading": "ぞい",
+      "meaning": "~를 따라, ~변에"
+    },
+    {
+      "id": "N1-1fvaqtb",
+      "word": "沿う",
+      "reading": "そう",
+      "meaning": "따라가다, ~에 따르다; 부응하다"
+    },
+    {
+      "id": "N1-jkgqtq",
+      "word": "沿岸",
+      "reading": "えんがん",
+      "meaning": "연안, 해안"
+    },
+    {
+      "id": "N1-c0swk7",
+      "word": "沿線",
+      "reading": "えんせん",
+      "meaning": "철도·버스 노선 주변, 연선"
+    },
+    {
+      "id": "N1-k04gba",
+      "word": "演じる",
+      "reading": "えんじる",
+      "meaning": "연기하다, 공연하다"
+    },
+    {
+      "id": "N1-14om35u",
+      "word": "演ずる",
+      "reading": "えんずる",
+      "meaning": "연기하다, 공연하다"
+    },
+    {
+      "id": "N1-197r1eu",
+      "word": "演習",
+      "reading": "えんしゅう",
+      "meaning": "연습, 훈련; 세미나"
+    },
+    {
+      "id": "N1-65upg8",
+      "word": "演出",
+      "reading": "えんしゅつ",
+      "meaning": "연출"
+    },
+    {
+      "id": "N1-1n8jt5f",
+      "word": "煙たい",
+      "reading": "けむたい",
+      "meaning": "연기가 자욱하다, 거북하다"
+    },
+    {
+      "id": "N1-rdqi23",
+      "word": "煙る",
+      "reading": "けむる",
+      "meaning": "연기가 나다, 연기로 흐릿해지다"
+    },
+    {
+      "id": "N1-1unbjiv",
+      "word": "煙草",
+      "reading": "たばこ",
+      "meaning": "담배"
+    },
+    {
+      "id": "N1-vokn29",
+      "word": "縁",
+      "reading": "えん",
+      "meaning": "인연, 관계"
+    },
+    {
+      "id": "N1-273j50",
+      "word": "縁側",
+      "reading": "えんがわ",
+      "meaning": "(일본 전통 가옥의) 바깥쪽 툇마루"
+    },
+    {
+      "id": "N1-6f91mv",
+      "word": "縁談",
+      "reading": "えんだん",
+      "meaning": "혼담, 결혼 이야기"
+    },
+    {
+      "id": "N1-1cxkeyq",
+      "word": "艶",
+      "reading": "えん",
+      "meaning": "요염하다, 매력적이다"
+    },
+    {
+      "id": "N1-1gw0107",
+      "word": "遠ざかる",
+      "reading": "とおざかる",
+      "meaning": "멀어지다"
+    },
+    {
+      "id": "N1-cnw1c",
+      "word": "遠方",
+      "reading": "えんぽう",
+      "meaning": "먼 곳, 원방"
+    },
+    {
+      "id": "N1-1qmnjvc",
+      "word": "鉛",
+      "reading": "なまり",
+      "meaning": "납(금속)"
+    },
+    {
+      "id": "N1-1oni9mx",
+      "word": "塩",
+      "reading": "えん",
+      "meaning": "염(화학의 염), 염화물"
+    },
+    {
+      "id": "N1-1ipixn0",
+      "word": "汚す",
+      "reading": "けがす",
+      "meaning": "더럽히다, 불명예를 입히다"
+    },
+    {
+      "id": "N1-1sa1qh8",
+      "word": "汚らわしい",
+      "reading": "けがらわしい",
+      "meaning": "더럽다, 추잡하다"
+    },
+    {
+      "id": "N1-1sqk03g",
+      "word": "汚れ",
+      "reading": "けがれ",
+      "meaning": "더러움, 불결함; 불명예"
+    },
+    {
+      "id": "N1-170dal0",
+      "word": "汚れる",
+      "reading": "けがれる",
+      "meaning": "더럽혀지다, 오염되다"
+    },
+    {
+      "id": "N1-133my56",
+      "word": "甥",
+      "reading": "おい",
+      "meaning": "조카(남자)"
+    },
+    {
+      "id": "N1-1vepwxe",
+      "word": "応急",
+      "reading": "おうきゅう",
+      "meaning": "응급 조치, 임시방편"
+    },
+    {
+      "id": "N1-1jdk74c",
+      "word": "応募",
+      "reading": "おうぼ",
+      "meaning": "응모, 지원, 신청"
+    },
+    {
+      "id": "N1-1wsw9zd",
+      "word": "押し寄せる",
+      "reading": "おしよせる",
+      "meaning": "몰려오다, 밀려들다"
+    },
+    {
+      "id": "N1-1p9fy8c",
+      "word": "押し込む",
+      "reading": "おしこむ",
+      "meaning": "밀어 넣다, 쑤셔 넣다; 침입하다"
+    },
+    {
+      "id": "N1-1bzr0cq",
+      "word": "横綱",
+      "reading": "よこづな",
+      "meaning": "요코즈나(스모 최고 등급의 선수)"
+    },
+    {
+      "id": "N1-14sn57c",
+      "word": "黄色",
+      "reading": "おうしょく",
+      "meaning": "노란색"
+    },
+    {
+      "id": "N1-wnfxwv",
+      "word": "屋敷",
+      "reading": "やしき",
+      "meaning": "저택, 대저택의 부지"
+    },
+    {
+      "id": "N1-1yviyi9",
+      "word": "臆病",
+      "reading": "おくびょう",
+      "meaning": "겁이 많음, 소심함"
+    },
+    {
+      "id": "N1-z1opjq",
+      "word": "乙",
+      "reading": "おつ",
+      "meaning": "둘째, 을(순서·등급); 멋스럽고 색다름"
+    },
+    {
+      "id": "N1-1h3f7ad",
+      "word": "俺",
+      "reading": "おれ",
+      "meaning": "나(남성이 편한 사이에서 쓰는 말)"
+    },
+    {
+      "id": "N1-1svx3v8",
+      "word": "温和",
+      "reading": "おんわ",
+      "meaning": "온화함, 부드러움, 온건함"
+    },
+    {
+      "id": "N1-1vyy6j9",
+      "word": "音",
+      "reading": "ね",
+      "meaning": "소리, 음색"
+    },
+    {
+      "id": "N1-bs95j4",
+      "word": "音色",
+      "reading": "ねいろ",
+      "meaning": "음색"
+    },
+    {
+      "id": "N1-1ye2aik",
+      "word": "下位",
+      "reading": "かい",
+      "meaning": "하위, 낮은 지위·순위"
+    },
+    {
+      "id": "N1-qqrlkj",
+      "word": "下取り",
+      "reading": "したどり",
+      "meaning": "보상 판매, 쓰던 물건을 넘기고 차액을 내는 교환"
+    },
+    {
+      "id": "N1-156j285",
+      "word": "下心",
+      "reading": "したごころ",
+      "meaning": "속셈, 숨은 의도"
+    },
+    {
+      "id": "N1-1h2tcb8",
+      "word": "下地",
+      "reading": "したじ",
+      "meaning": "기초, 바탕; 소질, 기본 지식"
+    },
+    {
+      "id": "N1-1gdmaxr",
+      "word": "下調べ",
+      "reading": "したしらべ",
+      "meaning": "사전 조사, 미리 하는 준비"
+    },
+    {
+      "id": "N1-1565870",
+      "word": "下番",
+      "reading": "かばん",
+      "meaning": "근무를 마침, 비번이 됨"
+    },
+    {
+      "id": "N1-141w1w3",
+      "word": "下品",
+      "reading": "げひん",
+      "meaning": "천함, 품위 없음"
+    },
+    {
+      "id": "N1-vbb8t0",
+      "word": "下吏",
+      "reading": "かり",
+      "meaning": "하급 관리"
+    },
+    {
+      "id": "N1-huw2s0",
+      "word": "下痢",
+      "reading": "げり",
+      "meaning": "설사"
+    },
+    {
+      "id": "N1-92ib7h",
+      "word": "化ける",
+      "reading": "ばける",
+      "meaning": "모습을 바꾸다, 둔갑하다; 변장하다"
+    },
+    {
+      "id": "N1-jii65g",
+      "word": "化する",
+      "reading": "かする",
+      "meaning": "~으로 변하다, ~화하다"
+    },
+    {
+      "id": "N1-l5ey30",
+      "word": "化合",
+      "reading": "かごう",
+      "meaning": "화합(화학적으로 결합함)"
+    },
+    {
+      "id": "N1-lkhb5n",
+      "word": "化石",
+      "reading": "かせき",
+      "meaning": "화석, 화석화"
+    },
+    {
+      "id": "N1-1ig9x7m",
+      "word": "化繊",
+      "reading": "かせん",
+      "meaning": "화학 섬유, 합성 섬유"
+    },
+    {
+      "id": "N1-d4qpdu",
+      "word": "仮令",
+      "reading": "たとえ",
+      "meaning": "설령 ~하더라도, 아무리 ~해도"
+    },
+    {
+      "id": "N1-1fiyssd",
+      "word": "何だか",
+      "reading": "なんだか",
+      "meaning": "왠지, 어쩐지, 어딘가"
+    },
+    {
+      "id": "N1-10dczn5",
+      "word": "何と",
+      "reading": "なんと",
+      "meaning": "무엇이라고, 얼마나; 뜻밖에도, 놀랍게도"
+    },
+    {
+      "id": "N1-xeik7z",
+      "word": "何とも",
+      "reading": "なんとも",
+      "meaning": "정말로, 매우; 전혀, 아무렇지도(부정 표현과 함께)"
+    },
+    {
+      "id": "N1-1jtj6uf",
+      "word": "何なり",
+      "reading": "なんなり",
+      "meaning": "무엇이든, 어떤 것이든"
+    },
+    {
+      "id": "N1-1fzpzct",
+      "word": "何の",
+      "reading": "どの",
+      "meaning": "어느, 어떤"
+    },
+    {
+      "id": "N1-3z8ej9",
+      "word": "何も",
+      "reading": "なにも",
+      "meaning": "아무것도(부정 표현과 함께); 굳이, 꼭"
+    },
+    {
+      "id": "N1-femax3",
+      "word": "何より",
+      "reading": "なにより",
+      "meaning": "무엇보다, 가장 좋음"
+    },
+    {
+      "id": "N1-vfb1te",
+      "word": "何れ",
+      "reading": "いずれ",
+      "meaning": "어느 것; 어쨌든; 언젠가, 머지않아"
+    },
+    {
+      "id": "N1-1muojku",
+      "word": "何気ない",
+      "reading": "なにげない",
+      "meaning": "무심함, 아무렇지 않은 듯함"
+    },
+    {
+      "id": "N1-1kt269r",
+      "word": "何故",
+      "reading": "なぜ",
+      "meaning": "왜, 어째서"
+    },
+    {
+      "id": "N1-3kiluh",
+      "word": "何故なら",
+      "reading": "なぜなら",
+      "meaning": "왜냐하면"
+    },
+    {
+      "id": "N1-5b5rku",
+      "word": "何時",
+      "reading": "いつ",
+      "meaning": "언제, 몇 시"
+    },
+    {
+      "id": "N1-1f1gz8v",
+      "word": "何時の間にか",
+      "reading": "いつのまにか",
+      "meaning": "어느새, 자신도 모르는 사이에"
+    },
+    {
+      "id": "N1-iyovgm",
+      "word": "何時までも",
+      "reading": "いつまでも",
+      "meaning": "언제까지나, 영원히"
+    },
+    {
+      "id": "N1-1uqqv72",
+      "word": "何時も",
+      "reading": "いつも",
+      "meaning": "늘, 항상; 평소"
+    },
+    {
+      "id": "N1-1cvuku",
+      "word": "何処",
+      "reading": "どこ",
+      "meaning": "어디, 어느 곳"
+    },
+    {
+      "id": "N1-11e24fe",
+      "word": "何処か",
+      "reading": "どこか",
+      "meaning": "어딘가, 어떤 점에서"
+    },
+    {
+      "id": "N1-13mu8k2",
+      "word": "何方",
+      "reading": "どちら",
+      "meaning": "어느 쪽, 어디; 누구(공손한 표현)"
+    },
+    {
+      "id": "N1-11nxpyl",
+      "word": "佳句",
+      "reading": "かく",
+      "meaning": "아름다운 글귀, 훌륭한 구절"
+    },
+    {
+      "id": "N1-3ty8mm",
+      "word": "加工",
+      "reading": "かこう",
+      "meaning": "가공, 처리"
+    },
+    {
+      "id": "N1-5boxgv",
+      "word": "加入",
+      "reading": "かにゅう",
+      "meaning": "가입"
+    },
+    {
+      "id": "N1-1dagdv6",
+      "word": "加味",
+      "reading": "かみ",
+      "meaning": "맛을 더함; 가미, 고려에 넣음"
+    },
+    {
+      "id": "N1-rnom7j",
+      "word": "加留多",
+      "reading": "かるた",
+      "meaning": "카루타(일본의 전통 카드놀이)"
+    },
+    {
+      "id": "N1-1e96fuu",
+      "word": "可哀想",
+      "reading": "かわいそう",
+      "meaning": "불쌍함, 가엾음"
+    },
+    {
+      "id": "N1-yqnra9",
+      "word": "可愛がる",
+      "reading": "かわいがる",
+      "meaning": "귀여워하다, 애정을 쏟다"
+    },
+    {
+      "id": "N1-1f2ukep",
+      "word": "可愛らしい",
+      "reading": "かわいらしい",
+      "meaning": "귀여움, 사랑스러움"
+    },
+    {
+      "id": "N1-176nkt7",
+      "word": "可成",
+      "reading": "かなり",
+      "meaning": "꽤, 상당히"
+    },
+    {
+      "id": "N1-8ea387",
+      "word": "家計",
+      "reading": "かけい",
+      "meaning": "가계, 가정의 살림살이"
+    },
+    {
+      "id": "N1-qob95j",
+      "word": "家主",
+      "reading": "いえぬし",
+      "meaning": "집주인, 임대인"
+    },
+    {
+      "id": "N1-1khfcgk",
+      "word": "家出",
+      "reading": "いえで",
+      "meaning": "가출"
+    },
+    {
+      "id": "N1-1pne5y",
+      "word": "家来",
+      "reading": "けらい",
+      "meaning": "가신, 부하"
+    },
+    {
+      "id": "N1-1be5yq9",
+      "word": "科",
+      "reading": "か",
+      "meaning": "과(부서·학과); 과(생물 분류 단위)"
+    },
+    {
+      "id": "N1-k5czck",
+      "word": "暇",
+      "reading": "いとま",
+      "meaning": "여유 시간, 짬; 휴가; 작별"
+    },
+    {
+      "id": "N1-1ukajz8",
+      "word": "果たして",
+      "reading": "はたして",
+      "meaning": "과연, 예상대로; 정말로(의문·추측)"
+    },
+    {
+      "id": "N1-vniadg",
+      "word": "果て",
+      "reading": "はて",
+      "meaning": "끝, 한계; 결과"
+    },
+    {
+      "id": "N1-17iw5ez",
+      "word": "果ない",
+      "reading": "はかない",
+      "meaning": "덧없음, 허무함; 가망이 희박함"
+    },
+    {
+      "id": "N1-1e6lvad",
+      "word": "火花",
+      "reading": "ひばな",
+      "meaning": "불꽃, 불똥"
+    },
+    {
+      "id": "N1-17rid8m",
+      "word": "火傷",
+      "reading": "かしょう",
+      "meaning": "화상"
+    },
+    {
+      "id": "N1-1utgf2x",
+      "word": "火星",
+      "reading": "かせい",
+      "meaning": "화성(행성)"
+    },
+    {
+      "id": "N1-1wy2smz",
+      "word": "火燵",
+      "reading": "こたつ",
+      "meaning": "코타츠(이불을 덮은 난방 탁자)"
+    },
+    {
+      "id": "N1-seqhn",
+      "word": "箇箇",
+      "reading": "ここ",
+      "meaning": "각각, 개별"
+    },
+    {
+      "id": "N1-1bhmfgh",
+      "word": "花びら",
+      "reading": "はなびら",
+      "meaning": "꽃잎"
+    },
+    {
+      "id": "N1-1045u4t",
+      "word": "花壇",
+      "reading": "かだん",
+      "meaning": "화단"
+    },
+    {
+      "id": "N1-1r1v0r2",
+      "word": "花粉",
+      "reading": "かふん",
+      "meaning": "꽃가루"
+    },
+    {
+      "id": "N1-1vsa4uj",
+      "word": "苛々",
+      "reading": "いらいら",
+      "meaning": "짜증 남, 초조함"
+    },
+    {
+      "id": "N1-1g6ywi7",
+      "word": "荷",
+      "reading": "に",
+      "meaning": "짐, 화물; 부담, 책임"
+    },
+    {
+      "id": "N1-1jsgsfp",
+      "word": "荷造り",
+      "reading": "にづくり",
+      "meaning": "짐 꾸리기, 포장"
+    },
+    {
+      "id": "N1-1sij27q",
+      "word": "華々しい",
+      "reading": "はなばなしい",
+      "meaning": "화려함, 눈부심, 성대함"
+    },
+    {
+      "id": "N1-qubf4d",
+      "word": "華やか",
+      "reading": "はなやか",
+      "meaning": "화려함, 밝고 아름다움"
+    },
+    {
+      "id": "N1-19h1qa2",
+      "word": "華美",
+      "reading": "かび",
+      "meaning": "화려함; 지나친 사치, 번지르르함"
+    },
+    {
+      "id": "N1-x47ftn",
+      "word": "華奢",
+      "reading": "かしゃ",
+      "meaning": "사치스러움, 호화로움"
+    },
+    {
+      "id": "N1-fb669o",
+      "word": "課外",
+      "reading": "かがい",
+      "meaning": "과외, 정규 수업 밖의 활동"
+    },
+    {
+      "id": "N1-1jg3ij2",
+      "word": "課題",
+      "reading": "かだい",
+      "meaning": "과제, 주제; 해결해야 할 문제"
+    },
+    {
+      "id": "N1-gx88fx",
+      "word": "貨幣",
+      "reading": "かへい",
+      "meaning": "화폐, 통화"
+    },
+    {
+      "id": "N1-ar7kxs",
+      "word": "過ぎ",
+      "reading": "すぎ",
+      "meaning": "~이 지나서, ~후; 지나침, 과도함"
+    },
+    {
+      "id": "N1-11ojf3",
+      "word": "過ち",
+      "reading": "あやまち",
+      "meaning": "잘못, 실수, 과오"
+    },
+    {
+      "id": "N1-v8s81r",
+      "word": "過疎",
+      "reading": "かそ",
+      "meaning": "과소(인구가 너무 적음), 인구 감소"
+    },
+    {
+      "id": "N1-1qjja35",
+      "word": "過多",
+      "reading": "かた",
+      "meaning": "과다, 지나치게 많음"
+    },
+    {
+      "id": "N1-d5smff",
+      "word": "過密",
+      "reading": "かみつ",
+      "meaning": "과밀, 너무 빽빽함"
+    },
+    {
+      "id": "N1-cq30h1",
+      "word": "過労",
+      "reading": "かろう",
+      "meaning": "과로"
+    },
+    {
+      "id": "N1-fmb6fn",
+      "word": "霞む",
+      "reading": "かすむ",
+      "meaning": "안개가 끼다, 흐릿해지다; 빛이 가려지다"
+    },
+    {
+      "id": "N1-18vyxrz",
+      "word": "俄か",
+      "reading": "にわか",
+      "meaning": "갑작스러움; 임시로 급히 마련함"
+    },
+    {
+      "id": "N1-1157fp7",
+      "word": "我がまま",
+      "reading": "わがまま",
+      "meaning": "제멋대로임, 이기적임"
+    },
+    {
+      "id": "N1-9pgfeu",
+      "word": "画期",
+      "reading": "かっき",
+      "meaning": "시대를 구분하는 전환점"
+    },
+    {
+      "id": "N1-1qitlhb",
+      "word": "雅致",
+      "reading": "がち",
+      "meaning": "우아한 멋, 고상한 취향"
+    },
+    {
+      "id": "N1-6uhtam",
+      "word": "介護",
+      "reading": "かいご",
+      "meaning": "돌봄, 간병"
+    },
+    {
+      "id": "N1-1vzzuve",
+      "word": "介入",
+      "reading": "かいにゅう",
+      "meaning": "개입"
+    },
+    {
+      "id": "N1-qsmcpx",
+      "word": "介抱",
+      "reading": "かいほう",
+      "meaning": "간호, 보살핌"
+    },
+    {
+      "id": "N1-50w08h",
+      "word": "会",
+      "reading": "え",
+      "meaning": "모임, 집회(특히 불교 행사)"
+    },
+    {
+      "id": "N1-a61ywd",
+      "word": "会見",
+      "reading": "かいけん",
+      "meaning": "회견, 면담"
+    },
+    {
+      "id": "N1-1a012zs",
+      "word": "会談",
+      "reading": "かいだん",
+      "meaning": "회담, 공식적인 협의"
+    },
+    {
+      "id": "N1-trbehq",
+      "word": "解く",
+      "reading": "ほどく",
+      "meaning": "풀다, 매듭을 풀다"
+    },
+    {
+      "id": "N1-ax9qjk",
+      "word": "解除",
+      "reading": "かいじょ",
+      "meaning": "해제, 취소, 폐지"
+    },
+    {
+      "id": "N1-1611gct",
+      "word": "解剖",
+      "reading": "かいぼう",
+      "meaning": "해부, 부검; 분석"
+    },
+    {
+      "id": "N1-u8833a",
+      "word": "回収",
+      "reading": "かいしゅう",
+      "meaning": "회수, 수거"
+    },
+    {
+      "id": "N1-fz7rqk",
+      "word": "回送",
+      "reading": "かいそう",
+      "meaning": "회송, 전달; 빈 차량 운행"
+    },
+    {
+      "id": "N1-fa8bd1",
+      "word": "回覧",
+      "reading": "かいらん",
+      "meaning": "회람, 문서를 돌려 봄"
+    },
+    {
+      "id": "N1-1w665tc",
+      "word": "回路",
+      "reading": "かいろ",
+      "meaning": "회로"
+    },
+    {
+      "id": "N1-14qm2bf",
+      "word": "快い",
+      "reading": "こころよい",
+      "meaning": "기분 좋음, 상쾌함, 쾌적함"
+    },
+    {
+      "id": "N1-13orgw8",
+      "word": "怪獣",
+      "reading": "かいじゅう",
+      "meaning": "괴수, 괴물"
+    },
+    {
+      "id": "N1-m6663z",
+      "word": "懐く",
+      "reading": "なつく",
+      "meaning": "친근하게 따르다, 정이 들다"
+    },
+    {
+      "id": "N1-cez632",
+      "word": "改まる",
+      "reading": "あらたまる",
+      "meaning": "새로워지다, 개선되다; 격식을 차리다"
+    },
+    {
+      "id": "N1-18dqupi",
+      "word": "改悪",
+      "reading": "かいあく",
+      "meaning": "개악, 더 나쁘게 바꿈"
+    },
+    {
+      "id": "N1-ilmcog",
+      "word": "改革",
+      "reading": "かいかく",
+      "meaning": "개혁"
+    },
+    {
+      "id": "N1-18xcmip",
+      "word": "改修",
+      "reading": "かいしゅう",
+      "meaning": "개수, 수리·보수"
+    },
+    {
+      "id": "N1-p994v",
+      "word": "改定",
+      "reading": "かいてい",
+      "meaning": "개정(규칙·가격 등을 고침)"
+    },
+    {
+      "id": "N1-1c21naf",
+      "word": "改訂",
+      "reading": "かいてい",
+      "meaning": "개정(책·글의 내용을 고침)"
+    },
+    {
+      "id": "N1-1f3puv",
+      "word": "改良",
+      "reading": "かいりょう",
+      "meaning": "개량, 개선"
+    },
+    {
+      "id": "N1-agqipd",
+      "word": "海運",
+      "reading": "かいうん",
+      "meaning": "해운, 해상 운송"
+    },
+    {
+      "id": "N1-12kws32",
+      "word": "海峡",
+      "reading": "かいきょう",
+      "meaning": "해협"
+    },
+    {
+      "id": "N1-lryj1",
+      "word": "海抜",
+      "reading": "かいばつ",
+      "meaning": "해발, 해수면으로부터의 높이"
+    },
+    {
+      "id": "N1-9vhxk9",
+      "word": "海流",
+      "reading": "かいりゅう",
+      "meaning": "해류"
+    },
+    {
+      "id": "N1-1v8jxha",
+      "word": "海路",
+      "reading": "うみじ",
+      "meaning": "바닷길, 해로"
+    },
+    {
+      "id": "N1-9t99ei",
+      "word": "灰汁",
+      "reading": "あく",
+      "meaning": "떫고 쓴맛; 음식의 거품·찌꺼기; 잿물"
+    },
+    {
+      "id": "N1-1blyw6d",
+      "word": "灰皿",
+      "reading": "はいざら",
+      "meaning": "재떨이"
+    },
+    {
+      "id": "N1-vjcd1o",
+      "word": "開催",
+      "reading": "かいさい",
+      "meaning": "개최"
+    },
+    {
+      "id": "N1-1g33azk",
+      "word": "開拓",
+      "reading": "かいたく",
+      "meaning": "개척, 토지 개간; 새로운 분야를 열어감"
+    },
+    {
+      "id": "N1-1e4uieg",
+      "word": "開発",
+      "reading": "かいはつ",
+      "meaning": "개발"
+    },
+    {
+      "id": "N1-1x5psts",
+      "word": "階",
+      "reading": "かい",
+      "meaning": "층(건물의 층을 세는 단위)"
+    },
+    {
+      "id": "N1-c3pj1c",
+      "word": "階級",
+      "reading": "かいきゅう",
+      "meaning": "계급, 지위, 등급"
+    },
+    {
+      "id": "N1-r4mt5x",
+      "word": "階層",
+      "reading": "かいそう",
+      "meaning": "계층, 층위"
+    },
+    {
+      "id": "N1-75gjrj",
+      "word": "貝殻",
+      "reading": "かいがら",
+      "meaning": "조개껍데기"
+    },
+    {
+      "id": "N1-cb0kmi",
+      "word": "外貨",
+      "reading": "がいか",
+      "meaning": "외화(외국 통화); 수입품"
+    },
+    {
+      "id": "N1-2cbjv8",
+      "word": "外観",
+      "reading": "がいかん",
+      "meaning": "외관, 겉모습"
+    },
+    {
+      "id": "N1-1qnbsxb",
+      "word": "外相",
+      "reading": "がいしょう",
+      "meaning": "외무 장관"
+    },
+    {
+      "id": "N1-1oird9r",
+      "word": "外方",
+      "reading": "そっぽ",
+      "meaning": "다른 쪽, 딴 방향"
+    },
+    {
+      "id": "N1-1pbfvlx",
+      "word": "外来",
+      "reading": "がいらい",
+      "meaning": "외래, 외국에서 들어옴; 외래 진료"
+    },
+    {
+      "id": "N1-k74yig",
+      "word": "崖",
+      "reading": "がけ",
+      "meaning": "벼랑, 절벽"
+    },
+    {
+      "id": "N1-1grmnaq",
+      "word": "概説",
+      "reading": "がいせつ",
+      "meaning": "개설, 전반적인 설명"
+    },
+    {
+      "id": "N1-sszaru",
+      "word": "蓋",
+      "reading": "ふた",
+      "meaning": "뚜껑"
+    },
+    {
+      "id": "N1-1l7f2xi",
+      "word": "街",
+      "reading": "がい",
+      "meaning": "~가, ~거리, ~구역"
+    },
+    {
+      "id": "N1-153imd5",
+      "word": "街頭",
+      "reading": "がいとう",
+      "meaning": "거리, 길거리"
+    },
+    {
+      "id": "N1-xl4mk1",
+      "word": "街道",
+      "reading": "かいどう",
+      "meaning": "가도, 주요 도로"
+    },
+    {
+      "id": "N1-hsfz23",
+      "word": "各種",
+      "reading": "かくしゅ",
+      "meaning": "각종, 여러 종류"
+    },
+    {
+      "id": "N1-1b2ucjd",
+      "word": "拡散",
+      "reading": "かくさん",
+      "meaning": "확산, 퍼짐"
+    },
+    {
+      "id": "N1-vo0yn",
+      "word": "格",
+      "reading": "かく",
+      "meaning": "격, 지위·등급; 격식; 격(문법)"
+    },
+    {
+      "id": "N1-1iohypm",
+      "word": "格差",
+      "reading": "かくさ",
+      "meaning": "격차, 차이"
+    },
+    {
+      "id": "N1-vjjdgl",
+      "word": "獲得",
+      "reading": "かくとく",
+      "meaning": "획득, 얻음"
+    },
+    {
+      "id": "N1-1yuq6iw",
+      "word": "獲物",
+      "reading": "えもの",
+      "meaning": "먹잇감, 사냥감; 전리품"
+    },
+    {
+      "id": "N1-ssljeo",
+      "word": "確り",
+      "reading": "しっかり",
+      "meaning": "단단히, 확실히, 제대로"
+    },
+    {
+      "id": "N1-1wl1eok",
+      "word": "確信",
+      "reading": "かくしん",
+      "meaning": "확신"
+    },
+    {
+      "id": "N1-1ffimtb",
+      "word": "確定",
+      "reading": "かくてい",
+      "meaning": "확정, 결정"
+    },
+    {
+      "id": "N1-dgfplj",
+      "word": "確保",
+      "reading": "かくほ",
+      "meaning": "확보"
+    },
+    {
+      "id": "N1-1ejo3kq",
+      "word": "確立",
+      "reading": "かくりつ",
+      "meaning": "확립"
+    },
+    {
+      "id": "N1-1hcqmdh",
+      "word": "覚え",
+      "reading": "おぼえ",
+      "meaning": "기억; 경험, 익숙함"
+    },
+    {
+      "id": "N1-1plj7nh",
+      "word": "角",
+      "reading": "かく",
+      "meaning": "각도; 각(장기의 말)"
+    },
+    {
+      "id": "N1-1j4om5",
+      "word": "隔たる",
+      "reading": "へだたる",
+      "meaning": "떨어져 있다, 사이에 거리가 있다"
+    },
+    {
+      "id": "N1-1pw03wi",
+      "word": "隔週",
+      "reading": "かくしゅう",
+      "meaning": "격주, 한 주 건너 한 번"
+    },
+    {
+      "id": "N1-1dt5ycs",
+      "word": "革新",
+      "reading": "かくしん",
+      "meaning": "혁신"
+    },
+    {
+      "id": "N1-1qptom2",
+      "word": "革命",
+      "reading": "かくめい",
+      "meaning": "혁명"
+    },
+    {
+      "id": "N1-1w1gsmq",
+      "word": "学芸",
+      "reading": "がくげい",
+      "meaning": "학예, 학문과 예술"
+    },
+    {
+      "id": "N1-13csc90",
+      "word": "学士",
+      "reading": "がくし",
+      "meaning": "학사, 학사 학위 소지자"
+    },
+    {
+      "id": "N1-1qhr84v",
+      "word": "学説",
+      "reading": "がくせつ",
+      "meaning": "학설, 이론"
+    },
+    {
+      "id": "N1-ssntyb",
+      "word": "学歴",
+      "reading": "がくれき",
+      "meaning": "학력"
+    },
+    {
+      "id": "N1-ja5ker",
+      "word": "楽しむ",
+      "reading": "たのしむ",
+      "meaning": "즐기다; 기대하다"
+    },
+    {
+      "id": "N1-bljqh",
+      "word": "楽観",
+      "reading": "らっかん",
+      "meaning": "낙관, 낙관적인 생각"
+    },
+    {
+      "id": "N1-pw5tgs",
+      "word": "楽譜",
+      "reading": "がくふ",
+      "meaning": "악보"
+    },
+    {
+      "id": "N1-1xg0cw1",
+      "word": "顎",
+      "reading": "あご",
+      "meaning": "턱"
+    },
+    {
+      "id": "N1-1yj6dj3",
+      "word": "掛け",
+      "reading": "かけ",
+      "meaning": "외상, 외상값"
+    },
+    {
+      "id": "N1-ft4uvo",
+      "word": "割り算",
+      "reading": "わりざん",
+      "meaning": "나눗셈"
+    },
+    {
+      "id": "N1-1hcxxep",
+      "word": "割り当て",
+      "reading": "わりあて",
+      "meaning": "할당, 배정"
+    },
+    {
+      "id": "N1-1pnhyww",
+      "word": "割合に",
+      "reading": "わりあいに",
+      "meaning": "비교적, 상대적으로"
+    },
+    {
+      "id": "N1-1w0qh56",
+      "word": "活ける",
+      "reading": "いける",
+      "meaning": "꽃을 꽂다, 꽃꽂이를 하다"
+    },
+    {
+      "id": "N1-1mt9267",
+      "word": "活発",
+      "reading": "かっぱつ",
+      "meaning": "활발함, 활동적임"
+    },
+    {
+      "id": "N1-1sa7yt1",
+      "word": "滑らか",
+      "reading": "なめらか",
+      "meaning": "매끄러움; 말이 유창함"
+    },
+    {
+      "id": "N1-1m8x7gc",
+      "word": "且つ",
+      "reading": "かつ",
+      "meaning": "또한, 그리고"
+    },
+    {
+      "id": "N1-64mwtc",
+      "word": "叶う",
+      "reading": "かなう",
+      "meaning": "소망이 이루어지다"
+    },
+    {
+      "id": "N1-1xxobgc",
+      "word": "叶える",
+      "reading": "かなえる",
+      "meaning": "소원·요구를 들어주다, 이루어 주다"
+    },
+    {
+      "id": "N1-1g1r5vv",
+      "word": "株式",
+      "reading": "かぶしき",
+      "meaning": "주식"
+    },
+    {
+      "id": "N1-q9sy8f",
+      "word": "噛る",
+      "reading": "かじる",
+      "meaning": "갉아먹다, 조금씩 베어 먹다; 조금 배우다"
+    },
+    {
+      "id": "N1-hm7amp",
+      "word": "粥",
+      "reading": "かゆ",
+      "meaning": "죽(음식)"
+    },
+    {
+      "id": "N1-57pvlh",
+      "word": "乾",
+      "reading": "けん",
+      "meaning": "건(乾, 주역에서 하늘을 상징하는 괘)"
+    },
+    {
+      "id": "N1-mif91b",
+      "word": "冠",
+      "reading": "かん",
+      "meaning": "관, 왕관; 으뜸"
+    },
+    {
+      "id": "N1-14svkhe",
+      "word": "刊行",
+      "reading": "かんこう",
+      "meaning": "간행, 출판"
+    },
+    {
+      "id": "N1-1ka9rmg",
+      "word": "勘弁",
+      "reading": "かんべん",
+      "meaning": "용서, 너그럽게 봐줌"
+    },
+    {
+      "id": "N1-177li04",
+      "word": "勧め",
+      "reading": "すすめ",
+      "meaning": "권유, 추천, 조언"
+    },
+    {
+      "id": "N1-1yd12g8",
+      "word": "勧告",
+      "reading": "かんこく",
+      "meaning": "권고, 조언"
+    },
+    {
+      "id": "N1-17i21uc",
+      "word": "勧誘",
+      "reading": "かんゆう",
+      "meaning": "권유, 가입 등을 권함"
+    },
+    {
+      "id": "N1-11iaz1n",
+      "word": "巻",
+      "reading": "まき",
+      "meaning": "두루마리; 권(책의 단위)"
+    },
+    {
+      "id": "N1-49jxag",
+      "word": "堪らない",
+      "reading": "たまらない",
+      "meaning": "참을 수 없음, 견딜 수 없음; 너무 좋아 어쩔 줄 모름"
+    },
+    {
+      "id": "N1-82vgab",
+      "word": "完璧",
+      "reading": "かんぺき",
+      "meaning": "완벽함, 흠이 없음"
+    },
+    {
+      "id": "N1-138x0s2",
+      "word": "官僚",
+      "reading": "かんりょう",
+      "meaning": "관료, 정부 관리"
+    },
+    {
+      "id": "N1-116lpaj",
+      "word": "寛容",
+      "reading": "かんよう",
+      "meaning": "관용, 너그러움"
+    },
+    {
+      "id": "N1-1pp4j6h",
+      "word": "干し物",
+      "reading": "ほしもの",
+      "meaning": "널어 말리는 것, 빨래"
+    },
+    {
+      "id": "N1-1ctsmye",
+      "word": "干渉",
+      "reading": "かんしょう",
+      "meaning": "간섭"
+    },
+    {
+      "id": "N1-1g26aby",
+      "word": "幹線",
+      "reading": "かんせん",
+      "meaning": "간선, 주요 노선"
+    },
+    {
+      "id": "N1-8j26vc",
+      "word": "幹部",
+      "reading": "かんぶ",
+      "meaning": "간부, 지도부"
+    },
+    {
+      "id": "N1-n4q334",
+      "word": "感慨",
+      "reading": "かんがい",
+      "meaning": "감개, 깊은 감회"
+    },
+    {
+      "id": "N1-tyy7hx",
+      "word": "感染",
+      "reading": "かんせん",
+      "meaning": "감염"
+    },
+    {
+      "id": "N1-wvrlpt",
+      "word": "感度",
+      "reading": "かんど",
+      "meaning": "감도(기기의 민감도)"
+    },
+    {
+      "id": "N1-ld2gm3",
+      "word": "感無量",
+      "reading": "かんむりょう",
+      "meaning": "감개무량, 벅찬 감회"
+    },
+    {
+      "id": "N1-h05fa0",
+      "word": "慣らす",
+      "reading": "ならす",
+      "meaning": "익숙하게 하다, 길들이다"
+    },
+    {
+      "id": "N1-16wrz7w",
+      "word": "慣れ",
+      "reading": "なれ",
+      "meaning": "익숙함, 숙달"
+    },
+    {
+      "id": "N1-12mw5g5",
+      "word": "慣行",
+      "reading": "かんこう",
+      "meaning": "관행"
+    },
+    {
+      "id": "N1-137mky8",
+      "word": "慣習",
+      "reading": "かんしゅう",
+      "meaning": "관습"
+    },
+    {
+      "id": "N1-15jdnou",
+      "word": "慣用",
+      "reading": "かんよう",
+      "meaning": "관용, 관례적으로 씀"
+    },
+    {
+      "id": "N1-g0mgoz",
+      "word": "慣例",
+      "reading": "かんれい",
+      "meaning": "관례, 전례"
+    },
+    {
+      "id": "N1-v1tlof",
+      "word": "換算",
+      "reading": "かんさん",
+      "meaning": "환산"
+    },
+    {
+      "id": "N1-1eqtwb",
+      "word": "歓声",
+      "reading": "かんせい",
+      "meaning": "환성, 기쁨의 함성"
+    },
+    {
+      "id": "N1-13jr48j",
+      "word": "漢語",
+      "reading": "かんご",
+      "meaning": "한자어, 한어; 중국어"
+    },
+    {
+      "id": "N1-w33c5d",
+      "word": "甘い",
+      "reading": "うまい",
+      "meaning": "능숙함; 맛있음; 유리함"
+    },
+    {
+      "id": "N1-1xmfeu4",
+      "word": "甘口",
+      "reading": "あまくち",
+      "meaning": "단맛, 순한 맛; 아첨하는 말"
+    },
+    {
+      "id": "N1-36mowj",
+      "word": "監視",
+      "reading": "かんし",
+      "meaning": "감시"
+    },
+    {
+      "id": "N1-rnwqjd",
+      "word": "看護",
+      "reading": "かんご",
+      "meaning": "간호"
+    },
+    {
+      "id": "N1-12qx23t",
+      "word": "竿",
+      "reading": "さお",
+      "meaning": "장대, 막대"
+    },
+    {
+      "id": "N1-1jvezsm",
+      "word": "管",
+      "reading": "かん",
+      "meaning": "관, 파이프, 튜브"
+    },
+    {
+      "id": "N1-1s5pbbj",
+      "word": "簡易",
+      "reading": "かんい",
+      "meaning": "간이, 간단하고 쉽게 만든 것"
+    },
+    {
+      "id": "N1-1qlaykn",
+      "word": "簡潔",
+      "reading": "かんけつ",
+      "meaning": "간결함"
+    },
+    {
+      "id": "N1-quko55",
+      "word": "簡素",
+      "reading": "かんそ",
+      "meaning": "간소함, 꾸밈이 없음"
+    },
+    {
+      "id": "N1-1jkt5jz",
+      "word": "緩める",
+      "reading": "ゆるめる",
+      "meaning": "느슨하게 하다, 풀다; 완화하다; 속도를 줄이다"
+    },
+    {
+      "id": "N1-1r0av7x",
+      "word": "緩やか",
+      "reading": "ゆるやか",
+      "meaning": "완만함, 느긋함; 느슨함, 너그러움"
+    },
+    {
+      "id": "N1-2spza4",
+      "word": "肝心",
+      "reading": "かんじん",
+      "meaning": "중요함, 핵심적임"
+    },
+    {
+      "id": "N1-187ugmk",
+      "word": "観衆",
+      "reading": "かんしゅう",
+      "meaning": "관중"
+    },
+    {
+      "id": "N1-1g5qwem",
+      "word": "観点",
+      "reading": "かんてん",
+      "meaning": "관점"
+    },
+    {
+      "id": "N1-15qft37",
+      "word": "観覧",
+      "reading": "かんらん",
+      "meaning": "관람"
+    },
+    {
+      "id": "N1-6grnev",
+      "word": "貫く",
+      "reading": "つらぬく",
+      "meaning": "꿰뚫다, 관통하다; 끝까지 지키다"
+    },
+    {
+      "id": "N1-5x4nxs",
+      "word": "貫禄",
+      "reading": "かんろく",
+      "meaning": "관록, 위엄 있는 풍채"
+    },
+    {
+      "id": "N1-15lqt41",
+      "word": "還元",
+      "reading": "かんげん",
+      "meaning": "환원, 본래로 돌림; 환원(화학)"
+    },
+    {
+      "id": "N1-l0r5gc",
+      "word": "還暦",
+      "reading": "かんれき",
+      "meaning": "환갑, 예순 번째 생일"
+    },
+    {
+      "id": "N1-1n0l7o3",
+      "word": "間々",
+      "reading": "まま",
+      "meaning": "이따금, 가끔"
+    },
+    {
+      "id": "N1-1pqdytk",
+      "word": "間違う",
+      "reading": "まちがう",
+      "meaning": "틀리다, 잘못하다; 혼동하다"
+    },
+    {
+      "id": "N1-141y21n",
+      "word": "間柄",
+      "reading": "あいだがら",
+      "meaning": "사이, 서로의 관계"
+    },
+    {
+      "id": "N1-fvp7x",
+      "word": "関税",
+      "reading": "かんぜい",
+      "meaning": "관세"
+    },
+    {
+      "id": "N1-xkeryv",
+      "word": "関与",
+      "reading": "かんよ",
+      "meaning": "관여, 참여"
+    },
+    {
+      "id": "N1-1v4jbaf",
+      "word": "館",
+      "reading": "かん",
+      "meaning": "관, 회관 등 큰 건물"
+    },
+    {
+      "id": "N1-10wt1ki",
+      "word": "丸々",
+      "reading": "まるまる",
+      "meaning": "통통함; 전부, 통째로"
+    },
+    {
+      "id": "N1-fooc6i",
+      "word": "丸ごと",
+      "reading": "まるごと",
+      "meaning": "통째로, 전부"
+    },
+    {
+      "id": "N1-u15l27",
+      "word": "含嗽",
+      "reading": "うがい",
+      "meaning": "양치, 입을 헹굼, 가글"
+    },
+    {
+      "id": "N1-bnombn",
+      "word": "玩具",
+      "reading": "おもちゃ",
+      "meaning": "장난감"
+    },
+    {
+      "id": "N1-lc39g4",
+      "word": "眼科",
+      "reading": "がんか",
+      "meaning": "안과"
+    },
+    {
+      "id": "N1-pclhk7",
+      "word": "眼球",
+      "reading": "がんきゅう",
+      "meaning": "안구, 눈알"
+    },
+    {
+      "id": "N1-1pz6nuv",
+      "word": "眼鏡",
+      "reading": "がんきょう",
+      "meaning": "안경"
+    },
+    {
+      "id": "N1-1v43682",
+      "word": "岩石",
+      "reading": "がんせき",
+      "meaning": "암석"
+    },
+    {
+      "id": "N1-qqxkas",
+      "word": "贋物",
+      "reading": "がんぶつ",
+      "meaning": "위조품, 가짜"
+    },
+    {
+      "id": "N1-s34xb4",
+      "word": "頑固",
+      "reading": "がんこ",
+      "meaning": "완고함, 고집이 셈"
+    },
+    {
+      "id": "N1-1ejzfce",
+      "word": "顔付き",
+      "reading": "かおつき",
+      "meaning": "얼굴 생김새, 인상"
+    },
+    {
+      "id": "N1-1tdibsw",
+      "word": "願書",
+      "reading": "がんしょ",
+      "meaning": "원서, 신청서"
+    },
+    {
+      "id": "N1-1y0gaak",
+      "word": "企画",
+      "reading": "きかく",
+      "meaning": "기획, 계획"
+    },
+    {
+      "id": "N1-eke7ru",
+      "word": "危ぶむ",
+      "reading": "あやぶむ",
+      "meaning": "우려하다, 의심하다, 위태롭게 여기다"
+    },
+    {
+      "id": "N1-63ll2q",
+      "word": "危害",
+      "reading": "きがい",
+      "meaning": "위해, 해로움, 손상"
+    },
+    {
+      "id": "N1-l1yekh",
+      "word": "危機",
+      "reading": "きき",
+      "meaning": "위기"
+    },
+    {
+      "id": "N1-1iffltq",
+      "word": "喜劇",
+      "reading": "きげき",
+      "meaning": "희극, 코미디"
+    },
+    {
+      "id": "N1-10i960g",
+      "word": "器官",
+      "reading": "きかん",
+      "meaning": "기관(몸의 장기)"
+    },
+    {
+      "id": "N1-8nw35r",
+      "word": "基",
+      "reading": "もとい",
+      "meaning": "기초, 바탕, 근원"
+    },
+    {
+      "id": "N1-1hi9hv3",
+      "word": "基金",
+      "reading": "ききん",
+      "meaning": "기금"
+    },
+    {
+      "id": "N1-cueqo6",
+      "word": "奇数",
+      "reading": "きすう",
+      "meaning": "홀수"
+    },
+    {
+      "id": "N1-15h63vk",
+      "word": "奇麗",
+      "reading": "きれい",
+      "meaning": "예쁨, 아름다움; 깨끗함"
+    },
+    {
+      "id": "N1-i7fw0f",
+      "word": "寄こす",
+      "reading": "よこす",
+      "meaning": "보내다, 건네주다"
+    },
+    {
+      "id": "N1-1fzm2q5",
+      "word": "寄贈",
+      "reading": "きそう",
+      "meaning": "기증"
+    },
+    {
+      "id": "N1-1x3l1c4",
+      "word": "寄与",
+      "reading": "きよ",
+      "meaning": "기여, 공헌"
+    },
+    {
+      "id": "N1-c85yfb",
+      "word": "幾多",
+      "reading": "いくた",
+      "meaning": "많음, 수많은"
+    },
+    {
+      "id": "N1-gbohco",
+      "word": "既婚",
+      "reading": "きこん",
+      "meaning": "기혼, 결혼한 상태"
+    },
+    {
+      "id": "N1-1q9f39d",
+      "word": "期",
+      "reading": "き",
+      "meaning": "기간, 시기, 임기"
+    },
+    {
+      "id": "N1-30w5hu",
+      "word": "期日",
+      "reading": "きじつ",
+      "meaning": "기일, 정해진 날짜; 마감일"
+    },
+    {
+      "id": "N1-15ezl7q",
+      "word": "期末",
+      "reading": "きまつ",
+      "meaning": "기말, 기간의 끝"
+    },
+    {
+      "id": "N1-12oa83d",
+      "word": "棄権",
+      "reading": "きけん",
+      "meaning": "기권(권리를 포기하거나 경기 등에서 물러남)"
+    },
+    {
+      "id": "N1-y0h1po",
+      "word": "機",
+      "reading": "はた",
+      "meaning": "베틀"
+    },
+    {
+      "id": "N1-1dop8ld",
+      "word": "機構",
+      "reading": "きこう",
+      "meaning": "기구, 구조; 조직, 체계"
+    },
+    {
+      "id": "N1-1xuio7w",
+      "word": "帰京",
+      "reading": "ききょう",
+      "meaning": "도쿄·수도로 돌아옴"
+    },
+    {
+      "id": "N1-1js4wmv",
+      "word": "気まぐれ",
+      "reading": "きまぐれ",
+      "meaning": "변덕, 변덕스러움"
+    },
+    {
+      "id": "N1-1oq739a",
+      "word": "気楽",
+      "reading": "きらく",
+      "meaning": "마음 편함, 부담이 없음"
+    },
+    {
+      "id": "N1-1f2y4bt",
+      "word": "気兼ね",
+      "reading": "きがね",
+      "meaning": "거리낌, 눈치 봄, 조심스러워함"
+    },
+    {
+      "id": "N1-1jwl9us",
+      "word": "気質",
+      "reading": "かたぎ",
+      "meaning": "기질, 성품"
+    },
+    {
+      "id": "N1-18zsulm",
+      "word": "気象",
+      "reading": "きしょう",
+      "meaning": "기상, 날씨"
+    },
+    {
+      "id": "N1-fdt01n",
+      "word": "気触れる",
+      "reading": "かぶれる",
+      "meaning": "피부에 염증·발진이 생기다; ~에 심취하다"
+    },
+    {
+      "id": "N1-gycydh",
+      "word": "気配",
+      "reading": "きはい",
+      "meaning": "기척, 낌새; 시장의 동향"
+    },
+    {
+      "id": "N1-zz3tu1",
+      "word": "気品",
+      "reading": "きひん",
+      "meaning": "기품, 품위"
+    },
+    {
+      "id": "N1-azbk2y",
+      "word": "気風",
+      "reading": "きふう",
+      "meaning": "기풍, 특유의 성향"
+    },
+    {
+      "id": "N1-1vey72a",
+      "word": "気立て",
+      "reading": "きだて",
+      "meaning": "마음씨, 성품"
+    },
+    {
+      "id": "N1-12yw5ib",
+      "word": "気流",
+      "reading": "きりゅう",
+      "meaning": "기류, 공기의 흐름"
+    },
+    {
+      "id": "N1-kkgfqu",
+      "word": "汽船",
+      "reading": "きせん",
+      "meaning": "기선, 증기선"
+    },
+    {
+      "id": "N1-7j7up7",
+      "word": "祈り",
+      "reading": "いのり",
+      "meaning": "기도, 기원"
+    },
+    {
+      "id": "N1-1fygmcb",
+      "word": "規格",
+      "reading": "きかく",
+      "meaning": "규격, 표준"
+    },
+    {
+      "id": "N1-p1nstw",
+      "word": "規制",
+      "reading": "きせい",
+      "meaning": "규제"
+    },
+    {
+      "id": "N1-ziz28l",
+      "word": "規定",
+      "reading": "きてい",
+      "meaning": "규정"
+    },
+    {
+      "id": "N1-1uq7yxu",
+      "word": "規模",
+      "reading": "きぼ",
+      "meaning": "규모, 범위"
+    },
+    {
+      "id": "N1-jrzcwg",
+      "word": "規約",
+      "reading": "きやく",
+      "meaning": "규약, 규칙"
+    },
+    {
+      "id": "N1-1pkcben",
+      "word": "記す",
+      "reading": "しるす",
+      "meaning": "적다, 기록하다; 표시하다"
+    },
+    {
+      "id": "N1-pu3i0k",
+      "word": "記載",
+      "reading": "きさい",
+      "meaning": "기재, 문서에 적음"
+    },
+    {
+      "id": "N1-1l7k02n",
+      "word": "記述",
+      "reading": "きじゅつ",
+      "meaning": "기술, 서술, 묘사"
+    },
+    {
+      "id": "N1-1x2z5b0",
+      "word": "記名",
+      "reading": "きめい",
+      "meaning": "기명, 이름을 적음"
+    },
+    {
+      "id": "N1-11qykyd",
+      "word": "貴女",
+      "reading": "あなた",
+      "meaning": "당신(여성을 가리키는 말)"
+    },
+    {
+      "id": "N1-vp3i44",
+      "word": "貴族",
+      "reading": "きぞく",
+      "meaning": "귀족"
+    },
+    {
+      "id": "N1-3o1yr4",
+      "word": "起こす",
+      "reading": "おこす",
+      "meaning": "깨우다; 일으키다; 시작하다"
+    },
+    {
+      "id": "N1-izocc2",
+      "word": "起源",
+      "reading": "きげん",
+      "meaning": "기원, 유래, 시작"
+    },
+    {
+      "id": "N1-1as0rhh",
+      "word": "起点",
+      "reading": "きてん",
+      "meaning": "기점, 출발점"
+    },
+    {
+      "id": "N1-18iak5k",
+      "word": "起伏",
+      "reading": "きふく",
+      "meaning": "기복, 높낮이; 흥망성쇠"
+    },
+    {
+      "id": "N1-1bhf8vc",
+      "word": "軌道",
+      "reading": "きどう",
+      "meaning": "궤도; 선로; 올바른 진행 방향"
+    },
+    {
+      "id": "N1-8ubi7i",
+      "word": "宜しく",
+      "reading": "よろしく",
+      "meaning": "잘, 적절히; 잘 부탁합니다"
+    },
+    {
+      "id": "N1-smflnn",
+      "word": "戯曲",
+      "reading": "ぎきょく",
+      "meaning": "희곡"
+    },
+    {
+      "id": "N1-1dngf30",
+      "word": "技",
+      "reading": "わざ",
+      "meaning": "기술, 기예, 솜씨"
+    },
+    {
+      "id": "N1-avwft0",
+      "word": "技能",
+      "reading": "ぎのう",
+      "meaning": "기능, 기술적인 능력"
+    },
+    {
+      "id": "N1-1y41zlj",
+      "word": "欺く",
+      "reading": "あざむく",
+      "meaning": "속이다, 기만하다"
+    },
+    {
+      "id": "N1-ah4v82",
+      "word": "犠牲",
+      "reading": "ぎせい",
+      "meaning": "희생; 희생자"
+    },
+    {
+      "id": "N1-1blj0tn",
+      "word": "疑惑",
+      "reading": "ぎわく",
+      "meaning": "의혹, 의심"
+    },
+    {
+      "id": "N1-1r2avj2",
+      "word": "義理",
+      "reading": "ぎり",
+      "meaning": "의리, 도리, 사회적 의무; 혼인으로 맺은 관계"
+    },
+    {
+      "id": "N1-1vgk1ik",
+      "word": "議案",
+      "reading": "ぎあん",
+      "meaning": "의안, 법안, 안건"
+    },
+    {
+      "id": "N1-1esbzrc",
+      "word": "議決",
+      "reading": "ぎけつ",
+      "meaning": "의결"
+    },
+    {
+      "id": "N1-gemryr",
+      "word": "議事堂",
+      "reading": "ぎじどう",
+      "meaning": "의사당, 국회의사당"
+    },
+    {
+      "id": "N1-aeyfpj",
+      "word": "議題",
+      "reading": "ぎだい",
+      "meaning": "의제, 논의할 주제"
+    },
+    {
+      "id": "N1-jx7tx6",
+      "word": "吃逆",
+      "reading": "しゃっくり",
+      "meaning": "딸꾹질"
+    },
+    {
+      "id": "N1-1lajqw3",
+      "word": "喫茶",
+      "reading": "きっさ",
+      "meaning": "차를 마심; 찻집, 커피숍"
+    },
+    {
+      "id": "N1-1vo4muv",
+      "word": "詰まり",
+      "reading": "つまり",
+      "meaning": "즉, 요컨대; 막힘"
+    },
+    {
+      "id": "N1-83mtqz",
+      "word": "詰らない",
+      "reading": "つまらない",
+      "meaning": "재미없음, 시시함; 쓸모없음"
+    },
+    {
+      "id": "N1-1mybry9",
+      "word": "客観",
+      "reading": "きゃっかん",
+      "meaning": "객관, 객관성"
+    },
+    {
+      "id": "N1-v1j693",
+      "word": "脚色",
+      "reading": "きゃくしょく",
+      "meaning": "각색; 사실을 과장하여 꾸밈"
+    },
+    {
+      "id": "N1-chppm0",
+      "word": "脚本",
+      "reading": "きゃくほん",
+      "meaning": "각본, 대본"
+    },
+    {
+      "id": "N1-m03qb2",
+      "word": "逆転",
+      "reading": "ぎゃくてん",
+      "meaning": "역전, 상황이 뒤집힘; 회전 방향을 반대로 함"
+    },
+    {
+      "id": "N1-1fol2so",
+      "word": "逆立ち",
+      "reading": "さかだち",
+      "meaning": "물구나무서기; 거꾸로 된 상태"
+    },
+    {
+      "id": "N1-xtsqh7",
+      "word": "久しい",
+      "reading": "ひさしい",
+      "meaning": "오래됨, 시간이 많이 지남"
+    },
+    {
+      "id": "N1-1ih8bsa",
+      "word": "久し振り",
+      "reading": "ひさしぶり",
+      "meaning": "오랜만"
+    },
+    {
+      "id": "N1-1cq4lmj",
+      "word": "休学",
+      "reading": "きゅうがく",
+      "meaning": "휴학"
+    },
+    {
+      "id": "N1-1k0i2ys",
+      "word": "休戦",
+      "reading": "きゅうせん",
+      "meaning": "휴전"
+    },
+    {
+      "id": "N1-1fu2nbt",
+      "word": "及び",
+      "reading": "および",
+      "meaning": "및, 그리고"
+    },
+    {
+      "id": "N1-mbj5ak",
+      "word": "宮殿",
+      "reading": "きゅうでん",
+      "meaning": "궁전"
+    },
+    {
+      "id": "N1-1fequ6p",
+      "word": "弓",
+      "reading": "ゆみ",
+      "meaning": "활"
+    },
+    {
+      "id": "N1-ndumk9",
+      "word": "急かす",
+      "reading": "せかす",
+      "meaning": "재촉하다"
+    },
+    {
+      "id": "N1-14pqocc",
+      "word": "救い",
+      "reading": "すくい",
+      "meaning": "구조, 도움; 구원, 위안"
+    },
+    {
+      "id": "N1-zaou19",
+      "word": "救援",
+      "reading": "きゅうえん",
+      "meaning": "구원, 구호, 구조"
+    },
+    {
+      "id": "N1-47pv8x",
+      "word": "朽ちる",
+      "reading": "くちる",
+      "meaning": "썩다, 쇠하다; 잊히다"
+    },
+    {
+      "id": "N1-fg9mnn",
+      "word": "球根",
+      "reading": "きゅうこん",
+      "meaning": "구근, 알뿌리"
+    },
+    {
+      "id": "N1-948gkl",
+      "word": "究極",
+      "reading": "きゅうきょく",
+      "meaning": "궁극, 최종"
+    },
+    {
+      "id": "N1-qja6ls",
+      "word": "窮屈",
+      "reading": "きゅうくつ",
+      "meaning": "비좁음; 답답함, 자유롭지 못함"
+    },
+    {
+      "id": "N1-1j15nfg",
+      "word": "窮乏",
+      "reading": "きゅうぼう",
+      "meaning": "궁핍, 빈곤"
+    },
+    {
+      "id": "N1-kp2l7s",
+      "word": "給う",
+      "reading": "たまう",
+      "meaning": "주시다(주다의 존경어)"
+    },
+    {
+      "id": "N1-15dd9c",
+      "word": "給仕",
+      "reading": "きゅうじ",
+      "meaning": "급사, 음식 시중; 웨이터·웨이트리스"
+    },
+    {
+      "id": "N1-nx9alh",
+      "word": "給食",
+      "reading": "きゅうしょく",
+      "meaning": "급식"
+    },
+    {
+      "id": "N1-ddbo06",
+      "word": "旧事",
+      "reading": "くじ",
+      "meaning": "지난 일, 옛 사건"
+    },
+    {
+      "id": "N1-1oagwac",
+      "word": "旧知",
+      "reading": "きゅうち",
+      "meaning": "오랜 지인, 옛 친구"
+    },
+    {
+      "id": "N1-1i946l6",
+      "word": "居住",
+      "reading": "きょじゅう",
+      "meaning": "거주"
+    },
+    {
+      "id": "N1-1m0y0cr",
+      "word": "拒絶",
+      "reading": "きょぜつ",
+      "meaning": "거절, 거부"
+    },
+    {
+      "id": "N1-158rbrr",
+      "word": "許容",
+      "reading": "きょよう",
+      "meaning": "허용, 받아들임"
+    },
+    {
+      "id": "N1-13d9ad4",
+      "word": "距離",
+      "reading": "きょり",
+      "meaning": "거리, 간격; 차이"
+    },
+    {
+      "id": "N1-e1toqa",
+      "word": "鋸",
+      "reading": "のこぎり",
+      "meaning": "톱"
+    },
+    {
+      "id": "N1-12019b0",
+      "word": "漁船",
+      "reading": "ぎょせん",
+      "meaning": "어선"
+    },
+    {
+      "id": "N1-r7886m",
+      "word": "漁村",
+      "reading": "ぎょそん",
+      "meaning": "어촌"
+    },
+    {
+      "id": "N1-5hqdfs",
+      "word": "供",
+      "reading": "きょう",
+      "meaning": "바치다, 제공하다(한자의 뜻)"
+    },
+    {
+      "id": "N1-r6d2ma",
+      "word": "共",
+      "reading": "とも",
+      "meaning": "~와 함께; 모두, 양쪽 다"
+    },
+    {
+      "id": "N1-1p97s6c",
+      "word": "共稼ぎ",
+      "reading": "ともかせぎ",
+      "meaning": "맞벌이"
+    },
+    {
+      "id": "N1-1wxqlu5",
+      "word": "共学",
+      "reading": "きょうがく",
+      "meaning": "남녀공학"
+    },
+    {
+      "id": "N1-mvcv3x",
+      "word": "共感",
+      "reading": "きょうかん",
+      "meaning": "공감"
+    },
+    {
+      "id": "N1-15zlog3",
+      "word": "共産",
+      "reading": "きょうさん",
+      "meaning": "공산주의; 공산당"
+    },
+    {
+      "id": "N1-e4epje",
+      "word": "共存",
+      "reading": "きょうそん",
+      "meaning": "공존"
+    },
+    {
+      "id": "N1-5pdpbr",
+      "word": "共働き",
+      "reading": "ともばたらき",
+      "meaning": "맞벌이"
+    },
+    {
+      "id": "N1-1k946or",
+      "word": "共鳴",
+      "reading": "きょうめい",
+      "meaning": "공명(울림); 공감"
+    },
+    {
+      "id": "N1-ofjl7v",
+      "word": "共和",
+      "reading": "きょうわ",
+      "meaning": "공화, 공화주의; 함께 협력함"
+    },
+    {
+      "id": "N1-wcj41p",
+      "word": "凶作",
+      "reading": "きょうさく",
+      "meaning": "흉작"
+    },
+    {
+      "id": "N1-12kkam",
+      "word": "協会",
+      "reading": "きょうかい",
+      "meaning": "협회"
+    },
+    {
+      "id": "N1-19xh9cj",
+      "word": "協議",
+      "reading": "きょうぎ",
+      "meaning": "협의, 논의"
+    },
+    {
+      "id": "N1-plkusc",
+      "word": "協調",
+      "reading": "きょうちょう",
+      "meaning": "협조, 조화"
+    },
+    {
+      "id": "N1-1dib4gz",
+      "word": "協定",
+      "reading": "きょうてい",
+      "meaning": "협정"
+    },
+    {
+      "id": "N1-1ufwr1c",
+      "word": "叫び",
+      "reading": "さけび",
+      "meaning": "외침, 절규"
+    },
+    {
+      "id": "N1-h3efx7",
+      "word": "境遇",
+      "reading": "きょうぐう",
+      "meaning": "처지, 형편, 삶의 환경"
+    },
+    {
+      "id": "N1-3xrlc3",
+      "word": "強いて",
+      "reading": "しいて",
+      "meaning": "굳이, 억지로"
+    },
+    {
+      "id": "N1-qho5a4",
+      "word": "強まる",
+      "reading": "つよまる",
+      "meaning": "강해지다"
+    },
+    {
+      "id": "N1-1verwdu",
+      "word": "強める",
+      "reading": "つよめる",
+      "meaning": "강하게 하다, 강화하다; 강조하다"
+    },
+    {
+      "id": "N1-doeyzf",
+      "word": "強気",
+      "reading": "ごうぎ",
+      "meaning": "대단함, 거창함; 고집이 셈"
+    },
+    {
+      "id": "N1-tnu7gh",
+      "word": "強硬",
+      "reading": "きょうこう",
+      "meaning": "강경함, 단호함"
+    },
+    {
+      "id": "N1-rtz35",
+      "word": "強行",
+      "reading": "きょうこう",
+      "meaning": "강행"
+    },
+    {
+      "id": "N1-z80wx5",
+      "word": "強制",
+      "reading": "きょうせい",
+      "meaning": "강제"
+    },
+    {
+      "id": "N1-a143rs",
+      "word": "強烈",
+      "reading": "きょうれつ",
+      "meaning": "강렬함, 매우 강함"
+    },
+    {
+      "id": "N1-1shlspz",
+      "word": "怯える",
+      "reading": "おびえる",
+      "meaning": "겁내다, 두려워하다"
+    },
+    {
+      "id": "N1-1bqnb3c",
+      "word": "恐らく",
+      "reading": "おそらく",
+      "meaning": "아마, 아마도"
+    },
+    {
+      "id": "N1-1vh6izy",
+      "word": "恐れ",
+      "reading": "おそれ",
+      "meaning": "두려움; 우려, 위험성"
+    },
+    {
+      "id": "N1-90rtm8",
+      "word": "教員",
+      "reading": "きょういん",
+      "meaning": "교원, 교사"
+    },
+    {
+      "id": "N1-ft20iy",
+      "word": "教科",
+      "reading": "きょうか",
+      "meaning": "교과, 과목"
+    },
+    {
+      "id": "N1-1lqiny5",
+      "word": "教訓",
+      "reading": "きょうくん",
+      "meaning": "교훈"
+    },
+    {
+      "id": "N1-iyx6e0",
+      "word": "教材",
+      "reading": "きょうざい",
+      "meaning": "교재, 교육 자료"
+    },
+    {
+      "id": "N1-tlv75u",
+      "word": "教習",
+      "reading": "きょうしゅう",
+      "meaning": "교습, 훈련"
+    },
+    {
+      "id": "N1-1cxkj0m",
+      "word": "教職",
+      "reading": "きょうしょく",
+      "meaning": "교직, 가르치는 직업"
+    },
+    {
+      "id": "N1-vyvtuz",
+      "word": "橋渡し",
+      "reading": "はしわたし",
+      "meaning": "중개, 가교 역할; 다리를 놓음"
+    },
+    {
+      "id": "N1-1b6qqpm",
+      "word": "況して",
+      "reading": "まして",
+      "meaning": "하물며, 더욱이"
+    },
+    {
+      "id": "N1-bzdao5",
+      "word": "脅かす",
+      "reading": "おどかす",
+      "meaning": "위협하다; 놀라게 하다"
+    },
+    {
+      "id": "N1-telghr",
+      "word": "脅す",
+      "reading": "おどす",
+      "meaning": "협박하다, 위협하다"
+    },
+    {
+      "id": "N1-195bk6d",
+      "word": "脅迫",
+      "reading": "きょうはく",
+      "meaning": "협박"
+    },
+    {
+      "id": "N1-1rvulih",
+      "word": "興じる",
+      "reading": "きょうじる",
+      "meaning": "즐기다, 흥겨워하다"
+    },
+    {
+      "id": "N1-1iovge2",
+      "word": "興業",
+      "reading": "こうぎょう",
+      "meaning": "산업을 일으킴, 산업 진흥"
+    },
+    {
+      "id": "N1-1na0bnc",
+      "word": "興奮",
+      "reading": "こうふん",
+      "meaning": "흥분"
+    },
+    {
+      "id": "N1-aok7kv",
+      "word": "郷愁",
+      "reading": "きょうしゅう",
+      "meaning": "향수, 고향을 그리워함"
+    },
+    {
+      "id": "N1-77nzlu",
+      "word": "郷里",
+      "reading": "きょうり",
+      "meaning": "향리, 고향"
+    },
+    {
+      "id": "N1-1r2n1zn",
+      "word": "驚き",
+      "reading": "おどろき",
+      "meaning": "놀람, 놀라움"
+    },
+    {
+      "id": "N1-bwui6j",
+      "word": "驚異",
+      "reading": "きょうい",
+      "meaning": "경이, 놀라운 일"
+    },
+    {
+      "id": "N1-pk9643",
+      "word": "凝らす",
+      "reading": "こごらす",
+      "meaning": "얼리다, 엉기게 하다"
+    },
+    {
+      "id": "N1-tj09s1",
+      "word": "凝る",
+      "reading": "こごる",
+      "meaning": "엉기다, 굳다"
+    },
+    {
+      "id": "N1-ny41vu",
+      "word": "業",
+      "reading": "ごう",
+      "meaning": "업(불교의 카르마); 업보, 운명"
+    },
+    {
+      "id": "N1-1d394xm",
+      "word": "業者",
+      "reading": "ぎょうしゃ",
+      "meaning": "업자, 사업자"
+    },
+    {
+      "id": "N1-1gbctt1",
+      "word": "業績",
+      "reading": "ぎょうせき",
+      "meaning": "업적, 실적, 성과"
+    },
+    {
+      "id": "N1-18d7v2k",
+      "word": "業務",
+      "reading": "ぎょうむ",
+      "meaning": "업무"
+    },
+    {
+      "id": "N1-2kqnlj",
+      "word": "局限",
+      "reading": "きょくげん",
+      "meaning": "국한, 범위를 한정함"
+    },
+    {
+      "id": "N1-1dn8jz4",
+      "word": "曲",
+      "reading": "きょく",
+      "meaning": "곡, 음악 작품; 곡조"
+    },
+    {
+      "id": "N1-gnbr96",
+      "word": "極めて",
+      "reading": "きわめて",
+      "meaning": "극히, 매우"
+    },
+    {
+      "id": "N1-1o89q2k",
+      "word": "極楽",
+      "reading": "ごくらく",
+      "meaning": "극락; 천국 같은 곳"
+    },
+    {
+      "id": "N1-uxyoxe",
+      "word": "極端",
+      "reading": "きょくたん",
+      "meaning": "극단"
+    },
+    {
+      "id": "N1-usuauq",
+      "word": "桐",
+      "reading": "きり",
+      "meaning": "오동나무"
+    },
+    {
+      "id": "N1-dcsfug",
+      "word": "僅",
+      "reading": "きん",
+      "meaning": "조금, 적음(한자의 뜻)"
+    },
+    {
+      "id": "N1-fgitwf",
+      "word": "勤め先",
+      "reading": "つとめさき",
+      "meaning": "직장, 근무처"
+    },
+    {
+      "id": "N1-12vl362",
+      "word": "勤勉",
+      "reading": "きんべん",
+      "meaning": "근면함, 부지런함"
+    },
+    {
+      "id": "N1-yfyfwy",
+      "word": "勤務",
+      "reading": "きんむ",
+      "meaning": "근무"
+    },
+    {
+      "id": "N1-17sluhw",
+      "word": "勤労",
+      "reading": "きんろう",
+      "meaning": "근로, 노동"
+    },
+    {
+      "id": "N1-dq2d1q",
+      "word": "禁じる",
+      "reading": "きんじる",
+      "meaning": "금하다, 금지하다; 감정을 억누르다"
+    },
+    {
+      "id": "N1-allku",
+      "word": "禁ずる",
+      "reading": "きんずる",
+      "meaning": "금하다, 금지하다; 감정을 억누르다"
+    },
+    {
+      "id": "N1-13aggzv",
+      "word": "禁物",
+      "reading": "きんもつ",
+      "meaning": "금물, 피해야 할 일"
+    },
+    {
+      "id": "N1-1wjywg0",
+      "word": "緊急",
+      "reading": "きんきゅう",
+      "meaning": "긴급, 비상"
+    },
+    {
+      "id": "N1-ve18hx",
+      "word": "近々",
+      "reading": "きんきん",
+      "meaning": "조만간, 머지않아"
+    },
+    {
+      "id": "N1-pijcrh",
+      "word": "近眼",
+      "reading": "きんがん",
+      "meaning": "근시"
+    },
+    {
+      "id": "N1-10k1427",
+      "word": "近郊",
+      "reading": "きんこう",
+      "meaning": "근교, 도시 주변"
+    },
+    {
+      "id": "N1-dvaxur",
+      "word": "近視",
+      "reading": "きんし",
+      "meaning": "근시"
+    },
+    {
+      "id": "N1-tax32c",
+      "word": "金庫",
+      "reading": "かねぐら",
+      "meaning": "금고, 재물을 보관하는 곳; 재정 후원자"
+    },
+    {
+      "id": "N1-zjvijn",
+      "word": "金槌",
+      "reading": "かなづち",
+      "meaning": "쇠망치; 수영을 전혀 못하는 사람"
+    },
+    {
+      "id": "N1-1wkqjn3",
+      "word": "吟味",
+      "reading": "ぎんみ",
+      "meaning": "음미, 자세한 검토"
+    },
+    {
+      "id": "N1-1mog86c",
+      "word": "区",
+      "reading": "く",
+      "meaning": "구(행정 구역), 구역"
+    },
+    {
+      "id": "N1-4qwlow",
+      "word": "区々",
+      "reading": "まちまち",
+      "meaning": "제각각임, 가지각색임"
+    },
+    {
+      "id": "N1-7q5qmx",
+      "word": "区画",
+      "reading": "くかく",
+      "meaning": "구획, 나누어진 구역"
+    },
+    {
+      "id": "N1-i44rw5",
+      "word": "区間",
+      "reading": "くかん",
+      "meaning": "구간; 간격"
+    },
+    {
+      "id": "N1-idyck9",
+      "word": "区切り",
+      "reading": "くぎり",
+      "meaning": "끊는 지점, 구분, 일단락"
+    },
+    {
+      "id": "N1-3gtxk5",
+      "word": "苦しめる",
+      "reading": "くるしめる",
+      "meaning": "괴롭히다, 고통을 주다"
+    },
+    {
+      "id": "N1-w9owrc",
+      "word": "駆けっこ",
+      "reading": "かけっこ",
+      "meaning": "달리기 시합"
+    },
+    {
+      "id": "N1-jkqcy8",
+      "word": "駆け足",
+      "reading": "かけあし",
+      "meaning": "달음박질, 빠른 걸음; 급하게 진행함"
+    },
+    {
+      "id": "N1-5y0bjo",
+      "word": "愚か",
+      "reading": "おろか",
+      "meaning": "어리석음, 미련함"
+    },
+    {
+      "id": "N1-1rpoubv",
+      "word": "空しい",
+      "reading": "むなしい",
+      "meaning": "공허함, 허무함; 헛됨"
+    },
+    {
+      "id": "N1-9r19nl",
+      "word": "空ろ",
+      "reading": "うつろ",
+      "meaning": "빈 공간; 텅 빈 듯한 표정·눈빛"
+    },
+    {
+      "id": "N1-1bwmlmj",
+      "word": "空間",
+      "reading": "あきま",
+      "meaning": "빈방, 빈 공간"
+    },
+    {
+      "id": "N1-11vb9pl",
+      "word": "空腹",
+      "reading": "くうふく",
+      "meaning": "공복, 배고픔"
+    },
+    {
+      "id": "N1-65osw4",
+      "word": "偶に",
+      "reading": "たまに",
+      "meaning": "가끔, 이따금"
+    },
+    {
+      "id": "N1-29k4g7",
+      "word": "君主",
+      "reading": "くんしゅ",
+      "meaning": "군주"
+    },
+    {
+      "id": "N1-1pgl0to",
+      "word": "群",
+      "reading": "ぐん",
+      "meaning": "무리, 집단, 군"
+    },
+    {
+      "id": "N1-fadb56",
+      "word": "群集",
+      "reading": "ぐんしゅう",
+      "meaning": "군집, 모인 무리"
+    },
+    {
+      "id": "N1-g513y8",
+      "word": "軍",
+      "reading": "いくさ",
+      "meaning": "전쟁, 싸움; 군대"
+    },
+    {
+      "id": "N1-1xx5rql",
+      "word": "軍艦",
+      "reading": "ぐんかん",
+      "meaning": "군함"
+    },
+    {
+      "id": "N1-5urgli",
+      "word": "軍事",
+      "reading": "ぐんじ",
+      "meaning": "군사, 군사상의 일"
+    },
+    {
+      "id": "N1-1odhhkd",
+      "word": "軍備",
+      "reading": "ぐんび",
+      "meaning": "군비, 군사 준비"
+    },
+    {
+      "id": "N1-1b32cty",
+      "word": "軍服",
+      "reading": "ぐんぷく",
+      "meaning": "군복"
+    },
+    {
+      "id": "N1-gfjb6x",
+      "word": "係り",
+      "reading": "かかり",
+      "meaning": "담당, 담당자; 관계"
+    },
+    {
+      "id": "N1-17ky4s2",
+      "word": "傾",
+      "reading": "けい",
+      "meaning": "기울다, 기울이다(한자의 뜻)"
+    },
+    {
+      "id": "N1-1puedmt",
+      "word": "刑",
+      "reading": "けい",
+      "meaning": "형, 형벌"
+    },
+    {
+      "id": "N1-1knwwpl",
+      "word": "刑罰",
+      "reading": "けいばつ",
+      "meaning": "형벌"
+    },
+    {
+      "id": "N1-be0in5",
+      "word": "契る",
+      "reading": "ちぎる",
+      "meaning": "맹세하다, 약속하다"
+    },
+    {
+      "id": "N1-12sio9x",
+      "word": "契機",
+      "reading": "けいき",
+      "meaning": "계기, 기회; 원인이 되는 일"
+    },
+    {
+      "id": "N1-pgihgx",
+      "word": "形勢",
+      "reading": "けいせい",
+      "meaning": "형세, 상황"
+    },
+    {
+      "id": "N1-1r047jf",
+      "word": "形成",
+      "reading": "けいせい",
+      "meaning": "형성, 만들어 이룸"
+    },
+    {
+      "id": "N1-p9l9ro",
+      "word": "形態",
+      "reading": "けいたい",
+      "meaning": "형태, 모양"
+    },
+    {
+      "id": "N1-gtfkmv",
+      "word": "恵み",
+      "reading": "めぐみ",
+      "meaning": "은혜, 축복"
+    },
+    {
+      "id": "N1-yb3nnr",
+      "word": "恵む",
+      "reading": "めぐむ",
+      "meaning": "은혜를 베풀다; 돈·물건을 나누어 주다"
+    },
+    {
+      "id": "N1-xgxx6v",
+      "word": "掲げる",
+      "reading": "かかげる",
+      "meaning": "내걸다, 높이 들다; 원칙·목표를 내세우다; 게재하다"
+    },
+    {
+      "id": "N1-12n3ys4",
+      "word": "掲載",
+      "reading": "けいさい",
+      "meaning": "게재"
+    },
+    {
+      "id": "N1-1ldn3gh",
+      "word": "携わる",
+      "reading": "たずさわる",
+      "meaning": "종사하다, 관여하다"
+    },
+    {
+      "id": "N1-2xpkbs",
+      "word": "携帯",
+      "reading": "けいたい",
+      "meaning": "휴대; 휴대전화"
+    },
+    {
+      "id": "N1-1vj785z",
+      "word": "敬具",
+      "reading": "けいぐ",
+      "meaning": "삼가 올림(편지 끝의 공손한 맺음말)"
+    },
+    {
+      "id": "N1-nh5q87",
+      "word": "系",
+      "reading": "けい",
+      "meaning": "계통, 계열, 체계"
+    },
+    {
+      "id": "N1-1fp20r6",
+      "word": "経緯",
+      "reading": "いきさつ",
+      "meaning": "경위, 일이 이루어진 과정"
+    },
+    {
+      "id": "N1-uqyqy5",
+      "word": "経過",
+      "reading": "けいか",
+      "meaning": "경과, 시간의 흐름; 일이 진행된 과정"
+    },
+    {
+      "id": "N1-jcemgp",
+      "word": "経費",
+      "reading": "けいひ",
+      "meaning": "경비, 비용"
+    },
+    {
+      "id": "N1-utgmih",
+      "word": "経歴",
+      "reading": "けいれき",
+      "meaning": "경력, 이력"
+    },
+    {
+      "id": "N1-1djs329",
+      "word": "継ぎ目",
+      "reading": "つぎめ",
+      "meaning": "이음매, 접합부"
+    },
+    {
+      "id": "N1-f41yjo",
+      "word": "継ぐ",
+      "reading": "つぐ",
+      "meaning": "이어받다, 계승하다; 잇다, 덧대다"
+    },
+    {
+      "id": "N1-i3fxun",
+      "word": "茎",
+      "reading": "くき",
+      "meaning": "줄기"
+    },
+    {
+      "id": "N1-kaqin5",
+      "word": "計器",
+      "reading": "けいき",
+      "meaning": "계기, 측정 기기"
+    },
+    {
+      "id": "N1-1lofiil",
+      "word": "警戒",
+      "reading": "けいかい",
+      "meaning": "경계, 조심하며 살핌"
+    },
+    {
+      "id": "N1-1o898fm",
+      "word": "警部",
+      "reading": "けいぶ",
+      "meaning": "경부(일본 경찰의 계급)"
+    },
+    {
+      "id": "N1-1u9twj9",
+      "word": "軽快",
+      "reading": "けいかい",
+      "meaning": "경쾌함, 가볍고 날렵함; 증상이 나아짐"
+    },
+    {
+      "id": "N1-50sub5",
+      "word": "軽減",
+      "reading": "けいげん",
+      "meaning": "경감, 줄임"
+    },
+    {
+      "id": "N1-110rfz9",
+      "word": "軽蔑",
+      "reading": "けいべつ",
+      "meaning": "경멸"
+    },
+    {
+      "id": "N1-1gi3khb",
+      "word": "激励",
+      "reading": "げきれい",
+      "meaning": "격려"
+    },
+    {
+      "id": "N1-13z63j9",
+      "word": "傑",
+      "reading": "けつ",
+      "meaning": "최상위, 가장 뛰어남"
+    },
+    {
+      "id": "N1-1s1ltgj",
+      "word": "欠乏",
+      "reading": "けつぼう",
+      "meaning": "결핍, 부족"
+    },
+    {
+      "id": "N1-imtybq",
+      "word": "決まり悪い",
+      "reading": "きまりわるい",
+      "meaning": "겸연쩍음, 부끄러움"
+    },
+    {
+      "id": "N1-dvjczu",
+      "word": "決まる",
+      "reading": "きまる",
+      "meaning": "정해지다, 결정되다; 잘 들어맞다"
+    },
+    {
+      "id": "N1-jwstnh",
+      "word": "決意",
+      "reading": "けつい",
+      "meaning": "결의, 결심"
+    },
+    {
+      "id": "N1-1hq7lti",
+      "word": "決議",
+      "reading": "けつぎ",
+      "meaning": "결의, 의결"
+    },
+    {
+      "id": "N1-jzeuiq",
+      "word": "決算",
+      "reading": "けっさん",
+      "meaning": "결산"
+    },
+    {
+      "id": "N1-6zi2s",
+      "word": "決勝",
+      "reading": "けっしょう",
+      "meaning": "결승"
+    },
+    {
+      "id": "N1-uebrds",
+      "word": "決断",
+      "reading": "けつだん",
+      "meaning": "결단"
+    },
+    {
+      "id": "N1-1va3djk",
+      "word": "結び",
+      "reading": "むすび",
+      "meaning": "맺음, 결말; 매듭; 연결"
+    },
+    {
+      "id": "N1-1wfqdaw",
+      "word": "結び付き",
+      "reading": "むすびつき",
+      "meaning": "결부, 연결, 관계"
+    },
+    {
+      "id": "N1-13ckxnl",
+      "word": "結核",
+      "reading": "けっかく",
+      "meaning": "결핵"
+    },
+    {
+      "id": "N1-137e1tk",
+      "word": "結合",
+      "reading": "けつごう",
+      "meaning": "결합"
+    },
+    {
+      "id": "N1-f28hiv",
+      "word": "結晶",
+      "reading": "けっしょう",
+      "meaning": "결정(結晶), 결정체; 노력의 결실"
+    },
+    {
+      "id": "N1-lh3yeg",
+      "word": "結成",
+      "reading": "けっせい",
+      "meaning": "결성, 단체를 조직함"
+    },
+    {
+      "id": "N1-13xf2fw",
+      "word": "結束",
+      "reading": "けっそく",
+      "meaning": "결속, 단결; 묶음"
+    },
+    {
+      "id": "N1-1hea0p0",
+      "word": "血管",
+      "reading": "けっかん",
+      "meaning": "혈관"
+    },
+    {
+      "id": "N1-14lymqf",
+      "word": "月謝",
+      "reading": "げっしゃ",
+      "meaning": "월사금, 월 수강료"
+    },
+    {
+      "id": "N1-shwydd",
+      "word": "月日",
+      "reading": "がっぴ",
+      "meaning": "월일, 날짜"
+    },
+    {
+      "id": "N1-18w7gqv",
+      "word": "月賦",
+      "reading": "げっぷ",
+      "meaning": "월부, 매달 내는 할부금"
+    },
+    {
+      "id": "N1-1wn5uno",
+      "word": "月並み",
+      "reading": "つきなみ",
+      "meaning": "매달; 평범함, 진부함"
+    },
+    {
+      "id": "N1-udrgx5",
+      "word": "件",
+      "reading": "くだん",
+      "meaning": "앞에서 말한, 해당하는(사람·사건 등)"
+    },
+    {
+      "id": "N1-40aw8d",
+      "word": "倹約",
+      "reading": "けんやく",
+      "meaning": "검약, 절약"
+    },
+    {
+      "id": "N1-13mu8lq",
+      "word": "健やか",
+      "reading": "すこやか",
+      "meaning": "건강함, 튼튼함"
+    },
+    {
+      "id": "N1-7x3vxq",
+      "word": "健在",
+      "reading": "けんざい",
+      "meaning": "건재, 건강하게 잘 지냄"
+    },
+    {
+      "id": "N1-kkqsqx",
+      "word": "健全",
+      "reading": "けんぜん",
+      "meaning": "건전함, 건강함"
+    },
+    {
+      "id": "N1-13k4eti",
+      "word": "兼ねて",
+      "reading": "かねて",
+      "meaning": "이전부터, 미리"
+    },
+    {
+      "id": "N1-1cijbrl",
+      "word": "兼業",
+      "reading": "けんぎょう",
+      "meaning": "겸업, 부업"
+    },
+    {
+      "id": "N1-1jeuqzx",
+      "word": "兼用",
+      "reading": "けんよう",
+      "meaning": "겸용, 함께 사용함"
+    },
+    {
+      "id": "N1-9dbn87",
+      "word": "喧しい",
+      "reading": "やかましい",
+      "meaning": "시끄러움; 까다로움, 엄격함"
+    },
+    {
+      "id": "N1-yctnaq",
+      "word": "圏",
+      "reading": "けん",
+      "meaning": "권, 영역, 범위"
+    },
+    {
+      "id": "N1-1mwt48r",
+      "word": "建前",
+      "reading": "たてまえ",
+      "meaning": "공식적인 입장, 겉으로 내세우는 원칙; 건물 골조를 올리는 의식"
+    },
+    {
+      "id": "N1-qna4cn",
+      "word": "懸賞",
+      "reading": "けんしょう",
+      "meaning": "현상, 상금을 걸고 모집함; 경품"
+    },
+    {
+      "id": "N1-vjhmis",
+      "word": "検事",
+      "reading": "けんじ",
+      "meaning": "검사(검찰관)"
+    },
+    {
+      "id": "N1-c2q3ug",
+      "word": "権",
+      "reading": "けん",
+      "meaning": "권리, 권한"
+    },
+    {
+      "id": "N1-emi5an",
+      "word": "権威",
+      "reading": "けんい",
+      "meaning": "권위; 권위자"
+    },
+    {
+      "id": "N1-1po1bpr",
+      "word": "権限",
+      "reading": "けんげん",
+      "meaning": "권한"
+    },
+    {
+      "id": "N1-1v3e7it",
+      "word": "権力",
+      "reading": "けんりょく",
+      "meaning": "권력"
+    },
+    {
+      "id": "N1-1da2kcf",
+      "word": "見すぼらしい",
+      "reading": "みすぼらしい",
+      "meaning": "초라함, 볼품없음"
+    },
+    {
+      "id": "N1-1ovk1k",
+      "word": "見せ物",
+      "reading": "みせもの",
+      "meaning": "구경거리, 흥행물"
+    },
+    {
+      "id": "N1-ihz16f",
+      "word": "見っともない",
+      "reading": "みっともない",
+      "meaning": "꼴사나움, 부끄러움"
+    },
+    {
+      "id": "N1-k1jjas",
+      "word": "見苦しい",
+      "reading": "みぐるしい",
+      "meaning": "보기 흉함, 추함"
+    },
+    {
+      "id": "N1-1tg045x",
+      "word": "見合い",
+      "reading": "みあい",
+      "meaning": "맞선"
+    },
+    {
+      "id": "N1-1oajwnt",
+      "word": "見合わせる",
+      "reading": "みあわせる",
+      "meaning": "서로 쳐다보다; 보류하다, 미루다"
+    },
+    {
+      "id": "N1-obxjto",
+      "word": "見込み",
+      "reading": "みこみ",
+      "meaning": "가망, 전망, 예상"
+    },
+    {
+      "id": "N1-kjef70",
+      "word": "見晴らし",
+      "reading": "みはらし",
+      "meaning": "전망, 탁 트인 경치"
+    },
+    {
+      "id": "N1-1wlwzgk",
+      "word": "見積り",
+      "reading": "みつもり",
+      "meaning": "견적, 어림잡은 계산"
+    },
+    {
+      "id": "N1-t8qzdl",
+      "word": "見地",
+      "reading": "けんち",
+      "meaning": "견지, 관점"
+    },
+    {
+      "id": "N1-1quxta7",
+      "word": "見通し",
+      "reading": "みとおし",
+      "meaning": "전망, 내다봄; 앞이 트여 보임"
+    },
+    {
+      "id": "N1-akrt1m",
+      "word": "見渡す",
+      "reading": "みわたす",
+      "meaning": "멀리 바라보다, 둘러보다"
+    },
+    {
+      "id": "N1-9ahfyv",
+      "word": "見舞",
+      "reading": "みまい",
+      "meaning": "문병, 위문"
+    },
+    {
+      "id": "N1-l5rbu",
+      "word": "見方",
+      "reading": "みかた",
+      "meaning": "보는 방식, 관점"
+    },
+    {
+      "id": "N1-6l5vjg",
+      "word": "見落とす",
+      "reading": "みおとす",
+      "meaning": "못 보고 지나치다, 간과하다"
+    },
+    {
+      "id": "N1-1f25ghr",
+      "word": "謙る",
+      "reading": "へりくだる",
+      "meaning": "겸손하게 자신을 낮추다"
+    },
+    {
+      "id": "N1-1iakxp2",
+      "word": "賢明",
+      "reading": "けんめい",
+      "meaning": "현명함, 분별이 있음"
+    },
+    {
+      "id": "N1-1enwqrg",
+      "word": "軒並み",
+      "reading": "のきなみ",
+      "meaning": "늘어선 집들; 모조리, 일제히"
+    },
+    {
+      "id": "N1-da84bp",
+      "word": "遣い",
+      "reading": "つかい",
+      "meaning": "심부름; 사자, 심부름꾼; 사용"
+    },
+    {
+      "id": "N1-v9tj2a",
+      "word": "遣り通す",
+      "reading": "やりとおす",
+      "meaning": "끝까지 해내다, 완수하다"
+    },
+    {
+      "id": "N1-1ntn3s8",
+      "word": "遣る",
+      "reading": "やる",
+      "meaning": "하다; 보내다; 주다(동등하거나 아랫사람에게)"
+    },
+    {
+      "id": "N1-13cgkl3",
+      "word": "元首",
+      "reading": "げんしゅ",
+      "meaning": "원수, 국가의 최고 지도자"
+    },
+    {
+      "id": "N1-1dj8g48",
+      "word": "元素",
+      "reading": "げんそ",
+      "meaning": "원소(화학)"
+    },
+    {
+      "id": "N1-k0ppjf",
+      "word": "元年",
+      "reading": "がんねん",
+      "meaning": "원년, 첫해"
+    },
+    {
+      "id": "N1-7iroen",
+      "word": "元来",
+      "reading": "がんらい",
+      "meaning": "원래, 본래"
+    },
+    {
+      "id": "N1-2tu0nh",
+      "word": "原",
+      "reading": "げん",
+      "meaning": "원래의, 근원의"
+    },
+    {
+      "id": "N1-i8c1d2",
+      "word": "原っぱ",
+      "reading": "はらっぱ",
+      "meaning": "들판, 빈터"
+    },
+    {
+      "id": "N1-1fd6o2a",
+      "word": "原形",
+      "reading": "げんけい",
+      "meaning": "원형, 본래의 형태"
+    },
+    {
+      "id": "N1-az3jgd",
+      "word": "原作",
+      "reading": "げんさく",
+      "meaning": "원작"
+    },
+    {
+      "id": "N1-doy9i2",
+      "word": "原子",
+      "reading": "げんし",
+      "meaning": "원자"
+    },
+    {
+      "id": "N1-1qk7m7",
+      "word": "原書",
+      "reading": "げんしょ",
+      "meaning": "원서, 원래 언어로 쓰인 책; 원본 문서"
+    },
+    {
+      "id": "N1-1vqx552",
+      "word": "原則",
+      "reading": "げんそく",
+      "meaning": "원칙; 원칙적으로"
+    },
+    {
+      "id": "N1-1b4s2aa",
+      "word": "原典",
+      "reading": "げんてん",
+      "meaning": "원전, 원래의 문헌"
+    },
+    {
+      "id": "N1-x94nij",
+      "word": "原点",
+      "reading": "げんてん",
+      "meaning": "원점, 출발점"
+    },
+    {
+      "id": "N1-qrrkiy",
+      "word": "原爆",
+      "reading": "げんばく",
+      "meaning": "원자폭탄"
+    },
+    {
+      "id": "N1-vrox6l",
+      "word": "原文",
+      "reading": "げんぶん",
+      "meaning": "원문"
+    },
+    {
+      "id": "N1-1iwoixm",
+      "word": "原油",
+      "reading": "げんゆ",
+      "meaning": "원유"
+    },
+    {
+      "id": "N1-1ie8jgk",
+      "word": "減少",
+      "reading": "げんしょう",
+      "meaning": "감소"
+    },
+    {
+      "id": "N1-x5h00i",
+      "word": "源",
+      "reading": "みなもと",
+      "meaning": "근원, 원천; 강의 발원지"
+    },
+    {
+      "id": "N1-1qta54v",
+      "word": "玄人",
+      "reading": "くろうと",
+      "meaning": "전문가, 숙련자"
+    },
+    {
+      "id": "N1-r5jifs",
+      "word": "現われ",
+      "reading": "あらわれ",
+      "meaning": "표현, 드러남, 구현"
+    },
+    {
+      "id": "N1-52mklf",
+      "word": "現行",
+      "reading": "げんこう",
+      "meaning": "현행, 현재 시행 중임"
+    },
+    {
+      "id": "N1-1oq0b6r",
+      "word": "現場",
+      "reading": "げんじょう",
+      "meaning": "현장"
+    },
+    {
+      "id": "N1-4hllp5",
+      "word": "現像",
+      "reading": "げんぞう",
+      "meaning": "현상(사진 필름 처리)"
+    },
+    {
+      "id": "N1-8qmfq9",
+      "word": "現地",
+      "reading": "げんち",
+      "meaning": "현지"
+    },
+    {
+      "id": "N1-2stohi",
+      "word": "言い訳",
+      "reading": "いいわけ",
+      "meaning": "변명, 해명"
+    },
+    {
+      "id": "N1-1syca2y",
+      "word": "言論",
+      "reading": "げんろん",
+      "meaning": "언론, 의견의 표현"
+    },
+    {
+      "id": "N1-ypshz0",
+      "word": "限定",
+      "reading": "げんてい",
+      "meaning": "한정, 제한"
+    },
+    {
+      "id": "N1-4p4puz",
+      "word": "個",
+      "reading": "か",
+      "meaning": "개수를 나타내는 단위(한자어와 함께 씀)"
+    },
+    {
+      "id": "N1-1k9vufd",
+      "word": "個々",
+      "reading": "ここ",
+      "meaning": "개개, 각각"
+    },
+    {
+      "id": "N1-1p9zms9",
+      "word": "個性",
+      "reading": "こせい",
+      "meaning": "개성"
+    },
+    {
+      "id": "N1-1drqf65",
+      "word": "個別",
+      "reading": "こべつ",
+      "meaning": "개별, 따로따로"
+    },
+    {
+      "id": "N1-18o29tj",
+      "word": "古",
+      "reading": "いにしえ",
+      "meaning": "옛날, 고대"
+    },
+    {
+      "id": "N1-1f6blm9",
+      "word": "古代",
+      "reading": "こだい",
+      "meaning": "고대"
+    },
+    {
+      "id": "N1-16n3qn4",
+      "word": "固体",
+      "reading": "こたい",
+      "meaning": "고체"
+    },
+    {
+      "id": "N1-1vujdnu",
+      "word": "固定",
+      "reading": "こてい",
+      "meaning": "고정"
+    },
+    {
+      "id": "N1-146e26s",
+      "word": "孤児",
+      "reading": "こじ",
+      "meaning": "고아"
+    },
+    {
+      "id": "N1-1b1h0rg",
+      "word": "孤独",
+      "reading": "こどく",
+      "meaning": "고독, 외로움"
+    },
+    {
+      "id": "N1-n1dujn",
+      "word": "孤立",
+      "reading": "こりつ",
+      "meaning": "고립"
+    },
+    {
+      "id": "N1-sen9rq",
+      "word": "戸",
+      "reading": "こ",
+      "meaning": "호(집·가구를 세는 단위)"
+    },
+    {
+      "id": "N1-hqhnwj",
+      "word": "戸籍",
+      "reading": "こせき",
+      "meaning": "호적, 가족 등록부"
+    },
+    {
+      "id": "N1-131h85r",
+      "word": "戸締り",
+      "reading": "とじまり",
+      "meaning": "문단속"
+    },
+    {
+      "id": "N1-1vspjtx",
+      "word": "故",
+      "reading": "こ",
+      "meaning": "고(故), 돌아가신"
+    },
+    {
+      "id": "N1-1gougy",
+      "word": "故人",
+      "reading": "こじん",
+      "meaning": "고인; 오랜 친구"
+    },
+    {
+      "id": "N1-3ebrbu",
+      "word": "誇張",
+      "reading": "こちょう",
+      "meaning": "과장"
+    },
+    {
+      "id": "N1-l3rgsw",
+      "word": "跨がる",
+      "reading": "またがる",
+      "meaning": "걸터앉다, 올라타다; 여러 범위에 걸치다"
+    },
+    {
+      "id": "N1-1dqdblc",
+      "word": "跨ぐ",
+      "reading": "またぐ",
+      "meaning": "넘어가다, 가로질러 건너다; 걸치다"
+    },
+    {
+      "id": "N1-1y1p56d",
+      "word": "雇用",
+      "reading": "こよう",
+      "meaning": "고용"
+    },
+    {
+      "id": "N1-1pkue29",
+      "word": "顧みる",
+      "reading": "かえりみる",
+      "meaning": "돌아보다, 회고하다; 마음에 두고 살피다"
+    },
+    {
+      "id": "N1-5eusjg",
+      "word": "五月蝿い",
+      "reading": "うるさい",
+      "meaning": "시끄러움; 귀찮음; 까다로움"
+    },
+    {
+      "id": "N1-x7a722",
+      "word": "呉れ呉れも",
+      "reading": "くれぐれも",
+      "meaning": "부디, 아무쪼록; 거듭, 몇 번이고"
+    },
+    {
+      "id": "N1-5ety4m",
+      "word": "後回し",
+      "reading": "あとまわし",
+      "meaning": "뒤로 미룸, 나중에 함"
+    },
+    {
+      "id": "N1-1rbfigt",
+      "word": "後悔",
+      "reading": "こうかい",
+      "meaning": "후회"
+    },
+    {
+      "id": "N1-2i7nqt",
+      "word": "後退",
+      "reading": "こうたい",
+      "meaning": "후퇴; 쇠퇴"
+    },
+    {
+      "id": "N1-oj038s",
+      "word": "御",
+      "reading": "ご",
+      "meaning": "존경·공손함을 나타내는 접두사"
+    },
+    {
+      "id": "N1-bhmvjd",
+      "word": "御手洗い",
+      "reading": "おてあらい",
+      "meaning": "화장실"
+    },
+    {
+      "id": "N1-1pfezfg",
+      "word": "御負け",
+      "reading": "おまけ",
+      "meaning": "덤, 사은품; 할인"
+    },
+    {
+      "id": "N1-3cqgwj",
+      "word": "御免ください",
+      "reading": "ごめんください",
+      "meaning": "실례합니다, 들어가도 될까요"
+    },
+    {
+      "id": "N1-1p6b7fh",
+      "word": "御免なさい",
+      "reading": "ごめんなさい",
+      "meaning": "미안합니다, 죄송합니다"
+    },
+    {
+      "id": "N1-o3p727",
+      "word": "御覧なさい",
+      "reading": "ごらんなさい",
+      "meaning": "보세요; 한번 해 보세요"
+    },
+    {
+      "id": "N1-1l7ddlt",
+      "word": "碁盤",
+      "reading": "ごばん",
+      "meaning": "바둑판"
+    },
+    {
+      "id": "N1-tdz4rd",
+      "word": "語句",
+      "reading": "ごく",
+      "meaning": "어구, 단어와 구절"
+    },
+    {
+      "id": "N1-mxhs7c",
+      "word": "語源",
+      "reading": "ごげん",
+      "meaning": "어원"
+    },
+    {
+      "id": "N1-3ok3mc",
+      "word": "語彙",
+      "reading": "ごい",
+      "meaning": "어휘"
+    },
+    {
+      "id": "N1-eubqyt",
+      "word": "誤る",
+      "reading": "あやまる",
+      "meaning": "잘못하다, 틀리다; 잘못된 방향으로 이끌다"
+    },
+    {
+      "id": "N1-cswjce",
+      "word": "誤差",
+      "reading": "ごさ",
+      "meaning": "오차"
+    },
+    {
+      "id": "N1-12owymb",
+      "word": "護衛",
+      "reading": "ごえい",
+      "meaning": "호위, 경호"
+    },
+    {
+      "id": "N1-c7ih2x",
+      "word": "交える",
+      "reading": "まじえる",
+      "meaning": "섞다, 포함하다; 서로 주고받다; 칼을 맞대다"
+    },
+    {
+      "id": "N1-1mye5j2",
+      "word": "交わす",
+      "reading": "かわす",
+      "meaning": "주고받다, 서로 교환하다"
+    },
+    {
+      "id": "N1-9pj6ne",
+      "word": "交易",
+      "reading": "こうえき",
+      "meaning": "교역"
+    },
+    {
+      "id": "N1-1bz0n80",
+      "word": "交互",
+      "reading": "こうご",
+      "meaning": "교대, 번갈아 함"
+    },
+    {
+      "id": "N1-15balt9",
+      "word": "交渉",
+      "reading": "こうしょう",
+      "meaning": "교섭, 협상"
+    },
+    {
+      "id": "N1-6rg4a9",
+      "word": "交付",
+      "reading": "こうふ",
+      "meaning": "교부, 발급"
+    },
+    {
+      "id": "N1-f85gf9",
+      "word": "光沢",
+      "reading": "こうたく",
+      "meaning": "광택, 윤기"
+    },
+    {
+      "id": "N1-zfi5nu",
+      "word": "光熱費",
+      "reading": "こうねつひ",
+      "meaning": "광열비, 전기·난방 등의 비용"
+    },
+    {
+      "id": "N1-xv6zqe",
+      "word": "公",
+      "reading": "おおやけ",
+      "meaning": "공적임; 공공, 공개"
+    },
+    {
+      "id": "N1-1tal7w7",
+      "word": "公演",
+      "reading": "こうえん",
+      "meaning": "공연"
+    },
+    {
+      "id": "N1-1ea02ty",
+      "word": "公開",
+      "reading": "こうかい",
+      "meaning": "공개"
+    },
+    {
+      "id": "N1-1xlg1hx",
+      "word": "公然",
+      "reading": "こうぜん",
+      "meaning": "공연함, 드러내 놓음"
+    },
+    {
+      "id": "N1-11lpc5s",
+      "word": "公団",
+      "reading": "こうだん",
+      "meaning": "공단, 공공 법인; 공공 주택"
+    },
+    {
+      "id": "N1-mdnavp",
+      "word": "公認",
+      "reading": "こうにん",
+      "meaning": "공인, 공식 승인"
+    },
+    {
+      "id": "N1-1v3oqdv",
+      "word": "公募",
+      "reading": "こうぼ",
+      "meaning": "공모, 공개 모집"
+    },
+    {
+      "id": "N1-i8a5ac",
+      "word": "公用",
+      "reading": "こうよう",
+      "meaning": "공용, 공무에 씀; 공적인 업무"
+    },
+    {
+      "id": "N1-11scqyf",
+      "word": "公立",
+      "reading": "こうりつ",
+      "meaning": "공립"
+    },
+    {
+      "id": "N1-23bv9y",
+      "word": "効き目",
+      "reading": "ききめ",
+      "meaning": "효과, 효험"
+    },
+    {
+      "id": "N1-1cujels",
+      "word": "効率",
+      "reading": "こうりつ",
+      "meaning": "효율"
+    },
+    {
+      "id": "N1-3zs4c2",
+      "word": "口ずさむ",
+      "reading": "くちずさむ",
+      "meaning": "흥얼거리다"
+    },
+    {
+      "id": "N1-d4xbc8",
+      "word": "口述",
+      "reading": "こうじゅつ",
+      "meaning": "구술, 말로 진술함"
+    },
+    {
+      "id": "N1-knb1jc",
+      "word": "口頭",
+      "reading": "こうとう",
+      "meaning": "구두, 말로 함"
+    },
+    {
+      "id": "N1-1wsutce",
+      "word": "向き",
+      "reading": "むき",
+      "meaning": "방향; ~용, ~에 적합함"
+    },
+    {
+      "id": "N1-nzkddk",
+      "word": "向上",
+      "reading": "こうじょう",
+      "meaning": "향상, 나아짐"
+    },
+    {
+      "id": "N1-17tutpo",
+      "word": "好い",
+      "reading": "よい",
+      "meaning": "좋음"
+    },
+    {
+      "id": "N1-tz76cr",
+      "word": "好ましい",
+      "reading": "このましい",
+      "meaning": "바람직함, 마음에 듦"
+    },
+    {
+      "id": "N1-10qq4nu",
+      "word": "好意",
+      "reading": "こうい",
+      "meaning": "호의, 친절한 마음; 호감"
+    },
+    {
+      "id": "N1-gunlby",
+      "word": "好況",
+      "reading": "こうきょう",
+      "meaning": "호황, 좋은 경기"
+    },
+    {
+      "id": "N1-17d0grw",
+      "word": "好調",
+      "reading": "こうちょう",
+      "meaning": "호조, 상태가 좋음"
+    },
+    {
+      "id": "N1-1kcc9cf",
+      "word": "好評",
+      "reading": "こうひょう",
+      "meaning": "호평"
+    },
+    {
+      "id": "N1-5g52oq",
+      "word": "工学",
+      "reading": "こうがく",
+      "meaning": "공학"
+    },
+    {
+      "id": "N1-1mno5q5",
+      "word": "工作",
+      "reading": "こうさく",
+      "meaning": "공작, 만들기; 술책"
+    },
+    {
+      "id": "N1-li5zqc",
+      "word": "巧み",
+      "reading": "たくみ",
+      "meaning": "교묘함, 능숙함; 솜씨"
+    },
+    {
+      "id": "N1-gqdbtx",
+      "word": "広まる",
+      "reading": "ひろまる",
+      "meaning": "널리 퍼지다"
+    },
+    {
+      "id": "N1-1ljqqdy",
+      "word": "慌ただしい",
+      "reading": "あわただしい",
+      "meaning": "분주함, 정신없이 바쁨"
+    },
+    {
+      "id": "N1-lu3g0c",
+      "word": "慌てる",
+      "reading": "あわてる",
+      "meaning": "당황하다; 서두르다"
+    },
+    {
+      "id": "N1-la6mwb",
+      "word": "抗議",
+      "reading": "こうぎ",
+      "meaning": "항의"
+    },
+    {
+      "id": "N1-sgbp2p",
+      "word": "抗争",
+      "reading": "こうそう",
+      "meaning": "항쟁, 대립, 다툼"
+    },
+    {
+      "id": "N1-1l4mzmp",
+      "word": "拘束",
+      "reading": "こうそく",
+      "meaning": "구속, 얽매임"
+    },
+    {
+      "id": "N1-hh6mdr",
+      "word": "控える",
+      "reading": "ひかえる",
+      "meaning": "삼가다, 자제하다; 메모하다; 대기하다"
+    },
+    {
+      "id": "N1-gjf91w",
+      "word": "控室",
+      "reading": "ひかえしつ",
+      "meaning": "대기실"
+    },
+    {
+      "id": "N1-hkonpe",
+      "word": "控除",
+      "reading": "こうじょ",
+      "meaning": "공제, 빼냄"
+    },
+    {
+      "id": "N1-yyo9u7",
+      "word": "攻め",
+      "reading": "せめ",
+      "meaning": "공격"
+    },
+    {
+      "id": "N1-yo6w99",
+      "word": "校",
+      "reading": "こう",
+      "meaning": "학교; 교정쇄, 교정"
+    },
+    {
+      "id": "N1-zh7j41",
+      "word": "構え",
+      "reading": "かまえ",
+      "meaning": "자세, 태세; 구조, 외관"
+    },
+    {
+      "id": "N1-z97mih",
+      "word": "構える",
+      "reading": "かまえる",
+      "meaning": "차리다, 세우다; 자세를 취하다; 준비하고 기다리다"
+    },
+    {
+      "id": "N1-4xyyf3",
+      "word": "構想",
+      "reading": "こうそう",
+      "meaning": "구상, 계획"
+    },
+    {
+      "id": "N1-fp4bm",
+      "word": "洪水",
+      "reading": "こうずい",
+      "meaning": "홍수"
+    },
+    {
+      "id": "N1-1f3x0g1",
+      "word": "溝",
+      "reading": "こう",
+      "meaning": "구(溝, 10^32의 수 단위)"
+    },
+    {
+      "id": "N1-1ra28ic",
+      "word": "甲",
+      "reading": "きのえ",
+      "meaning": "갑(甲, 십간의 첫째)"
+    },
+    {
+      "id": "N1-1bf8i82",
+      "word": "皇居",
+      "reading": "こうきょ",
+      "meaning": "황궁(일본 천황의 거처)"
+    },
+    {
+      "id": "N1-1aaad71",
+      "word": "耕作",
+      "reading": "こうさく",
+      "meaning": "경작"
+    },
+    {
+      "id": "N1-30xm6v",
+      "word": "考古学",
+      "reading": "こうこがく",
+      "meaning": "고고학"
+    },
+    {
+      "id": "N1-fgt158",
+      "word": "航海",
+      "reading": "こうかい",
+      "meaning": "항해"
+    },
+    {
+      "id": "N1-12zu3xw",
+      "word": "荒っぽい",
+      "reading": "あらっぽい",
+      "meaning": "거침, 난폭함; 조잡함"
+    },
+    {
+      "id": "N1-skvr44",
+      "word": "荒廃",
+      "reading": "こうはい",
+      "meaning": "황폐, 폐허가 됨"
+    },
+    {
+      "id": "N1-1s7np30",
+      "word": "行",
+      "reading": "ぎょう",
+      "meaning": "행, 줄(글의 한 줄); 수행"
+    },
+    {
+      "id": "N1-1y2or3q",
+      "word": "行い",
+      "reading": "おこない",
+      "meaning": "행동, 행실; 수행"
+    },
+    {
+      "id": "N1-xk5oup",
+      "word": "行き違い",
+      "reading": "いきちがい",
+      "meaning": "엇갈림, 서로 못 만남; 오해"
+    },
+    {
+      "id": "N1-ixut0b",
+      "word": "行き成り",
+      "reading": "いきなり",
+      "meaning": "갑자기, 느닷없이"
+    },
+    {
+      "id": "N1-1dzp568",
+      "word": "行為",
+      "reading": "こうい",
+      "meaning": "행위, 행동"
+    },
+    {
+      "id": "N1-sjzpxm",
+      "word": "行員",
+      "reading": "こういん",
+      "meaning": "은행원"
+    },
+    {
+      "id": "N1-13cg4k6",
+      "word": "行進",
+      "reading": "こうしん",
+      "meaning": "행진"
+    },
+    {
+      "id": "N1-nkxaf8",
+      "word": "行政",
+      "reading": "ぎょうせい",
+      "meaning": "행정"
+    },
+    {
+      "id": "N1-1pkzk6h",
+      "word": "講習",
+      "reading": "こうしゅう",
+      "meaning": "강습, 단기 교육"
+    },
+    {
+      "id": "N1-112cvr6",
+      "word": "講読",
+      "reading": "こうどく",
+      "meaning": "강독, 글을 읽고 풀이함"
+    },
+    {
+      "id": "N1-txhapb",
+      "word": "購読",
+      "reading": "こうどく",
+      "meaning": "구독, 사서 읽음"
+    },
+    {
+      "id": "N1-14gl6c7",
+      "word": "購入",
+      "reading": "こうにゅう",
+      "meaning": "구입, 구매"
+    },
+    {
+      "id": "N1-twusoh",
+      "word": "購買",
+      "reading": "こうばい",
+      "meaning": "구매; 학교 매점"
+    },
+    {
+      "id": "N1-1eu23fb",
+      "word": "鉱業",
+      "reading": "こうぎょう",
+      "meaning": "광업"
+    },
+    {
+      "id": "N1-1vg9lk3",
+      "word": "鉱山",
+      "reading": "こうざん",
+      "meaning": "광산"
+    },
+    {
+      "id": "N1-1plsfdc",
+      "word": "降水",
+      "reading": "こうすい",
+      "meaning": "강수, 비·눈이 내림"
+    },
+    {
+      "id": "N1-1m623fq",
+      "word": "降伏",
+      "reading": "こうふく",
+      "meaning": "항복"
+    },
+    {
+      "id": "N1-176ix4y",
+      "word": "香辛料",
+      "reading": "こうしんりょう",
+      "meaning": "향신료"
+    },
+    {
+      "id": "N1-ibloq6",
+      "word": "高原",
+      "reading": "こうげん",
+      "meaning": "고원"
+    },
+    {
+      "id": "N1-1gas480",
+      "word": "高尚",
+      "reading": "こうしょう",
+      "meaning": "고상함, 품격이 높음"
+    },
+    {
+      "id": "N1-1p2p9fs",
+      "word": "号",
+      "reading": "ごう",
+      "meaning": "호(번호·호수); 아호, 필명"
+    },
+    {
+      "id": "N1-5bqz55",
+      "word": "合わせ",
+      "reading": "あわせ",
+      "meaning": "맞춤, 맞대거나 합침"
+    },
+    {
+      "id": "N1-ylkfui",
+      "word": "合意",
+      "reading": "ごうい",
+      "meaning": "합의"
+    },
+    {
+      "id": "N1-1dwv9co",
+      "word": "合間",
+      "reading": "あいま",
+      "meaning": "틈, 짬, 사이의 시간"
+    },
+    {
+      "id": "N1-mfabst",
+      "word": "合議",
+      "reading": "ごうぎ",
+      "meaning": "합의(合議), 함께 의논함"
+    },
+    {
+      "id": "N1-1nii1qb",
+      "word": "濠",
+      "reading": "ごう",
+      "meaning": "해자, 성 둘레의 도랑; 호주(약칭)"
+    },
+    {
+      "id": "N1-187vt3d",
+      "word": "告げる",
+      "reading": "つげる",
+      "meaning": "알리다, 고하다"
+    },
+    {
+      "id": "N1-leavac",
+      "word": "告白",
+      "reading": "こくはく",
+      "meaning": "고백"
+    },
+    {
+      "id": "N1-9rnw4y",
+      "word": "国境",
+      "reading": "くにざかい",
+      "meaning": "국경"
+    },
+    {
+      "id": "N1-npmk17",
+      "word": "国交",
+      "reading": "こっこう",
+      "meaning": "국교, 외교 관계"
+    },
+    {
+      "id": "N1-1maz7p1",
+      "word": "国産",
+      "reading": "こくさん",
+      "meaning": "국산"
+    },
+    {
+      "id": "N1-102khgq",
+      "word": "国定",
+      "reading": "こくてい",
+      "meaning": "국정, 국가가 정하거나 관리함"
+    },
+    {
+      "id": "N1-1lkk1dw",
+      "word": "国土",
+      "reading": "こくど",
+      "meaning": "국토"
+    },
+    {
+      "id": "N1-juykzq",
+      "word": "国防",
+      "reading": "こくぼう",
+      "meaning": "국방"
+    },
+    {
+      "id": "N1-vwuz8n",
+      "word": "国有",
+      "reading": "こくゆう",
+      "meaning": "국유, 국가 소유"
+    },
+    {
+      "id": "N1-9e86d0",
+      "word": "国連",
+      "reading": "こくれん",
+      "meaning": "국제연합, 유엔"
+    },
+    {
+      "id": "N1-18570uh",
+      "word": "酷い",
+      "reading": "ひどい",
+      "meaning": "심함, 지독함; 잔인함, 끔찍함"
+    },
+    {
+      "id": "N1-1obpow6",
+      "word": "黒字",
+      "reading": "くろじ",
+      "meaning": "흑자; 검은 글자"
+    },
+    {
+      "id": "N1-1rc2x94",
+      "word": "忽ち",
+      "reading": "たちまち",
+      "meaning": "곧, 순식간에, 갑자기"
+    },
+    {
+      "id": "N1-12mk11i",
+      "word": "骨",
+      "reading": "こつ",
+      "meaning": "요령, 비결; 뼈, 유골"
+    },
+    {
+      "id": "N1-1657hk6",
+      "word": "骨董品",
+      "reading": "こっとうひん",
+      "meaning": "골동품"
+    },
+    {
+      "id": "N1-10pp8k2",
+      "word": "込める",
+      "reading": "こめる",
+      "meaning": "담다, 넣다; 마음·힘을 쏟다"
+    },
+    {
+      "id": "N1-1rp15ew",
+      "word": "此の",
+      "reading": "この",
+      "meaning": "이(이것을 가리킴)"
+    },
+    {
+      "id": "N1-1br7gxg",
+      "word": "此れ",
+      "reading": "これ",
+      "meaning": "이것"
+    },
+    {
+      "id": "N1-9qyb1u",
+      "word": "此れ等",
+      "reading": "これら",
+      "meaning": "이것들, 이들"
+    },
+    {
+      "id": "N1-owcvfj",
+      "word": "頃",
+      "reading": "けい",
+      "meaning": "경(頃, 중국의 옛 토지 면적 단위)"
+    },
+    {
+      "id": "N1-19w53t9",
+      "word": "今更",
+      "reading": "いまさら",
+      "meaning": "이제 와서, 새삼스럽게"
+    },
+    {
+      "id": "N1-2jmzna",
+      "word": "今日は",
+      "reading": "こんにちは",
+      "meaning": "안녕하세요(낮에 하는 인사)"
+    },
+    {
+      "id": "N1-mbdrj5",
+      "word": "今晩は",
+      "reading": "こんばんは",
+      "meaning": "안녕하세요(저녁에 하는 인사)"
+    },
+    {
+      "id": "N1-16xjahc",
+      "word": "昆虫",
+      "reading": "こんちゅう",
+      "meaning": "곤충"
+    },
+    {
+      "id": "N1-131ze5c",
+      "word": "根回し",
+      "reading": "ねまわし",
+      "meaning": "사전 조율, 일을 위한 사전 준비; 나무 이식 전 뿌리 손질"
+    },
+    {
+      "id": "N1-90wuug",
+      "word": "根気",
+      "reading": "こんき",
+      "meaning": "끈기, 인내심"
+    },
+    {
+      "id": "N1-1xvggmx",
+      "word": "根底",
+      "reading": "こんてい",
+      "meaning": "근저, 밑바탕"
+    },
+    {
+      "id": "N1-1mfnynm",
+      "word": "根本",
+      "reading": "こんぽん",
+      "meaning": "근본, 근원"
+    },
+    {
+      "id": "N1-1rdgai9",
+      "word": "混む",
+      "reading": "こむ",
+      "meaning": "붐비다, 혼잡하다"
+    },
+    {
+      "id": "N1-1btl4p9",
+      "word": "混血",
+      "reading": "こんけつ",
+      "meaning": "혼혈"
+    },
+    {
+      "id": "N1-ya25tv",
+      "word": "混同",
+      "reading": "こんどう",
+      "meaning": "혼동, 뒤섞음"
+    },
+    {
+      "id": "N1-1uwv9pt",
+      "word": "魂",
+      "reading": "こん",
+      "meaning": "혼, 영혼"
+    },
+    {
+      "id": "N1-xkkhq6",
+      "word": "些とも",
+      "reading": "ちっとも",
+      "meaning": "전혀, 조금도(부정 표현과 함께)"
+    },
+    {
+      "id": "N1-1euqshc",
+      "word": "些事",
+      "reading": "さじ",
+      "meaning": "사소한 일"
+    },
+    {
+      "id": "N1-ul1phw",
+      "word": "佐",
+      "reading": "さ",
+      "meaning": "돕다, 보좌하다(한자의 뜻)"
+    },
+    {
+      "id": "N1-1mvxbth",
+      "word": "左程",
+      "reading": "さほど",
+      "meaning": "그다지, 별로(부정 표현과 함께)"
+    },
+    {
+      "id": "N1-swopoa",
+      "word": "左様なら",
+      "reading": "さようなら",
+      "meaning": "안녕히 가세요, 안녕히 계세요"
+    },
+    {
+      "id": "N1-7s5al1",
+      "word": "左利き",
+      "reading": "ひだりきき",
+      "meaning": "왼손잡이; 술을 좋아하는 사람"
+    },
+    {
+      "id": "N1-2e11bp",
+      "word": "差し引く",
+      "reading": "さしひく",
+      "meaning": "빼다, 공제하다; 감안하다"
+    },
+    {
+      "id": "N1-jkdtdy",
+      "word": "差し掛かる",
+      "reading": "さしかかる",
+      "meaning": "다가가다, 접어들다; 위에 걸치다"
+    },
+    {
+      "id": "N1-bbu48k",
+      "word": "差異",
+      "reading": "さい",
+      "meaning": "차이, 격차"
+    },
+    {
+      "id": "N1-egorqi",
+      "word": "差額",
+      "reading": "さがく",
+      "meaning": "차액"
+    },
+    {
+      "id": "N1-1lb5c9a",
+      "word": "詐欺",
+      "reading": "さぎ",
+      "meaning": "사기"
+    },
+    {
+      "id": "N1-1g308fr",
+      "word": "座談会",
+      "reading": "ざだんかい",
+      "meaning": "좌담회"
+    },
+    {
+      "id": "N1-d135ci",
+      "word": "座標",
+      "reading": "ざひょう",
+      "meaning": "좌표"
+    },
+    {
+      "id": "N1-6trsm1",
+      "word": "催す",
+      "reading": "もよおす",
+      "meaning": "개최하다, 열다; 감정·증상이 생기다"
+    },
+    {
+      "id": "N1-b8h0h9",
+      "word": "再",
+      "reading": "さい",
+      "meaning": "재~, 다시"
+    },
+    {
+      "id": "N1-1qmi1y3",
+      "word": "再建",
+      "reading": "さいけん",
+      "meaning": "재건"
+    },
+    {
+      "id": "N1-stmjtk",
+      "word": "再現",
+      "reading": "さいげん",
+      "meaning": "재현"
+    },
+    {
+      "id": "N1-r5thb9",
+      "word": "再生",
+      "reading": "さいせい",
+      "meaning": "재생, 다시 살아남; 재활용; 녹음·영상 재생"
+    },
+    {
+      "id": "N1-10hswm4",
+      "word": "再発",
+      "reading": "さいはつ",
+      "meaning": "재발"
+    },
+    {
+      "id": "N1-1l1t2s7",
+      "word": "最善",
+      "reading": "さいぜん",
+      "meaning": "최선"
+    },
+    {
+      "id": "N1-18v9z1v",
+      "word": "最早",
+      "reading": "もはや",
+      "meaning": "이미, 이제는; 더는(부정 표현과 함께)"
+    },
+    {
+      "id": "N1-1ezjvvo",
+      "word": "哉",
+      "reading": "や",
+      "meaning": "~인가, ~이랴(의문·반어를 나타내는 고어 조사)"
+    },
+    {
+      "id": "N1-1kisf6i",
+      "word": "採掘",
+      "reading": "さいくつ",
+      "meaning": "채굴"
+    },
+    {
+      "id": "N1-luyq4u",
+      "word": "採決",
+      "reading": "さいけつ",
+      "meaning": "채결, 표결"
+    },
+    {
+      "id": "N1-9rj64e",
+      "word": "採算",
+      "reading": "さいさん",
+      "meaning": "채산, 수익과 비용의 관계"
+    },
+    {
+      "id": "N1-1yzrt23",
+      "word": "採集",
+      "reading": "さいしゅう",
+      "meaning": "채집, 수집"
+    },
+    {
+      "id": "N1-1w2vhn1",
+      "word": "採択",
+      "reading": "さいたく",
+      "meaning": "채택"
+    },
+    {
+      "id": "N1-oqkavr",
+      "word": "採用",
+      "reading": "さいよう",
+      "meaning": "채용; 채택, 사용"
+    },
+    {
+      "id": "N1-1h2unrc",
+      "word": "栽培",
+      "reading": "さいばい",
+      "meaning": "재배"
+    },
+    {
+      "id": "N1-rsrwnv",
+      "word": "歳",
+      "reading": "さい",
+      "meaning": "~세, 나이를 세는 단위"
+    },
+    {
+      "id": "N1-1yzbyx4",
+      "word": "済ます",
+      "reading": "すます",
+      "meaning": "끝내다, 마치다; 지불하다; 간단히 때우다"
+    },
+    {
+      "id": "N1-1ymxxdi",
+      "word": "済まない",
+      "reading": "すまない",
+      "meaning": "미안하다; 용서할 수 없음"
+    },
+    {
+      "id": "N1-1be3q4g",
+      "word": "済みません",
+      "reading": "すみません",
+      "meaning": "실례합니다; 미안합니다; 감사합니다"
+    },
+    {
+      "id": "N1-qrgjoe",
+      "word": "災害",
+      "reading": "さいがい",
+      "meaning": "재해"
+    },
+    {
+      "id": "N1-12e0jdm",
+      "word": "細やか",
+      "reading": "こまやか",
+      "meaning": "다정함; 세심함, 상세함"
+    },
+    {
+      "id": "N1-q9w0xq",
+      "word": "細菌",
+      "reading": "さいきん",
+      "meaning": "세균"
+    },
+    {
+      "id": "N1-12gzboo",
+      "word": "細工",
+      "reading": "さいく",
+      "meaning": "세공, 손으로 정교하게 만듦; 꾸민 수작"
+    },
+    {
+      "id": "N1-1e4yave",
+      "word": "細胞",
+      "reading": "さいぼう",
+      "meaning": "세포"
+    },
+    {
+      "id": "N1-1pkgexr",
+      "word": "裁く",
+      "reading": "さばく",
+      "meaning": "재판하다, 판결하다"
+    },
+    {
+      "id": "N1-1f79y12",
+      "word": "際",
+      "reading": "きわ",
+      "meaning": "가장자리, 경계; 순간, 때"
+    },
+    {
+      "id": "N1-1w5j9nf",
+      "word": "在庫",
+      "reading": "ざいこ",
+      "meaning": "재고"
+    },
+    {
+      "id": "N1-1ue7izm",
+      "word": "財",
+      "reading": "ざい",
+      "meaning": "재산, 재물; 재화"
+    },
+    {
+      "id": "N1-13rx2rl",
+      "word": "財源",
+      "reading": "ざいげん",
+      "meaning": "재원, 자금의 출처"
+    },
+    {
+      "id": "N1-ngau8i",
+      "word": "財政",
+      "reading": "ざいせい",
+      "meaning": "재정"
+    },
+    {
+      "id": "N1-kiqdp4",
+      "word": "冴える",
+      "reading": "さえる",
+      "meaning": "맑고 선명해지다; 정신이 또렷해지다; 솜씨가 뛰어나다"
+    },
+    {
+      "id": "N1-1q1mo3x",
+      "word": "作",
+      "reading": "さく",
+      "meaning": "작품; 수확"
+    },
+    {
+      "id": "N1-w4ymmq",
+      "word": "作り",
+      "reading": "つくり",
+      "meaning": "만듦; 생김새, 구조; 생선회"
+    },
+    {
+      "id": "N1-16xauv3",
+      "word": "作戦",
+      "reading": "さくせん",
+      "meaning": "작전, 전략"
+    },
+    {
+      "id": "N1-1ncdq74",
+      "word": "作物",
+      "reading": "さくぶつ",
+      "meaning": "창작물, 문학 작품"
+    },
+    {
+      "id": "N1-m3u864",
+      "word": "作用",
+      "reading": "さよう",
+      "meaning": "작용"
+    },
+    {
+      "id": "N1-11g3hp9",
+      "word": "削減",
+      "reading": "さくげん",
+      "meaning": "삭감, 감축"
+    },
+    {
+      "id": "N1-7er3n7",
+      "word": "策",
+      "reading": "さく",
+      "meaning": "책략, 방책, 정책"
+    },
+    {
+      "id": "N1-1rvmnnq",
+      "word": "錯覚",
+      "reading": "さっかく",
+      "meaning": "착각"
+    },
+    {
+      "id": "N1-csobcy",
+      "word": "錯誤",
+      "reading": "さくご",
+      "meaning": "착오, 오류"
+    },
+    {
+      "id": "N1-ns1ywy",
+      "word": "冊",
+      "reading": "さつ",
+      "meaning": "권(책을 세는 단위)"
+    },
+    {
+      "id": "N1-1j4fckb",
+      "word": "刷り",
+      "reading": "すり",
+      "meaning": "인쇄, 찍음"
+    },
+    {
+      "id": "N1-7z8vpn",
+      "word": "擦る",
+      "reading": "かする",
+      "meaning": "스치다, 가볍게 닿다; 일부를 가로채다"
+    },
+    {
+      "id": "N1-qzbmf2",
+      "word": "擦れ違い",
+      "reading": "すれちがい",
+      "meaning": "스쳐 지나감; 서로 못 만남, 엇갈림"
+    },
+    {
+      "id": "N1-1hm4ysv",
+      "word": "殺人",
+      "reading": "さつじん",
+      "meaning": "살인"
+    },
+    {
+      "id": "N1-1fijbea",
+      "word": "雑",
+      "reading": "ざつ",
+      "meaning": "거침, 조잡함; 여러 가지가 섞임"
+    },
+    {
+      "id": "N1-1knb8zs",
+      "word": "雑貨",
+      "reading": "ざっか",
+      "meaning": "잡화"
+    },
+    {
+      "id": "N1-1sa4qh0",
+      "word": "雑談",
+      "reading": "ざつだん",
+      "meaning": "잡담"
+    },
+    {
+      "id": "N1-15lnhb3",
+      "word": "雑木",
+      "reading": "ざつぼく",
+      "meaning": "잡목, 여러 종류의 나무"
+    },
+    {
+      "id": "N1-fbldce",
+      "word": "錆び",
+      "reading": "さび",
+      "meaning": "녹(금속 표면에 생기는 것)"
+    },
+    {
+      "id": "N1-1mvvglx",
+      "word": "三",
+      "reading": "み",
+      "meaning": "셋, 3"
+    },
+    {
+      "id": "N1-fjs730",
+      "word": "三日月",
+      "reading": "みかずき",
+      "meaning": "초승달"
+    },
+    {
+      "id": "N1-1k6ghpx",
+      "word": "三味線",
+      "reading": "さみせん",
+      "meaning": "샤미센(일본의 세 줄 현악기)"
+    },
+    {
+      "id": "N1-v6u7jw",
+      "word": "参議院",
+      "reading": "さんぎいん",
+      "meaning": "참의원(일본 국회의 상원)"
+    },
+    {
+      "id": "N1-4d9vta",
+      "word": "参照",
+      "reading": "さんしょう",
+      "meaning": "참조"
+    },
+    {
+      "id": "N1-1qz1rl8",
+      "word": "参上",
+      "reading": "さんじょう",
+      "meaning": "찾아뵘, 방문(겸손한 표현)"
+    },
+    {
+      "id": "N1-1cnsjk6",
+      "word": "山岳",
+      "reading": "さんがく",
+      "meaning": "산악, 산들"
+    },
+    {
+      "id": "N1-1g0tiyz",
+      "word": "山腹",
+      "reading": "さんぷく",
+      "meaning": "산허리, 산의 비탈"
+    },
+    {
+      "id": "N1-gutirf",
+      "word": "山脈",
+      "reading": "さんみゃく",
+      "meaning": "산맥"
+    },
+    {
+      "id": "N1-thd4ss",
+      "word": "惨め",
+      "reading": "みじめ",
+      "meaning": "비참함, 가엾음"
+    },
+    {
+      "id": "N1-s3p23h",
+      "word": "散蒔く",
+      "reading": "ばらまく",
+      "meaning": "흩뿌리다, 널리 퍼뜨리다; 마구 나눠 주다"
+    },
+    {
+      "id": "N1-m9f3yt",
+      "word": "産休",
+      "reading": "さんきゅう",
+      "meaning": "출산 휴가"
+    },
+    {
+      "id": "N1-1b1vx8k",
+      "word": "産出",
+      "reading": "さんしゅつ",
+      "meaning": "산출, 생산"
+    },
+    {
+      "id": "N1-15t79hc",
+      "word": "産婦人科",
+      "reading": "さんふじんか",
+      "meaning": "산부인과"
+    },
+    {
+      "id": "N1-1j0wknx",
+      "word": "産物",
+      "reading": "さんぶつ",
+      "meaning": "산물, 생산물; 결과물"
+    },
+    {
+      "id": "N1-1yj1s91",
+      "word": "賛美",
+      "reading": "さんび",
+      "meaning": "찬미, 찬양"
+    },
+    {
+      "id": "N1-x7d671",
+      "word": "酸",
+      "reading": "さん",
+      "meaning": "산(酸), 신맛"
+    },
+    {
+      "id": "N1-17ppoly",
+      "word": "酸っぱい",
+      "reading": "すっぱい",
+      "meaning": "신맛이 남, 시다"
+    },
+    {
+      "id": "N1-wkbwpq",
+      "word": "酸化",
+      "reading": "さんか",
+      "meaning": "산화"
+    },
+    {
+      "id": "N1-15zfyfy",
+      "word": "暫く",
+      "reading": "しばらく",
+      "meaning": "잠시, 한동안"
+    },
+    {
+      "id": "N1-1vga0sc",
+      "word": "残金",
+      "reading": "ざんきん",
+      "meaning": "잔금, 남은 돈"
+    },
+    {
+      "id": "N1-107ryew",
+      "word": "残高",
+      "reading": "ざんだか",
+      "meaning": "잔고, 잔액"
+    },
+    {
+      "id": "N1-10lwl0",
+      "word": "残酷",
+      "reading": "ざんこく",
+      "meaning": "잔혹함, 잔인함"
+    },
+    {
+      "id": "N1-dnhkh7",
+      "word": "仕える",
+      "reading": "つかえる",
+      "meaning": "섬기다, 모시다"
+    },
+    {
+      "id": "N1-srp751",
+      "word": "仕掛け",
+      "reading": "しかけ",
+      "meaning": "장치, 구조; 속임수, 함정"
+    },
+    {
+      "id": "N1-14gsfl",
+      "word": "仕掛ける",
+      "reading": "しかける",
+      "meaning": "시작하다; 걸다, 도발하다; 함정 등을 설치하다"
+    },
+    {
+      "id": "N1-i0hnkb",
+      "word": "仕上がり",
+      "reading": "しあがり",
+      "meaning": "완성, 마무리 상태"
+    },
+    {
+      "id": "N1-1d0c0x9",
+      "word": "仕上げ",
+      "reading": "しあげ",
+      "meaning": "마무리, 끝손질"
+    },
+    {
+      "id": "N1-ujggeh",
+      "word": "仕上げる",
+      "reading": "しあげる",
+      "meaning": "완성하다, 마무리하다"
+    },
+    {
+      "id": "N1-1nhx6qg",
+      "word": "仕入れる",
+      "reading": "しいれる",
+      "meaning": "상품·재료를 사들이다; 정보를 얻다"
+    },
+    {
+      "id": "N1-yt6n0r",
+      "word": "仕付ける",
+      "reading": "しつける",
+      "meaning": "습관이 되다; 예절을 가르치다; 시침하다"
+    },
+    {
+      "id": "N1-1cjhq6d",
+      "word": "仕舞",
+      "reading": "しまい",
+      "meaning": "끝, 마침; 노(能)의 약식 춤"
+    },
+    {
+      "id": "N1-1n0nc2f",
+      "word": "仕様",
+      "reading": "しよう",
+      "meaning": "방법; 사양(기술 규격)"
+    },
+    {
+      "id": "N1-9adyh7",
+      "word": "仕立てる",
+      "reading": "したてる",
+      "meaning": "옷을 짓다; 길러내다; ~로 만들다"
+    },
+    {
+      "id": "N1-jcibws",
+      "word": "使い道",
+      "reading": "つかいみち",
+      "meaning": "용도, 쓰임새"
+    },
+    {
+      "id": "N1-1q613h9",
+      "word": "使命",
+      "reading": "しめい",
+      "meaning": "사명, 임무"
+    },
+    {
+      "id": "N1-66ulb9",
+      "word": "使用人",
+      "reading": "しようにん",
+      "meaning": "고용인, 하인"
+    },
+    {
+      "id": "N1-opumjl",
+      "word": "刺繍",
+      "reading": "ししゅう",
+      "meaning": "자수"
+    },
+    {
+      "id": "N1-1vzyute",
+      "word": "司法",
+      "reading": "しほう",
+      "meaning": "사법"
+    },
+    {
+      "id": "N1-1ehshkz",
+      "word": "始め",
+      "reading": "はじめ",
+      "meaning": "시작, 처음"
+    },
+    {
+      "id": "N1-vrkbdd",
+      "word": "始めまして",
+      "reading": "はじめまして",
+      "meaning": "처음 뵙겠습니다"
+    },
+    {
+      "id": "N1-5gknxe",
+      "word": "始発",
+      "reading": "しはつ",
+      "meaning": "첫차; 출발역에서 운행을 시작함"
+    },
+    {
+      "id": "N1-9fra0c",
+      "word": "始末",
+      "reading": "しまつ",
+      "meaning": "처리, 뒷정리; 경위, 결과"
+    },
+    {
+      "id": "N1-12l010p",
+      "word": "姉妹",
+      "reading": "きょうだい",
+      "meaning": "자매"
+    },
+    {
+      "id": "N1-16ism1l",
+      "word": "子息",
+      "reading": "しそく",
+      "meaning": "아드님, 다른 사람의 아들"
+    },
+    {
+      "id": "N1-1f9tw4k",
+      "word": "市",
+      "reading": "いち",
+      "meaning": "시장, 장터"
+    },
+    {
+      "id": "N1-1q07fcj",
+      "word": "市街",
+      "reading": "しがい",
+      "meaning": "시가지"
+    },
+    {
+      "id": "N1-cpzfy0",
+      "word": "志",
+      "reading": "こころざし",
+      "meaning": "뜻, 지향, 결심; 성의"
+    },
+    {
+      "id": "N1-r8iu1h",
+      "word": "志す",
+      "reading": "こころざす",
+      "meaning": "뜻을 두다, 목표로 삼다"
+    },
+    {
+      "id": "N1-18gyr49",
+      "word": "志向",
+      "reading": "しこう",
+      "meaning": "지향, 목표로 하는 방향"
+    },
+    {
+      "id": "N1-x1thes",
+      "word": "志望",
+      "reading": "しぼう",
+      "meaning": "지망, 희망"
+    },
+    {
+      "id": "N1-ncqcj4",
+      "word": "思い付き",
+      "reading": "おもいつき",
+      "meaning": "생각, 갑자기 떠오른 아이디어"
+    },
+    {
+      "id": "N1-y857zx",
+      "word": "思考",
+      "reading": "しこう",
+      "meaning": "사고, 생각함"
+    },
+    {
+      "id": "N1-rcc62s",
+      "word": "指揮",
+      "reading": "しき",
+      "meaning": "지휘"
+    },
+    {
+      "id": "N1-1gk5tr4",
+      "word": "指差す",
+      "reading": "ゆびさす",
+      "meaning": "손가락으로 가리키다"
+    },
+    {
+      "id": "N1-1nmtsqn",
+      "word": "指示",
+      "reading": "しじ",
+      "meaning": "지시"
+    },
+    {
+      "id": "N1-luy9g9",
+      "word": "指図",
+      "reading": "さしず",
+      "meaning": "지시, 명령"
+    },
+    {
+      "id": "N1-jcdg8y",
+      "word": "指摘",
+      "reading": "してき",
+      "meaning": "지적, 짚어 냄"
+    },
+    {
+      "id": "N1-1du4l6r",
+      "word": "指令",
+      "reading": "しれい",
+      "meaning": "지령, 명령"
+    },
+    {
+      "id": "N1-1n1fv0s",
+      "word": "支持",
+      "reading": "しじ",
+      "meaning": "지지; 받쳐 줌"
+    },
+    {
+      "id": "N1-1oabzws",
+      "word": "施行",
+      "reading": "しぎょう",
+      "meaning": "시행, 실시(계획 등을 실행함)"
+    },
+    {
+      "id": "N1-1hlbiud",
+      "word": "施設",
+      "reading": "しせつ",
+      "meaning": "시설"
+    },
+    {
+      "id": "N1-11fdktm",
+      "word": "止まる",
+      "reading": "とどまる",
+      "meaning": "머무르다; ~에 그치다"
+    },
+    {
+      "id": "N1-1lyu7mu",
+      "word": "止むを得ない",
+      "reading": "やむをえない",
+      "meaning": "어쩔 수 없음, 불가피함"
+    },
+    {
+      "id": "N1-ictpnj",
+      "word": "死",
+      "reading": "し",
+      "meaning": "죽음, 사망"
+    },
+    {
+      "id": "N1-3590hx",
+      "word": "死刑",
+      "reading": "しけい",
+      "meaning": "사형"
+    },
+    {
+      "id": "N1-1ei3tk8",
+      "word": "氏",
+      "reading": "うじ",
+      "meaning": "성씨, 씨족"
+    },
+    {
+      "id": "N1-1apvk9c",
+      "word": "私物",
+      "reading": "しぶつ",
+      "meaning": "사물(私物), 개인 소지품"
+    },
+    {
+      "id": "N1-1fhmume",
+      "word": "私有",
+      "reading": "しゆう",
+      "meaning": "사유, 개인 소유"
+    },
+    {
+      "id": "N1-cg9tv",
+      "word": "私用",
+      "reading": "しよう",
+      "meaning": "사용(私用), 개인적인 용도·볼일"
+    },
+    {
+      "id": "N1-6jxp7m",
+      "word": "脂肪",
+      "reading": "しぼう",
+      "meaning": "지방(脂肪)"
+    },
+    {
+      "id": "N1-19f6qsl",
+      "word": "至って",
+      "reading": "いたって",
+      "meaning": "매우, 극히"
+    },
+    {
+      "id": "N1-19agu8y",
+      "word": "視覚",
+      "reading": "しかく",
+      "meaning": "시각, 보는 감각"
+    },
+    {
+      "id": "N1-1y3mphi",
+      "word": "視察",
+      "reading": "しさつ",
+      "meaning": "시찰"
+    },
+    {
+      "id": "N1-3kqk16",
+      "word": "視点",
+      "reading": "してん",
+      "meaning": "시점, 관점"
+    },
+    {
+      "id": "N1-ryzfq8",
+      "word": "視野",
+      "reading": "しや",
+      "meaning": "시야; 생각이 미치는 범위"
+    },
+    {
+      "id": "N1-1qiibqo",
+      "word": "試み",
+      "reading": "こころみ",
+      "meaning": "시도, 시험"
+    },
+    {
+      "id": "N1-1d9204h",
+      "word": "諮る",
+      "reading": "はかる",
+      "meaning": "상의하다, 자문하다"
+    },
+    {
+      "id": "N1-1x675tx",
+      "word": "資格",
+      "reading": "しかく",
+      "meaning": "자격"
+    },
+    {
+      "id": "N1-g07yw",
+      "word": "資金",
+      "reading": "しきん",
+      "meaning": "자금"
+    },
+    {
+      "id": "N1-qnryt6",
+      "word": "資産",
+      "reading": "しさん",
+      "meaning": "자산, 재산"
+    },
+    {
+      "id": "N1-vw8t3",
+      "word": "賜る",
+      "reading": "たまわる",
+      "meaning": "받다(겸손한 표현); 내려 주시다"
+    },
+    {
+      "id": "N1-b2e333",
+      "word": "雌",
+      "reading": "めす",
+      "meaning": "암컷"
+    },
+    {
+      "id": "N1-iot2d",
+      "word": "歯科",
+      "reading": "しか",
+      "meaning": "치과, 치의학"
+    },
+    {
+      "id": "N1-1j4eywr",
+      "word": "歯磨",
+      "reading": "はみがき",
+      "meaning": "양치질; 치약"
+    },
+    {
+      "id": "N1-1s6op01",
+      "word": "事によると",
+      "reading": "ことによると",
+      "meaning": "어쩌면, 혹시"
+    },
+    {
+      "id": "N1-ngf434",
+      "word": "事業",
+      "reading": "じぎょう",
+      "meaning": "사업"
+    },
+    {
+      "id": "N1-4wwo74",
+      "word": "事項",
+      "reading": "じこう",
+      "meaning": "사항, 항목"
+    },
+    {
+      "id": "N1-pm84f8",
+      "word": "事前",
+      "reading": "じぜん",
+      "meaning": "사전, 미리"
+    },
+    {
+      "id": "N1-1sdab7u",
+      "word": "事柄",
+      "reading": "ことがら",
+      "meaning": "일, 사항, 사건"
+    },
+    {
+      "id": "N1-1q4cwb5",
+      "word": "似通う",
+      "reading": "にかよう",
+      "meaning": "매우 닮다, 비슷하다"
+    },
+    {
+      "id": "N1-7u3x84",
+      "word": "侍",
+      "reading": "さむらい",
+      "meaning": "사무라이, 무사"
+    },
+    {
+      "id": "N1-1a4b3i",
+      "word": "児",
+      "reading": "こ",
+      "meaning": "아이, 자녀; 새끼"
+    },
+    {
+      "id": "N1-1vbz9d2",
+      "word": "字",
+      "reading": "あざ",
+      "meaning": "마을 안의 작은 구역"
+    },
+    {
+      "id": "N1-1785o80",
+      "word": "字体",
+      "reading": "じたい",
+      "meaning": "자체(글자의 형태), 글꼴"
+    },
+    {
+      "id": "N1-12shxr0",
+      "word": "持ち切り",
+      "reading": "もちきり",
+      "meaning": "온통 그 이야기뿐임, 화제의 중심"
+    },
+    {
+      "id": "N1-wfev3u",
+      "word": "持てる",
+      "reading": "もてる",
+      "meaning": "가질 수 있다; 인기가 있다; 견디다"
+    },
+    {
+      "id": "N1-c080pi",
+      "word": "持て成す",
+      "reading": "もてなす",
+      "meaning": "대접하다, 환대하다"
+    },
+    {
+      "id": "N1-1mtu3lx",
+      "word": "持続",
+      "reading": "じぞく",
+      "meaning": "지속"
+    },
+    {
+      "id": "N1-sl51wr",
+      "word": "時刻表",
+      "reading": "じこくひょう",
+      "meaning": "시각표, 시간표"
+    },
+    {
+      "id": "N1-1q367p4",
+      "word": "時差",
+      "reading": "じさ",
+      "meaning": "시차"
+    },
+    {
+      "id": "N1-7vr77q",
+      "word": "時折",
+      "reading": "ときおり",
+      "meaning": "이따금, 가끔"
+    },
+    {
+      "id": "N1-1bhrdet",
+      "word": "次",
+      "reading": "じ",
+      "meaning": "차(순서·횟수를 나타내는 단위); 다음"
+    },
+    {
+      "id": "N1-1u6nhgc",
+      "word": "次いで",
+      "reading": "ついで",
+      "meaning": "이어서, 다음으로"
+    },
+    {
+      "id": "N1-516ydp",
+      "word": "治まる",
+      "reading": "おさまる",
+      "meaning": "가라앉다, 진정되다; 평온해지다; 증상이 나아지다"
+    },
+    {
+      "id": "N1-1qad1pt",
+      "word": "治安",
+      "reading": "ちあん",
+      "meaning": "치안"
+    },
+    {
+      "id": "N1-1yjrag2",
+      "word": "治療",
+      "reading": "ちりょう",
+      "meaning": "치료"
+    },
+    {
+      "id": "N1-gmnrhr",
+      "word": "磁器",
+      "reading": "じき",
+      "meaning": "자기(磁器), 도자기"
+    },
+    {
+      "id": "N1-156z1a8",
+      "word": "磁気",
+      "reading": "じき",
+      "meaning": "자기(磁氣), 자성"
+    },
+    {
+      "id": "N1-1p6b1an",
+      "word": "而も",
+      "reading": "しかも",
+      "meaning": "더구나; 그럼에도 불구하고"
+    },
+    {
+      "id": "N1-srfrz4",
+      "word": "耳鼻科",
+      "reading": "じびか",
+      "meaning": "이비인후과"
+    },
+    {
+      "id": "N1-e3hro4",
+      "word": "自我",
+      "reading": "じが",
+      "meaning": "자아"
+    },
+    {
+      "id": "N1-1854qnv",
+      "word": "自覚",
+      "reading": "じかく",
+      "meaning": "자각, 자신의 상태·역할을 앎"
+    },
+    {
+      "id": "N1-zxy6s9",
+      "word": "自己",
+      "reading": "じこ",
+      "meaning": "자기, 자신"
+    },
+    {
+      "id": "N1-1ui9w1",
+      "word": "自在",
+      "reading": "じざい",
+      "meaning": "자유자재, 뜻대로 할 수 있음"
+    },
+    {
+      "id": "N1-uabaua",
+      "word": "自主",
+      "reading": "じしゅ",
+      "meaning": "자주, 자율, 스스로 함"
+    },
+    {
+      "id": "N1-1dqmq9t",
+      "word": "自首",
+      "reading": "じしゅ",
+      "meaning": "자수(수사기관에 스스로 신고함)"
+    },
+    {
+      "id": "N1-8qc1ma",
+      "word": "自信",
+      "reading": "じしん",
+      "meaning": "자신감"
+    },
+    {
+      "id": "N1-1epk1ts",
+      "word": "自尊心",
+      "reading": "じそんしん",
+      "meaning": "자존심, 자긍심"
+    },
+    {
+      "id": "N1-8msllu",
+      "word": "自転",
+      "reading": "じてん",
+      "meaning": "자전, 스스로 회전함"
+    },
+    {
+      "id": "N1-1v0w8xe",
+      "word": "自動詞",
+      "reading": "じどうし",
+      "meaning": "자동사"
+    },
+    {
+      "id": "N1-opgm3k",
+      "word": "自立",
+      "reading": "じりつ",
+      "meaning": "자립"
+    },
+    {
+      "id": "N1-14o836h",
+      "word": "辞職",
+      "reading": "じしょく",
+      "meaning": "사직"
+    },
+    {
+      "id": "N1-qissmk",
+      "word": "辞退",
+      "reading": "じたい",
+      "meaning": "사퇴, 사양하여 거절함"
+    },
+    {
+      "id": "N1-zv7g8v",
+      "word": "式場",
+      "reading": "しきじょう",
+      "meaning": "식장, 의식이 열리는 곳"
+    },
+    {
+      "id": "N1-1v4u6cg",
+      "word": "雫",
+      "reading": "しずく",
+      "meaning": "물방울, 방울"
+    },
+    {
+      "id": "N1-1j23b4i",
+      "word": "七日",
+      "reading": "なぬか",
+      "meaning": "7일(날짜); 이레"
+    },
+    {
+      "id": "N1-1cbmzm2",
+      "word": "執着",
+      "reading": "しゅうじゃく",
+      "meaning": "집착"
+    },
+    {
+      "id": "N1-l625sg",
+      "word": "失格",
+      "reading": "しっかく",
+      "meaning": "실격; 역할을 할 자격이 없음"
+    },
+    {
+      "id": "N1-1ghigm1",
+      "word": "失調",
+      "reading": "しっちょう",
+      "meaning": "실조, 조화·균형을 잃음"
+    },
+    {
+      "id": "N1-1h6x3m2",
+      "word": "嫉妬",
+      "reading": "しっと",
+      "meaning": "질투"
+    },
+    {
+      "id": "N1-s7mtrx",
+      "word": "悉く",
+      "reading": "ことごとく",
+      "meaning": "모두, 남김없이"
+    },
+    {
+      "id": "N1-qtv75r",
+      "word": "疾っくに",
+      "reading": "とっくに",
+      "meaning": "벌써, 훨씬 전에"
+    },
+    {
+      "id": "N1-hz8htr",
+      "word": "質疑",
+      "reading": "しつぎ",
+      "meaning": "질의, 질문"
+    },
+    {
+      "id": "N1-1lmes7e",
+      "word": "質素",
+      "reading": "しっそ",
+      "meaning": "검소함, 소박함"
+    },
+    {
+      "id": "N1-wlvbze",
+      "word": "実",
+      "reading": "じつ",
+      "meaning": "진실, 사실; 성실함; 실속"
+    },
+    {
+      "id": "N1-2xfja7",
+      "word": "実業家",
+      "reading": "じつぎょうか",
+      "meaning": "실업가, 사업가"
+    },
+    {
+      "id": "N1-9qdglu",
+      "word": "実質",
+      "reading": "じっしつ",
+      "meaning": "실질, 본질, 실제 내용"
+    },
+    {
+      "id": "N1-1whd0os",
+      "word": "実費",
+      "reading": "じっぴ",
+      "meaning": "실비, 실제 든 비용"
+    },
+    {
+      "id": "N1-1gw7lbn",
+      "word": "芝",
+      "reading": "しば",
+      "meaning": "잔디"
+    },
+    {
+      "id": "N1-19chqlk",
+      "word": "屡",
+      "reading": "しばしば",
+      "meaning": "자주, 종종"
+    },
+    {
+      "id": "N1-1c242tq",
+      "word": "写し",
+      "reading": "うつし",
+      "meaning": "사본, 복사본"
+    },
+    {
+      "id": "N1-1epwhad",
+      "word": "社",
+      "reading": "やしろ",
+      "meaning": "신사(일본 신토의 사당)"
+    },
+    {
+      "id": "N1-1b1vdt6",
+      "word": "社交",
+      "reading": "しゃこう",
+      "meaning": "사교"
+    },
+    {
+      "id": "N1-1ywld2g",
+      "word": "社宅",
+      "reading": "しゃたく",
+      "meaning": "사택"
+    },
+    {
+      "id": "N1-wvqjsk",
+      "word": "謝絶",
+      "reading": "しゃぜつ",
+      "meaning": "사절, 거절"
+    },
+    {
+      "id": "N1-av04c1",
+      "word": "借り",
+      "reading": "かり",
+      "meaning": "빌림, 빚"
+    },
+    {
+      "id": "N1-1hbx33o",
+      "word": "若し",
+      "reading": "もし",
+      "meaning": "만약, 혹시"
+    },
+    {
+      "id": "N1-18m6h2s",
+      "word": "若しかしたら",
+      "reading": "もしかしたら",
+      "meaning": "어쩌면, 혹시"
+    },
+    {
+      "id": "N1-1um8tl6",
+      "word": "若しかして",
+      "reading": "もしかして",
+      "meaning": "혹시, 어쩌면"
+    },
+    {
+      "id": "N1-vh14ju",
+      "word": "若しかすると",
+      "reading": "もしかすると",
+      "meaning": "어쩌면, 혹시"
+    },
+    {
+      "id": "N1-1nrdx6c",
+      "word": "若しくは",
+      "reading": "もしくは",
+      "meaning": "또는, 혹은"
+    },
+    {
+      "id": "N1-1azh8gy",
+      "word": "若しも",
+      "reading": "もしも",
+      "meaning": "만약, 혹시라도"
+    },
+    {
+      "id": "N1-17e3w4m",
+      "word": "若干",
+      "reading": "じゃっかん",
+      "meaning": "약간, 얼마간"
+    },
+    {
+      "id": "N1-89068q",
+      "word": "弱",
+      "reading": "じゃく",
+      "meaning": "~약(조금 못 미침); 약함"
+    },
+    {
+      "id": "N1-130zcod",
+      "word": "弱める",
+      "reading": "よわめる",
+      "meaning": "약하게 하다"
+    },
+    {
+      "id": "N1-1ya43sz",
+      "word": "主演",
+      "reading": "しゅえん",
+      "meaning": "주연"
+    },
+    {
+      "id": "N1-3sc8wv",
+      "word": "主観",
+      "reading": "しゅかん",
+      "meaning": "주관, 개인적인 견해"
+    },
+    {
+      "id": "N1-pjnuyb",
+      "word": "主権",
+      "reading": "しゅけん",
+      "meaning": "주권"
+    },
+    {
+      "id": "N1-j6t547",
+      "word": "主催",
+      "reading": "しゅさい",
+      "meaning": "주최"
+    },
+    {
+      "id": "N1-9ndfh8",
+      "word": "主食",
+      "reading": "しゅしょく",
+      "meaning": "주식(主食), 주로 먹는 음식"
+    },
+    {
+      "id": "N1-18kmc7s",
+      "word": "主人公",
+      "reading": "しゅじんこう",
+      "meaning": "주인공"
+    },
+    {
+      "id": "N1-no62jm",
+      "word": "主体",
+      "reading": "しゅたい",
+      "meaning": "주체, 중심이 되는 것"
+    },
+    {
+      "id": "N1-9jupgy",
+      "word": "主題",
+      "reading": "しゅだい",
+      "meaning": "주제"
+    },
+    {
+      "id": "N1-a19xqf",
+      "word": "主導",
+      "reading": "しゅどう",
+      "meaning": "주도, 앞장서 이끎"
+    },
+    {
+      "id": "N1-1o8ihav",
+      "word": "主任",
+      "reading": "しゅにん",
+      "meaning": "주임, 담당 책임자"
+    },
+    {
+      "id": "N1-9p7nwi",
+      "word": "取っ手",
+      "reading": "とって",
+      "meaning": "손잡이"
+    },
+    {
+      "id": "N1-k9glx1",
+      "word": "取りあえず",
+      "reading": "とりあえず",
+      "meaning": "우선, 일단, 당장은"
+    },
+    {
+      "id": "N1-hav5rj",
+      "word": "取り扱い",
+      "reading": "とりあつかい",
+      "meaning": "취급, 다룸"
+    },
+    {
+      "id": "N1-1e6tp1y",
+      "word": "取り引き",
+      "reading": "とりひき",
+      "meaning": "거래"
+    },
+    {
+      "id": "N1-1qdg8wx",
+      "word": "取り寄せる",
+      "reading": "とりよせる",
+      "meaning": "주문해서 보내 받다, 가져오게 하다"
+    },
+    {
+      "id": "N1-10ffx6",
+      "word": "取り混ぜる",
+      "reading": "とりまぜる",
+      "meaning": "뒤섞다, 함께 섞다"
+    },
+    {
+      "id": "N1-1qpxuqu",
+      "word": "取り次ぐ",
+      "reading": "とりつぐ",
+      "meaning": "전달하다, 중개하다"
+    },
+    {
+      "id": "N1-qyuisj",
+      "word": "取り除く",
+      "reading": "とりのぞく",
+      "meaning": "제거하다, 없애다"
+    },
+    {
+      "id": "N1-u7haqu",
+      "word": "取り組む",
+      "reading": "とりくむ",
+      "meaning": "씨름하다; 문제에 힘써 임하다"
+    },
+    {
+      "id": "N1-1l9n4qz",
+      "word": "取り替え",
+      "reading": "とりかえ",
+      "meaning": "교체, 바꿈"
+    },
+    {
+      "id": "N1-k1roqs",
+      "word": "取り調べる",
+      "reading": "とりしらべる",
+      "meaning": "조사하다, 취조하다"
+    },
+    {
+      "id": "N1-qqng0c",
+      "word": "取り締まり",
+      "reading": "とりしまり",
+      "meaning": "단속, 관리"
+    },
+    {
+      "id": "N1-4qi3cx",
+      "word": "取り分け",
+      "reading": "とりわけ",
+      "meaning": "특히, 무엇보다"
+    },
+    {
+      "id": "N1-10t7pkp",
+      "word": "取り立てる",
+      "reading": "とりたてる",
+      "meaning": "빚 등을 받아 내다; 발탁하다; 특별히 강조하다"
+    },
+    {
+      "id": "N1-1yt8ya3",
+      "word": "取材",
+      "reading": "しゅざい",
+      "meaning": "취재, 자료 수집"
+    },
+    {
+      "id": "N1-9xerzw",
+      "word": "守衛",
+      "reading": "しゅえい",
+      "meaning": "경비원"
+    },
+    {
+      "id": "N1-1l7jswn",
+      "word": "守備",
+      "reading": "しゅび",
+      "meaning": "수비, 방어"
+    },
+    {
+      "id": "N1-172s1me",
+      "word": "手引き",
+      "reading": "てびき",
+      "meaning": "안내, 길잡이; 안내서"
+    },
+    {
+      "id": "N1-aandnh",
+      "word": "手回し",
+      "reading": "てまわし",
+      "meaning": "손으로 돌림; 준비, 조치"
+    },
+    {
+      "id": "N1-vuwm4d",
+      "word": "手掛かり",
+      "reading": "てがかり",
+      "meaning": "단서, 실마리; 손으로 잡을 곳"
+    },
+    {
+      "id": "N1-12ug133",
+      "word": "手掛ける",
+      "reading": "てがける",
+      "meaning": "맡아 하다, 다루다; 돌보다"
+    },
+    {
+      "id": "N1-1o7ku3c",
+      "word": "手近",
+      "reading": "てぢか",
+      "meaning": "가까움, 손이 닿는 곳에 있음"
+    },
+    {
+      "id": "N1-1526lmm",
+      "word": "手軽",
+      "reading": "てがる",
+      "meaning": "간편함, 손쉽게 할 수 있음"
+    },
+    {
+      "id": "N1-4g8bs4",
+      "word": "手芸",
+      "reading": "しゅげい",
+      "meaning": "수예, 손으로 만드는 공예"
+    },
+    {
+      "id": "N1-1b1jrmj",
+      "word": "手元",
+      "reading": "てもと",
+      "meaning": "손 가까이, 곁; 수중의 돈"
+    },
+    {
+      "id": "N1-b4v25i",
+      "word": "手際",
+      "reading": "てぎわ",
+      "meaning": "솜씨, 일을 처리하는 능력"
+    },
+    {
+      "id": "N1-81opm6",
+      "word": "手順",
+      "reading": "てじゅん",
+      "meaning": "순서, 절차"
+    },
+    {
+      "id": "N1-1pyhlr5",
+      "word": "手錠",
+      "reading": "てじょう",
+      "meaning": "수갑"
+    },
+    {
+      "id": "N1-iceyzl",
+      "word": "手数",
+      "reading": "てかず",
+      "meaning": "수고, 번거로움; 수(手)의 개수, 움직임의 수"
+    },
+    {
+      "id": "N1-5grhyq",
+      "word": "手遅れ",
+      "reading": "ておくれ",
+      "meaning": "때를 놓침, 너무 늦음"
+    },
+    {
+      "id": "N1-1a5bsih",
+      "word": "手当て",
+      "reading": "てあて",
+      "meaning": "수당, 보수; 치료, 응급처치; 미리 대비함"
+    },
+    {
+      "id": "N1-1guyk7o",
+      "word": "手配",
+      "reading": "てはい",
+      "meaning": "준비, 조치; 수배"
+    },
+    {
+      "id": "N1-1ohyh7h",
+      "word": "手筈",
+      "reading": "てはず",
+      "meaning": "준비, 절차, 계획"
+    },
+    {
+      "id": "N1-88l11h",
+      "word": "手分け",
+      "reading": "てわけ",
+      "meaning": "분담, 일을 나누어 함"
+    },
+    {
+      "id": "N1-1598kgi",
+      "word": "手法",
+      "reading": "しゅほう",
+      "meaning": "수법, 기법, 방법"
+    },
+    {
+      "id": "N1-t7860q",
+      "word": "手本",
+      "reading": "てほん",
+      "meaning": "본보기, 모범"
+    },
+    {
+      "id": "N1-lhfmty",
+      "word": "殊に",
+      "reading": "ことに",
+      "meaning": "특히"
+    },
+    {
+      "id": "N1-13a2whr",
+      "word": "種",
+      "reading": "しゅ",
+      "meaning": "종류; 종(생물 분류)"
+    },
+    {
+      "id": "N1-1vnocuv",
+      "word": "種々",
+      "reading": "くさぐさ",
+      "meaning": "여러 가지, 갖가지"
+    },
+    {
+      "id": "N1-1xwu0bx",
+      "word": "趣",
+      "reading": "おもむき",
+      "meaning": "멋, 정취; 취지, 뜻"
+    },
+    {
+      "id": "N1-fct0nj",
+      "word": "趣旨",
+      "reading": "しゅし",
+      "meaning": "취지, 요점, 의도"
+    },
+    {
+      "id": "N1-8quqi2",
+      "word": "首飾り",
+      "reading": "くびかざり",
+      "meaning": "목걸이"
+    },
+    {
+      "id": "N1-6frt52",
+      "word": "首脳",
+      "reading": "しゅのう",
+      "meaning": "수뇌, 최고 지도자"
+    },
+    {
+      "id": "N1-809c02",
+      "word": "首輪",
+      "reading": "くびわ",
+      "meaning": "목줄; 목걸이"
+    },
+    {
+      "id": "N1-1ft5qnc",
+      "word": "受かる",
+      "reading": "うかる",
+      "meaning": "시험에 합격하다"
+    },
+    {
+      "id": "N1-1ics7xu",
+      "word": "受け止める",
+      "reading": "うけとめる",
+      "meaning": "받아 막다, 받아내다; 받아들이다"
+    },
+    {
+      "id": "N1-bckj6g",
+      "word": "受け取り",
+      "reading": "うけとり",
+      "meaning": "수령, 받음; 영수증"
+    },
+    {
+      "id": "N1-1oxn9qh",
+      "word": "受け入れ",
+      "reading": "うけいれ",
+      "meaning": "수용, 받아들임"
+    },
+    {
+      "id": "N1-k6he5n",
+      "word": "受け入れる",
+      "reading": "うけいれる",
+      "meaning": "받아들이다, 수용하다"
+    },
+    {
+      "id": "N1-ub94gc",
+      "word": "受け付ける",
+      "reading": "うけつける",
+      "meaning": "접수하다; 받아들이다"
+    },
+    {
+      "id": "N1-ahv8yh",
+      "word": "受身",
+      "reading": "うけみ",
+      "meaning": "수동, 수동태; 낙법"
+    },
+    {
+      "id": "N1-f4bhhe",
+      "word": "授ける",
+      "reading": "さずける",
+      "meaning": "주다, 수여하다; 가르쳐 주다"
+    },
+    {
+      "id": "N1-1yg27o8",
+      "word": "樹木",
+      "reading": "じゅもく",
+      "meaning": "수목, 나무"
+    },
+    {
+      "id": "N1-eqsq8y",
+      "word": "樹立",
+      "reading": "じゅりつ",
+      "meaning": "수립; 기록을 세움"
+    },
+    {
+      "id": "N1-1mcsfvg",
+      "word": "収益",
+      "reading": "しゅうえき",
+      "meaning": "수익"
+    },
+    {
+      "id": "N1-jk5h6l",
+      "word": "収支",
+      "reading": "しゅうし",
+      "meaning": "수지, 수입과 지출"
+    },
+    {
+      "id": "N1-1lqhglv",
+      "word": "収集",
+      "reading": "しゅうしゅう",
+      "meaning": "수집"
+    },
+    {
+      "id": "N1-xarhsc",
+      "word": "収容",
+      "reading": "しゅうよう",
+      "meaning": "수용, 받아들여 들임; 구금"
+    },
+    {
+      "id": "N1-1oxjmvd",
+      "word": "周",
+      "reading": "しゅう",
+      "meaning": "바퀴(회전·순회 횟수); 둘레; 주나라"
+    },
+    {
+      "id": "N1-1lxitm1",
+      "word": "周期",
+      "reading": "しゅうき",
+      "meaning": "주기"
+    }
+  ],
+  "unresolved": [],
+  "sources": [
+    {
+      "title": "EDRDG JMdict_e; primary dictionary consulted for written form, normalized kana reading and senses",
+      "url": "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz",
+      "localPath": "C:/Users/bobil/Documents/Codex/2026-10-03/new-chat-2/work/jmdict-original.xml",
+      "sha256": "b615a0f3521661b31a58115336a59226e8e09b05e7dfc3c0a7f8d2ae5758de22",
+      "method": "Assistant individually read all 1500 assigned entries in six batches of 250. JMdict written forms, normalized kana readings, applicable senses and representative Korean meanings were checked; sourceMeanings were not accepted blindly. Exact form/reading corrections and choices between merged homonyms are documented per ID. Valid isolated kanji readings/meanings and a classical particle were corroborated with the primary KanjiPedia dictionary and labelled explicitly."
+    },
+    {
+      "title": "개별 원전 대조: N1-zswi39",
+      "url": "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz",
+      "id": "N1-zswi39",
+      "before": {
+        "word": "あら",
+        "reading": "あら"
+      },
+      "after": {
+        "word": "あら",
+        "reading": "あら"
+      },
+      "note": "동일 가나 표제의 유효한 대표 뜻인 감탄사를 선택. 생선 이름은 감사용 sourceMeanings에 보존됨.",
+      "ent_seq": [
+        "1000520"
+      ]
+    },
+    {
+      "title": "개별 원전 대조: N1-hvurej",
+      "url": "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz",
+      "id": "N1-hvurej",
+      "before": {
+        "word": "イエス",
+        "reading": "いえす"
+      },
+      "after": {
+        "word": "イエス",
+        "reading": "いえす"
+      },
+      "note": "동일 표기·읽기의 두 사전 표제를 구분해 뜻을 명시.",
+      "ent_seq": [
+        "2843921",
+        "1021010"
+      ]
+    },
+    {
+      "title": "개별 원전 대조: N1-s86ico",
+      "url": "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz",
+      "id": "N1-s86ico",
+      "before": {
+        "word": "お八",
+        "reading": "おやつ"
+      },
+      "after": {
+        "word": "お八つ",
+        "reading": "おやつ"
+      },
+      "note": "원본 お八에 빠진 つ를 사전의 같은 뜻·읽기 표제로 보완.",
+      "ent_seq": [
+        "1589430"
+      ]
+    },
+    {
+      "title": "개별 원전 대조: N1-1lrtn57",
+      "url": "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz",
+      "id": "N1-1lrtn57",
+      "before": {
+        "word": "し",
+        "reading": "し"
+      },
+      "after": {
+        "word": "し",
+        "reading": "し"
+      },
+      "note": "JMdict 2542020 confirms 秭/し as the rare unit 10^24. Keep the pinned OpenJLPT kana headword し: EDRDG permits kana term versions, and pinned KanjiVG has no 秭 stroke SVG. This does not assert a usually-kana usage label.",
+      "ent_seq": [
+        "2542020"
+      ]
+    },
+    {
+      "title": "개별 원전 대조: N1-1pu2cir",
+      "url": "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz",
+      "id": "N1-1pu2cir",
+      "before": {
+        "word": "しいんと",
+        "reading": "しいんと"
+      },
+      "after": {
+        "word": "しんと",
+        "reading": "しんと"
+      },
+      "note": "제시된 뜻과 일치하는 사전의 완전한 의태어 표제로 정규화. しいん/しーん도 ent_seq 1631970에서 같은 침묵 의미로 확인.",
+      "ent_seq": [
+        "1632010"
+      ]
+    },
+    {
+      "title": "개별 원전 대조: N1-v0715n",
+      "url": "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz",
+      "id": "N1-v0715n",
+      "before": {
+        "word": "と",
+        "reading": "と"
+      },
+      "after": {
+        "word": "と",
+        "reading": "と"
+      },
+      "note": "원본의 if 의미와 일치하는 대표 문법 표제를 선택. 장기의 말이라는 다른 동음이의 의미는 sourceMeanings에 보존됨.",
+      "ent_seq": [
+        "1008490"
+      ]
+    },
+    {
+      "title": "개별 원전 대조: N1-1qziso",
+      "url": "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz",
+      "id": "N1-1qziso",
+      "before": {
+        "word": "愛憎",
+        "reading": "あいにく"
+      },
+      "after": {
+        "word": "愛憎",
+        "reading": "あいぞう"
+      },
+      "note": "표기는 일치하나 원본 あいにく는 다른 단어의 읽기이므로 같은 표제의 정확한 읽기로 교정.",
+      "ent_seq": [
+        "1575670"
+      ]
+    },
+    {
+      "title": "개별 원전 대조: N1-193eq0k",
+      "url": "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz",
+      "id": "N1-193eq0k",
+      "before": {
+        "word": "伊井",
+        "reading": "いい"
+      },
+      "after": {
+        "word": "伊",
+        "reading": "い"
+      },
+      "note": "sourceMeanings의 Italy와 일치하는 대표 표제 伊/い를 선택. 伊井/いい는 해당 의미의 표제가 아님.",
+      "ent_seq": [
+        "2252790"
+      ]
+    },
+    {
+      "title": "개별 원전 대조: N1-12fqyyw",
+      "url": "https://www.kanjipedia.jp/kanji/0000130400",
+      "id": "N1-12fqyyw",
+      "before": {
+        "word": "依",
+        "reading": "い"
+      },
+      "after": {
+        "word": "依",
+        "reading": "い"
+      },
+      "note": "KanjiPedia에서 음독 イ와 의미 たよる를 확인. 독립 동사로 오인하지 않도록 글자 의미임을 명시."
+    },
+    {
+      "title": "개별 원전 대조: N1-uhe1hk",
+      "url": "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz",
+      "id": "N1-uhe1hk",
+      "before": {
+        "word": "厭やらしい",
+        "reading": "いやらしい"
+      },
+      "after": {
+        "word": "厭らしい",
+        "reading": "いやらしい"
+      },
+      "note": "원본 厭やらしい의 잘못 끼어든 や를 제거해 같은 읽기·뜻의 표제로 교정.",
+      "ent_seq": [
+        "1257270"
+      ]
+    },
+    {
+      "title": "개별 원전 대조: N1-bs95j4",
+      "url": "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz",
+      "id": "N1-bs95j4",
+      "before": {
+        "word": "音色",
+        "reading": "おんいろ"
+      },
+      "after": {
+        "word": "音色",
+        "reading": "ねいろ"
+      },
+      "note": "같은 표제의 대표 읽기 ねいろ로 교정. おんしょく도 사전상 유효한 다른 읽기.",
+      "ent_seq": [
+        "1576910"
+      ]
+    },
+    {
+      "title": "개별 원전 대조: N1-141w1w3",
+      "url": "https://dictionary.goo.ne.jp/word/%E4%B8%8B%E5%93%81_%28%E3%81%92%E3%81%B2%E3%82%93%29/",
+      "id": "N1-141w1w3",
+      "before": {
+        "word": "下品",
+        "reading": "かひん"
+      },
+      "after": {
+        "word": "下品",
+        "reading": "げひん"
+      },
+      "note": "JMdict 및 小学館 디지털 대사천에서 읽기 げひん 확인. 후자는 품질이 낮은 물품이라는 뜻도 확인하여 sourceMeanings의 inferior article과 일치.",
+      "ent_seq": [
+        "1186230"
+      ]
+    },
+    {
+      "title": "개별 원전 대조: N1-9t99ei",
+      "url": "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz",
+      "id": "N1-9t99ei",
+      "before": {
+        "word": "灰",
+        "reading": "あく"
+      },
+      "after": {
+        "word": "灰汁",
+        "reading": "あく"
+      },
+      "note": "sourceMeanings의 puckery juice 및 읽기 あく와 일치하는 표제 灰汁을 복원. 灰/はい(재)와 구분.",
+      "ent_seq": [
+        "1201960"
+      ]
+    },
+    {
+      "title": "개별 원전 대조: N1-1blyw6d",
+      "url": "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz",
+      "id": "N1-1blyw6d",
+      "before": {
+        "word": "灰皿",
+        "reading": "はいさら"
+      },
+      "after": {
+        "word": "灰皿",
+        "reading": "はいざら"
+      },
+      "note": "사전의 정확한 읽기 はいざら로 교정.",
+      "ent_seq": [
+        "1201940"
+      ]
+    },
+    {
+      "title": "개별 원전 대조: N1-sszaru",
+      "url": "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz",
+      "id": "N1-sszaru",
+      "before": {
+        "word": "蓋",
+        "reading": "がい"
+      },
+      "after": {
+        "word": "蓋",
+        "reading": "ふた"
+      },
+      "note": "덮개라는 sourceMeanings와 일치하는 대표 어휘 읽기 ふた로 교정.",
+      "ent_seq": [
+        "1204540"
+      ]
+    },
+    {
+      "title": "개별 원전 대조: N1-57pvlh",
+      "url": "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz",
+      "id": "N1-57pvlh",
+      "before": {
+        "word": "乾",
+        "reading": "かん"
+      },
+      "after": {
+        "word": "乾",
+        "reading": "けん"
+      },
+      "note": "sourceMeanings의 heaven과 일치하는 けん 표제를 선택. 다른 뜻의 음독 かん 및 ほし/いぬい와 구분.",
+      "ent_seq": [
+        "1577540"
+      ]
+    },
+    {
+      "title": "개별 원전 대조: N1-5hqdfs",
+      "url": "https://www.kanjipedia.jp/kanji/0001490800",
+      "id": "N1-5hqdfs",
+      "before": {
+        "word": "供",
+        "reading": "きょう"
+      },
+      "after": {
+        "word": "供",
+        "reading": "きょう"
+      },
+      "note": "KanjiPedia에서 음독 キョウ 및 そなえる/さし出す를 확인. 독립 동사로 오인하지 않도록 글자 의미임을 명시."
+    },
+    {
+      "title": "개별 원전 대조: N1-r6d2ma",
+      "url": "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz",
+      "id": "N1-r6d2ma",
+      "before": {
+        "word": "共",
+        "reading": "きょう"
+      },
+      "after": {
+        "word": "共",
+        "reading": "とも"
+      },
+      "note": "sourceMeanings의 together with, both, all과 일치하는 어휘 읽기 とも로 교정.",
+      "ent_seq": [
+        "1578040"
+      ]
+    },
+    {
+      "title": "개별 원전 대조: N1-dcsfug",
+      "url": "https://www.kanjipedia.jp/kanji/0001628500",
+      "id": "N1-dcsfug",
+      "before": {
+        "word": "僅",
+        "reading": "きん"
+      },
+      "after": {
+        "word": "僅",
+        "reading": "きん"
+      },
+      "note": "KanjiPedia에서 음독 キン과 わずか/ほんの少し를 확인. 올바른 글자 읽기를 보존하고 글자 의미임을 명시."
+    },
+    {
+      "title": "개별 원전 대조: N1-17ky4s2",
+      "url": "https://www.kanjipedia.jp/kanji/0001799500",
+      "id": "N1-17ky4s2",
+      "before": {
+        "word": "傾",
+        "reading": "けい"
+      },
+      "after": {
+        "word": "傾",
+        "reading": "けい"
+      },
+      "note": "KanjiPedia에서 음독 ケイ와 かたむく/かたむける를 확인. 올바른 글자 읽기를 보존하고 글자 의미임을 명시."
+    },
+    {
+      "title": "개별 원전 대조: N1-ul1phw",
+      "url": "https://www.kanjipedia.jp/kanji/0002457100",
+      "id": "N1-ul1phw",
+      "before": {
+        "word": "佐",
+        "reading": "さ"
+      },
+      "after": {
+        "word": "佐",
+        "reading": "さ"
+      },
+      "note": "KanjiPedia에서 음독 サ와 たすける/手助けする를 확인. 올바른 글자 읽기를 보존하고 글자 의미임을 명시."
+    },
+    {
+      "title": "개별 원전 대조: N1-1ezjvvo",
+      "url": "https://www.kanjipedia.jp/kotoba/0002498100",
+      "id": "N1-1ezjvvo",
+      "before": {
+        "word": "哉",
+        "reading": "や"
+      },
+      "after": {
+        "word": "哉",
+        "reading": "や"
+      },
+      "note": "KanjiPedia의 정확한 단어 표제 哉/や에서 의문·반어의 종조사임을 확인. 단순히 문장 부호인 물음표라고 하지 않고 문법 의미를 명시."
+    },
+    {
+      "title": "개별 원전 대조: N1-1bhrdet",
+      "url": "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz",
+      "id": "N1-1bhrdet",
+      "before": {
+        "word": "次",
+        "reading": "し"
+      },
+      "after": {
+        "word": "次",
+        "reading": "じ"
+      },
+      "note": "sourceMeanings의 order, sequence, times, next와 일치하는 접사 표제 次/じ로 교정. 次/つぎ와 구분.",
+      "ent_seq": [
+        "1579580"
+      ]
+    },
+    {
+      "title": "개별 원전 대조: N1-4qi3cx",
+      "url": "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz",
+      "id": "N1-4qi3cx",
+      "before": {
+        "word": "取り分",
+        "reading": "とりわけ"
+      },
+      "after": {
+        "word": "取り分け",
+        "reading": "とりわけ"
+      },
+      "note": "sourceMeanings의 especially, above all과 같은 뜻·읽기의 표제에서 빠진 け를 복원. 取り分/とりぶん(몫)으로 바꾸지 않음.",
+      "ent_seq": [
+        "1599150"
+      ]
+    }
+  ],
+  "displayChoice": {
+    "id": "N1-1lrtn57",
+    "word": "し",
+    "reading": "し",
+    "meaning": "자(10^24의 수 단위)",
+    "primaryEntry": "JMdict 2542020",
+    "kanji": "秭",
+    "kanjiStrokeUnavailableAtCommit": "422b5538595676da918c288a4230cb5e22a1ee7e",
+    "source": "https://www.edrdg.org/wiki/Kanji_and_Reading_Information_Fields.html",
+    "note": "Retains original source kana headword; not a claim of common kana spelling."
+  },
+  "senseClarifications": [
+    {
+      "id": "N1-141w1w3",
+      "reading": "げひん",
+      "meaning": "천함, 품위 없음",
+      "primaryEntry": "JMdict 1186230",
+      "excludedSense": "inferior goods belongs to 下品/かひん, not the selected げひん"
+    }
+  ]
+}

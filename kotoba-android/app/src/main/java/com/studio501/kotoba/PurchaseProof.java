@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 
 /** Shared, deterministic purchase binding. This class has no Android dependency. */
 public final class PurchaseProof {
+ public static boolean isDeletedAccountResponse(int status,String error){return status==410&&"account_deleted".equals(error);}
  private PurchaseProof() {}
  private static final char[] URL_ALPHABET="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_".toCharArray();
  public static String canonicalRequest(String accountId,String installationId,String packageName,String productId,String purchaseToken) {

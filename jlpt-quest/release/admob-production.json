@@ -8,5 +8,7 @@
   "accountReviewStatus": "pending",
   "storeLinkStatus": "not-yet-listed",
   "registeredAt": "2026-10-03",
-  "note": "Public identifiers provisioned in AdMob. Debug builds use Google sample IDs. Account/app approval and device consent tests remain required."
+  "note": "Public identifiers provisioned in AdMob. Debug builds use Google sample IDs. Account/app approval and device consent tests remain required.",
+  "appAdsTxtSnippet": "google.com, pub-7047481394406378, DIRECT, f08c47fec0942fa0",
+  "appAdsTxtStatus": "prepared-not-published-or-verified"
 }

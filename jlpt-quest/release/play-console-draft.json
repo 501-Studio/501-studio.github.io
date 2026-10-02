@@ -133,8 +133,8 @@
     "collection": true,
     "sharing": "Ads SDK handling must match actual version, consent, age and release configuration; verify applicable service-provider exceptions.",
     "encryptedInTransit": "SDK TLS and configured HTTPS verification endpoint; verify actual release",
-    "accountCreation": false,
-    "deleteAccountWebUrl": "not applicable to a separate app account; no account creation",
+    "accountCreation": true,
+    "deleteAccountWebUrl": "REQUIRED: publish data-deletion.html; Google SSO purchase identity is treated as an app account",
     "billingBackendDeployed": false,
     "rtdnAndDurableTokenOwnershipImplemented": false,
     "dataSafetyConsoleState": "unverified"
