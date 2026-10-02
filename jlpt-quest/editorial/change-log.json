@@ -16720,6 +16720,14 @@
     "scope": "punctuation-only"
   },
   {
+    "id": "N2-tlqi7v",
+    "word": "ええと",
+    "reading": "ええと",
+    "old": "봐야 할 것 같아요 ᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒᄒ",
+    "new": "음, 어, 어디 보자",
+    "scope": "id"
+  },
+  {
     "id": "N2-4e032r",
     "word": "オイル",
     "reading": "おいる",
@@ -42160,6 +42168,22 @@
     "scope": "id"
   },
   {
+    "id": "N1-11crmnn",
+    "word": "臍",
+    "reading": "へそ",
+    "old": "버튼",
+    "new": "배꼽",
+    "scope": "id"
+  },
+  {
+    "id": "N1-13ouzrm",
+    "word": "茹でる",
+    "reading": "ゆでる",
+    "old": "술을 마시게",
+    "new": "삶다, 데치다",
+    "scope": "id"
+  },
+  {
     "id": "N1-6fe7hc",
     "word": "蕾",
     "reading": "つぼみ",
@@ -42192,12 +42216,20 @@
     "scope": "id"
   },
   {
+    "id": "N1-15qiijg",
+    "word": "躓く",
+    "reading": "つまずく",
+    "old": "여행을 위해 을 다",
+    "new": "발이 걸리다, 넘어지다",
+    "scope": "id"
+  },
+  {
     "id": "N1-1yvfp9z",
     "word": "躾",
     "reading": "しつけ",
     "old": "홈 · 교육 · 교육 · 육식 · 육식",
-    "new": "홈, 교육, 육식",
-    "scope": "punctuation-only"
+    "new": "훈육, 예절 교육",
+    "scope": "id"
   },
   {
     "id": "N1-t3jr4p",
@@ -42240,6 +42272,14 @@
     "scope": "id"
   },
   {
+    "id": "N1-1jblqnz",
+    "word": "鋏",
+    "reading": "はさみ",
+    "old": "분리기",
+    "new": "가위",
+    "scope": "id"
+  },
+  {
     "id": "N1-qmx5lm",
     "word": "騙す",
     "reading": "だます",
@@ -42252,7 +42292,15 @@
     "word": "黴菌",
     "reading": "ばいきん",
     "old": "박테리아 · 균형",
-    "new": "박테리아, 균형",
-    "scope": "punctuation-only"
+    "new": "세균, 병균",
+    "scope": "id"
+  },
+  {
+    "id": "N1-spyjc9",
+    "word": "鼾",
+    "reading": "いびき",
+    "old": "스노우",
+    "new": "코골이",
+    "scope": "id"
   }
 ]

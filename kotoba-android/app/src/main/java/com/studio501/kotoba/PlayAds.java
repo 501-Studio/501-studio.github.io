@@ -42,8 +42,13 @@ public final class PlayAds {
  }
  private void initializeIfAllowed(){if(!canRequest())return;
   if(!initialized){if(initializing)return;initializing=true;
-   // Non-personalized requests only. No mediation, location, or custom audience signals.
-   MobileAds.setRequestConfiguration(new RequestConfiguration.Builder().setMaxAdContentRating(RequestConfiguration.MAX_AD_CONTENT_RATING_G).build());
+   // The target includes teens. Apply teen protections to every request, including adults,
+   // without collecting a birth date or encouraging users to claim an older age.
+   MobileAds.setRequestConfiguration(new RequestConfiguration.Builder()
+       .setAgeRestrictedTreatment(AgeRestrictedTreatment.TEEN)
+       .setMaxAdContentRating(RequestConfiguration.MAX_AD_CONTENT_RATING_G)
+       .setPublisherPrivacyPersonalizationState(RequestConfiguration.PublisherPrivacyPersonalizationState.DISABLED)
+       .build());
    MobileAds.initialize(activity,status->activity.runOnUiThread(()->{initializing=false;initialized=true;refreshPlacement();}));return;
   }
   refreshPlacement();

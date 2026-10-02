@@ -10,6 +10,19 @@ test('critical dictionary confusions are keyed to Japanese words, not global Kor
  const all=['N5','N4','N3','N2','N1'].flatMap(l=>JSON.parse(read(`../data/${l}.json`)).words);
  assert.ok(all.find(w=>w.word==='経済').meaning.includes('경제'));assert.equal(all.length,8451);
 });
+test('corrected dictionary glosses remain tied to their stable Japanese word IDs',()=>{
+ const words=['N1','N2'].flatMap(l=>JSON.parse(read(`../data/${l}.json`)).words),glosses=JSON.parse(read('../data/korean-glosses.json')).glosses;
+ for(const [id,word,reading,meaning] of [
+  ['N1-11crmnn','臍','へそ','배꼽'],
+  ['N1-13ouzrm','茹でる','ゆでる','삶다, 데치다'],
+  ['N1-1jblqnz','鋏','はさみ','가위'],
+  ['N1-spyjc9','鼾','いびき','코골이'],
+  ['N1-15qiijg','躓く','つまずく','발이 걸리다, 넘어지다'],
+  ['N1-1yvfp9z','躾','しつけ','훈육, 예절 교육'],
+  ['N1-3svmyf','黴菌','ばいきん','세균, 병균'],
+  ['N2-tlqi7v','ええと','ええと','음, 어, 어디 보자']
+ ]){const w=words.find(w=>w.id===id);assert.ok(w,id);assert.equal(w.word,word);assert.equal(w.reading,reading);assert.equal(w.meaning,meaning,word);assert.equal(glosses[id],meaning,word);assert.equal(w.glossReview,'assistant-reviewed',word);}
+});
 test('every definition has comma separators and no translation boilerplate or English',()=>{
  for(const l of ['N5','N4','N3','N2','N1'])for(const w of JSON.parse(read(`../data/${l}.json`)).words){assert.ok(w.meaning.trim());assert.doesNotMatch(w.meaning,/[A-Za-z·•;]|경찰관을 위한 친절한 시간|단어 의미|원래 제목|곡 영어/,w.word);}
 });

@@ -1,4 +1,4 @@
-const NAME='kotoba-course-0.4.1';
+const NAME='kotoba-course-0.4.2';
 const CORE=[
  './tutorial.css','./src/tutorial.js','./src/tutorial-state.js',
  './src/advanced-ui.js','./src/learning-policy.js','./src/study-data.js','./src/example-quality.js','./src/exam-engine.js','./src/playlist.js','./data/context040.js','./data/study040-seed.js',

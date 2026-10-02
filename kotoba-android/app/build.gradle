@@ -13,8 +13,8 @@ android {
         applicationId 'com.studio501.kotoba'
         minSdk 24
         targetSdk 36
-        versionCode 14
-        versionName '0.4.1'
+        versionCode 15
+        versionName '0.4.2'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         manifestPlaceholders = [admobAppId: appIdValue]
         buildConfigField 'boolean', 'ADS_ENABLED', envValue('KOTOBA_ADS_ENABLED','true')

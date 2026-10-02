@@ -107,7 +107,14 @@ public final class MainActivity extends ComponentActivity {
             }
             @Override public boolean shouldOverrideUrlLoading(WebView view,WebResourceRequest req){
                 Uri u=req.getUrl();if(u.toString().startsWith(ORIGIN+"/assets/www/"))return false;
-                if(req.hasGesture()&&"https".equals(u.getScheme()))try{startActivity(new Intent(Intent.ACTION_VIEW,u));}catch(Exception ignored){}
+                if(req.hasGesture()&&"mailto".equals(u.getScheme())){
+                    try{startActivity(new Intent(Intent.ACTION_SENDTO,u));}
+                    catch(android.content.ActivityNotFoundException e){
+                        new AlertDialog.Builder(MainActivity.this).setTitle("이메일로 문의하기")
+                            .setMessage("메일 앱이 없어요. 501.dingerlab@gmail.com으로 문의해 주세요.")
+                            .setPositiveButton("확인",null).show();
+                    }
+                }else if(req.hasGesture()&&"https".equals(u.getScheme()))try{startActivity(new Intent(Intent.ACTION_VIEW,u));}catch(Exception ignored){}
                 return true;
             }
             @Override public boolean onRenderProcessGone(WebView view,RenderProcessGoneDetail detail){
