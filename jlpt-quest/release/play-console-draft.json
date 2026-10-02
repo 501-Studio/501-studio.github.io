@@ -1,5 +1,5 @@
 {
-  "status": "SOURCE_DRAFT_ACCOUNT_STATE_UNVERIFIED",
+  "status": "SOURCE_DRAFT_ACCOUNT_STATE_PARTIALLY_VERIFIED",
   "sourceVersion": "0.4.2",
   "reviewedOn": "2026-10-03",
   "accountEmail": "501.dingerlab@gmail.com",
@@ -85,9 +85,9 @@
     "appPlatform": "Android",
     "appName": "JLPT 단어장 - 코토바",
     "packageName": "com.studio501.kotoba",
-    "appId": null,
-    "bannerAdUnitId": null,
-    "interstitialAdUnitId": null,
+    "appId": "ca-app-pub-7047481394406378~2408479323",
+    "bannerAdUnitId": "ca-app-pub-7047481394406378/2057125539",
+    "interstitialAdUnitId": "ca-app-pub-7047481394406378/1941575467",
     "testIdsOnlyInCurrentDefaultBuild": true,
     "sdkVersion": "25.4.0",
     "umpVersion": "4.0.0",
@@ -95,8 +95,11 @@
     "adPersonalization": "non-personalized-request",
     "maxAdContentRating": "G",
     "umpMessagePublished": null,
-    "appAdsTxtPublisherId": null,
-    "youthConsentAndIdentifierHandling": "must-verify-final-release-configuration"
+    "appAdsTxtPublisherId": "pub-7047481394406378",
+    "youthConsentAndIdentifierHandling": "must-verify-final-release-configuration",
+    "accountReviewStatus": "pending",
+    "storeLinkStatus": "not-yet-listed",
+    "appAdsTxtStatus": "prepared-not-published-or-verified"
   },
   "ownerRequired": {
     "targetAudienceAges": "user-confirmed-13-and-older-console-state-unverified",
@@ -107,7 +110,12 @@
     "accountVerification": null,
     "paymentsProfile": null,
     "merchantTaxInformation": null,
-    "uploadKeystore": null,
+    "uploadKeystore": {
+      "status": "generated-locally-not-registered-with-google-play",
+      "publicCertificateSha256": "21DC558302945945EAA253BC5F70446C1BD42D9536FEAA4A61942593223888D5",
+      "portableOfflineBackupComplete": false,
+      "privateKeyInGit": false
+    },
     "playAppSigning": null,
     "testerRequirementAndCompletion": null
   },
@@ -136,7 +144,10 @@
     "accountCreation": true,
     "deleteAccountWebUrl": "REQUIRED: publish data-deletion.html; Google SSO purchase identity is treated as an app account",
     "billingBackendDeployed": false,
-    "rtdnAndDurableTokenOwnershipImplemented": false,
-    "dataSafetyConsoleState": "unverified"
+    "rtdnAndDurableTokenOwnershipImplemented": true,
+    "dataSafetyConsoleState": "unverified",
+    "rtdnAndRefundsOperationallyVerified": false,
+    "authenticatedAccountDeletionImplemented": true,
+    "accountDeletionOperationallyVerified": false
   }
 }
