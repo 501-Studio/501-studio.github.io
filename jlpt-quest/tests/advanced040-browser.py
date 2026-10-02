@@ -33,7 +33,10 @@ def screenshot(p,name):p.wait_for_timeout(250);p.screenshot(path=str(OUT/name),f
 with sync_playwright() as P:
  b=P.chromium.launch(headless=True,args=['--no-sandbox']);c=b.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2);c.add_init_script(TTS);p=c.new_page();p.on('pageerror',lambda e:errors.append(str(e)));p.on('console',lambda m:console.append(m.text) if m.type=='error' else None);p.on('request',lambda r:requests.append(r.url))
  try:
-  navigate(p,'home');dismiss_tutorial(p);check('page identity, meaningful content and no error overlay','코토바' in p.title() and p.locator('.study-entry').count()>0 and p.locator('.fatal,vite-error-overlay').count()==0)
+  navigate(p,'home');dismiss_tutorial(p)
+  start=p.locator('.study-start [data-action="start-course"]')
+  check('JLPT home has a usable primary study action and no error overlay','JLPT' in p.title() and '코토바' in p.title() and start.count()==1 and start.is_visible() and start.is_enabled() and p.locator('.fatal,vite-error-overlay').count()==0)
+  start_box=start.bounding_box();check('primary study action is in the first mobile viewport',start_box['y']>=0 and start_box['y']+start_box['height']<p.viewport_size['height']-75)
   p.locator('.appbar [data-action="settings"]').click();p.locator('[data-setting="intensity"]').select_option('veryeasy');p.wait_for_timeout(200)
   check('intensity persists and explains zero listening writing',state(p)['settings']['intensity']=='veryeasy' and '쓰기 0문제' in p.locator('#intensity-description').inner_text())
   screenshot(p,'intensity.png');click(p,'close-modal');p.locator('[data-action="start-course"]').first.click();p.wait_for_selector('.survey-card')

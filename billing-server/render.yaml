@@ -1,0 +1,55 @@
+# Deployment proposal. Do not apply before the owner approves recurring cost and
+# Google permissions/secrets are provisioned. No existing service is modified.
+services:
+  - type: web
+    name: kotoba-billing-verifier
+    runtime: docker
+    plan: starter
+    region: singapore
+    repo: https://github.com/501-Studio/501-studio.github.io
+    branch: feat/jlpt-kotoba-play-release
+    rootDir: billing-server
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    autoDeployTrigger: "off"
+    healthCheckPath: /health
+    numInstances: 1
+    disk:
+      name: kotoba-purchase-records
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: RECEIPT_VERIFICATION_ENABLED
+        value: "false"
+      - key: PLAY_PACKAGE
+        value: com.studio501.kotoba
+      - key: SQLITE_PATH
+        value: /var/data/kotoba/receipts.sqlite3
+      - key: ENTITLEMENT_KEY_FILE
+        value: /etc/secrets/entitlement-private.pem
+      - key: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/secrets/google-play-service-account.json
+      - key: TRUST_PROXY_HOPS
+        value: "1"
+      - key: TOKEN_ENCRYPTION_KEY
+        sync: false
+      - key: ACCOUNT_HMAC_KEY
+        sync: false
+      - key: GOOGLE_OAUTH_CLIENT_ID
+        sync: false
+      - key: PLAY_SIGNING_CERT_SHA256
+        sync: false
+      - key: PUBSUB_AUDIENCE
+        sync: false
+      - key: PUBSUB_SERVICE_ACCOUNT_EMAIL
+        sync: false
+      - key: PUBSUB_SUBSCRIPTION
+        sync: false
+      - key: OPS_AUDIENCE
+        sync: false
+      - key: OPS_SERVICE_ACCOUNT_EMAIL
+        sync: false
+# Mount the RSA and ADC JSON files through Render secret files; never commit them.
+# Initialize and protect the disk directory for the non-root Docker user.
+# Configure authenticated Pub/Sub push and hourly reconciliation separately.
+# Add request rate limits before enabling verification. Health is liveness only.

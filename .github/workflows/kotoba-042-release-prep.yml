@@ -35,6 +35,18 @@ jobs:
         run: |
           pip install -r requirements.txt
           python -m unittest discover -s tests -v
+      - name: Docker privilege drop and durable storage smoke test
+        run: |
+          docker build -t kotoba-verifier-test billing-server
+          docker volume create kotoba-qa-data
+          trap 'docker rm -f kotoba-verifier-test || true; docker volume rm kotoba-qa-data || true' EXIT
+          docker run -d --name kotoba-verifier-test -p 127.0.0.1:8080:8080 -e SQLITE_PATH=/var/data/kotoba/receipts.sqlite3 -v kotoba-qa-data:/var/data kotoba-verifier-test
+          curl --fail --retry 20 --retry-connrefused --retry-delay 1 http://127.0.0.1:8080/health > /tmp/kotoba042-qa/backend-health.json
+          python -c "import json; d=json.load(open('/tmp/kotoba042-qa/backend-health.json')); assert not d['configured'] and not d['ready']"
+          docker exec -u app kotoba-verifier-test python -c "import os,sqlite3; assert os.getuid()!=0; db=sqlite3.connect('/var/data/kotoba/receipts.sqlite3'); db.execute('CREATE TABLE smoke (value TEXT)'); db.execute('INSERT INTO smoke VALUES (?)',('durable',)); db.commit(); db.close()"
+          docker restart kotoba-verifier-test
+          curl --fail --retry 20 --retry-connrefused --retry-delay 1 http://127.0.0.1:8080/health > /tmp/kotoba042-qa/backend-health-restarted.json
+          docker exec -u app kotoba-verifier-test python -c "import os,sqlite3,stat; p='/var/data/kotoba/receipts.sqlite3'; assert stat.S_IMODE(os.stat(p).st_mode)==0o600; db=sqlite3.connect(p); assert db.execute('SELECT value FROM smoke').fetchone()[0]=='durable'; db.close(); print('Non-root durable restart passed')"
       - name: Browser regression
         working-directory: jlpt-quest
         run: |
@@ -58,6 +70,20 @@ jobs:
           set -e
           test "$STATUS" -ne 0
           grep -q 'RELEASE BLOCKED' /tmp/kotoba042-qa/release-gate.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jlpt-kotoba-042-web-verification
+          path: /tmp/kotoba042-qa/
+          retention-days: 30
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: Synchronize current web source
         working-directory: jlpt-quest
         run: npm run android:sync
@@ -75,8 +101,28 @@ jobs:
       - name: Android internal APK and AAB, JVM tests and lint
         working-directory: kotoba-android
         run: |
+          mkdir -p /tmp/kotoba042-qa
           set -o pipefail
           gradle --no-daemon assembleDebug bundleDebug assembleDebugAndroidTest testDebugUnitTest lintDebug 2>&1 | tee /tmp/kotoba042-qa/gradle.txt
+      - name: Verify internal package identity and APK signature
+        working-directory: kotoba-android
+        run: |
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" > /tmp/kotoba042-qa/package.txt
+          grep -q "name='com.studio501.kotoba.debug'" /tmp/kotoba042-qa/package.txt
+          grep -q "versionCode='15'" /tmp/kotoba042-qa/package.txt
+          grep -q "versionName='0.4.2-internal'" /tmp/kotoba042-qa/package.txt
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$APK" > /tmp/kotoba042-qa/signature.txt
+      - name: Actual Android lifecycle instrumentation
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          working-directory: kotoba-android
+          script: gradle --no-daemon connectedDebugAndroidTest
       - uses: actions/upload-artifact@v4
         with:
           name: jlpt-kotoba-042-internal
@@ -87,7 +133,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: jlpt-kotoba-042-verification
+          name: jlpt-kotoba-042-android-verification
           path: |
             /tmp/kotoba042-qa/
             kotoba-android/app/build/reports/

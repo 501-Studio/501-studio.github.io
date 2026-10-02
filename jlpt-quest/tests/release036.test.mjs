@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
 import {fresh,createClass,classifySurvey,current,submit,next,validateState,unresolved,createReview} from '../src/course-engine.js';
-import {STARTERS,courses} from '../src/catalog.js';
+import {STARTERS,courses,validateStoredPack} from '../src/catalog.js';
 import {PLANS,mergeProducts} from '../src/commerce.js';
 const read=p=>fs.readFileSync(new URL(p,import.meta.url),'utf8');
 const pack=JSON.parse(read('../data/N5.json'));
@@ -25,6 +25,13 @@ test('corrected dictionary glosses remain tied to their stable Japanese word IDs
 });
 test('every definition has comma separators and no translation boilerplate or English',()=>{
  for(const l of ['N5','N4','N3','N2','N1'])for(const w of JSON.parse(read(`../data/${l}.json`)).words){assert.ok(w.meaning.trim());assert.doesNotMatch(w.meaning,/[A-Za-z·•;]|경찰관을 위한 친절한 시간|단어 의미|원래 제목|곡 영어/,w.word);}
+});
+test('corrupted Japanese readings are corrected without changing saved vocabulary IDs',()=>{
+ const pack=JSON.parse(read('../data/N3.json')),words=pack.words;assert.equal(validateStoredPack(pack),pack);
+ for(const [id,word,reading,original] of [['N3-1b97nrt','とん','とん','(1000'],['N3-1d6ofkx','賛成','さんせい','Uӣ[い']]){
+  const entry=words.find(w=>w.id===id);assert.ok(entry);assert.equal(entry.word,word);assert.equal(entry.reading,reading);assert.equal(entry.pre036Reading,original);
+ }
+ const tampered=structuredClone(pack);tampered.words.find(w=>w.id==='N3-1d6ofkx').reading='さんせん';assert.throws(()=>validateStoredPack(tampered));
 });
 test('editorial audit distinguishes reviewed meanings from punctuation-only changes',()=>{const a=JSON.parse(read('../editorial/audit.json'));assert.equal(a.total,8451);assert.ok(a.semanticReviewed>=2404);assert.equal(a.semanticReviewed+a.remainingSemanticReview,a.total);assert.equal(a.semanticReviewComplete,false);assert.equal(a.levels.N5.semanticReviewed,669);assert.equal(a.levels.N4.semanticReviewed,655);});
 test('unknown words receive three writing repetitions before the actual exam',()=>{

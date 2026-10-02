@@ -1,10 +1,16 @@
 plugins { id 'com.android.application' }
 def stringValue = { String value -> groovy.json.JsonOutput.toJson(value) }
 def envValue = { String name, String fallback -> System.getenv(name) ?: fallback }
-def prodRequested = gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') }
 def sampleApp = 'ca-app-pub-3940256099942544~3347511713'
-def appIdValue = envValue('ADMOB_APP_ID', sampleApp)
+def adConfigFile = rootProject.file('../jlpt-quest/release/admob-production.json')
+def adConfig = adConfigFile.exists() ? new groovy.json.JsonSlurper().parse(adConfigFile) : [:]
+def appIdValue = envValue('ADMOB_APP_ID', adConfig.appId ?: sampleApp)
+def bannerIdValue = envValue('ADMOB_BANNER_ID', adConfig.bannerId ?: 'ca-app-pub-3940256099942544/6300978111')
+def interstitialIdValue = envValue('ADMOB_INTERSTITIAL_ID', adConfig.interstitialId ?: 'ca-app-pub-3940256099942544/1033173712')
 def verifiedSales = envValue('KOTOBA_SELLING_ENABLED', 'false') == 'true'
+def oauthClientId = envValue('GOOGLE_OAUTH_CLIENT_ID', '')
+def integrityProject = envValue('PLAY_INTEGRITY_CLOUD_PROJECT_NUMBER', '0')
+if (!(integrityProject ==~ /[0-9]{1,18}/)) throw new GradleException('Invalid Play Integrity Cloud project number.')
 
 android {
     namespace 'com.studio501.kotoba'
@@ -19,15 +25,22 @@ android {
         manifestPlaceholders = [admobAppId: appIdValue]
         buildConfigField 'boolean', 'ADS_ENABLED', envValue('KOTOBA_ADS_ENABLED','true')
         buildConfigField 'boolean', 'SELLING_ENABLED', verifiedSales.toString()
-        buildConfigField 'String', 'BANNER_AD_UNIT', stringValue(envValue('ADMOB_BANNER_ID','ca-app-pub-3940256099942544/6300978111'))
-        buildConfigField 'String', 'INTERSTITIAL_AD_UNIT', stringValue(envValue('ADMOB_INTERSTITIAL_ID','ca-app-pub-3940256099942544/1033173712'))
+        buildConfigField 'String', 'BANNER_AD_UNIT', stringValue(bannerIdValue)
+        buildConfigField 'String', 'INTERSTITIAL_AD_UNIT', stringValue(interstitialIdValue)
         buildConfigField 'String', 'VERIFICATION_URL', stringValue(envValue('KOTOBA_VERIFICATION_URL',''))
         buildConfigField 'String', 'ENTITLEMENT_PUBLIC_KEY', stringValue(envValue('KOTOBA_ENTITLEMENT_PUBLIC_KEY',''))
+        buildConfigField 'String', 'GOOGLE_OAUTH_CLIENT_ID', stringValue(oauthClientId)
+        buildConfigField 'long', 'PLAY_INTEGRITY_CLOUD_PROJECT_NUMBER', integrityProject+'L'
     }
     buildFeatures { buildConfig true }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
     buildTypes {
-        debug { applicationIdSuffix '.debug'; versionNameSuffix '-internal' }
+        debug {
+            applicationIdSuffix '.debug'; versionNameSuffix '-internal'
+            manifestPlaceholders = [admobAppId: sampleApp]
+            buildConfigField 'String', 'BANNER_AD_UNIT', stringValue('ca-app-pub-3940256099942544/6300978111')
+            buildConfigField 'String', 'INTERSTITIAL_AD_UNIT', stringValue('ca-app-pub-3940256099942544/1033173712')
+        }
         release { minifyEnabled true; shrinkResources true; proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro' }
     }
     lint { abortOnError true }
@@ -38,6 +51,10 @@ dependencies {
     implementation 'com.android.billingclient:billing:9.1.0'
     implementation 'com.google.android.gms:play-services-ads:25.4.0'
     implementation 'com.google.android.ump:user-messaging-platform:4.0.0'
+    implementation 'androidx.credentials:credentials:1.6.0'
+    implementation 'androidx.credentials:credentials-play-services-auth:1.6.0'
+    implementation 'com.google.android.libraries.identity.googleid:googleid:1.2.1'
+    implementation 'com.google.android.play:integrity:1.6.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test:core:1.6.1'
     androidTestImplementation 'androidx.test:runner:1.6.2'
@@ -45,8 +62,10 @@ dependencies {
 }
 tasks.configureEach { task ->
     if (task.name == 'preReleaseBuild') task.doFirst {
-        if (appIdValue == sampleApp || !System.getenv('ADMOB_BANNER_ID') || !System.getenv('ADMOB_INTERSTITIAL_ID')) throw new GradleException('Production AdMob identifiers are not configured.')
+        if ([appIdValue, bannerIdValue, interstitialIdValue].any { it.contains('3940256099942544') }) throw new GradleException('Production AdMob identifiers are not configured.')
+        if (adConfig.accountReviewStatus != 'approved') throw new GradleException('AdMob account/app review is not confirmed.')
         if (!verifiedSales || !System.getenv('KOTOBA_VERIFICATION_URL')?.startsWith('https://') || !System.getenv('KOTOBA_ENTITLEMENT_PUBLIC_KEY')) throw new GradleException('Verified billing backend is not configured.')
+        if (!oauthClientId.endsWith('.apps.googleusercontent.com') || integrityProject.toLong() <= 0) throw new GradleException('Google purchase identity and Play Integrity project are not configured.')
         def approvalFile = rootProject.file('../release-approval.json')
         if(!approvalFile.exists()) throw new GradleException('Production QA approval has not been recorded.')
         def approval = new groovy.json.JsonSlurper().parse(approvalFile)

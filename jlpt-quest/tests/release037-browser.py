@@ -28,7 +28,8 @@ with sync_playwright() as P:
  c=b.new_context(viewport={'width':390,'height':780},has_touch=True,device_scale_factor=2);c.add_init_script("window.__deviceTestSpeech=[];Object.defineProperty(window,'SpeechSynthesisUtterance',{configurable:true,value:class{constructor(t){this.text=t;}}});Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{getVoices:()=>[{lang:'ja-JP',localService:true}],speak(u){window.__deviceTestSpeech.push(u.text);setTimeout(()=>u.onend?.(),50)},cancel(){}}});");p=c.new_page();p.on('pageerror',lambda e:errors.append(str(e)))
  try:
   p.goto(BASE);p.wait_for_selector('.kana-entry');dismiss_tutorial(p)
-  check('kana course appears before N5 level cards',p.locator('.kana-entry').bounding_box()['y']<p.locator('.levels-panel').bounding_box()['y'])
+  kana_entry=p.locator('.kana-entry [data-action="kana-open"]');primary_study=p.locator('.study-start [data-action="start-course"]')
+  check('kana entry remains available after primary JLPT study action',kana_entry.count()==1 and kana_entry.is_visible() and kana_entry.is_enabled() and primary_study.count()==1 and primary_study.is_visible() and primary_study.is_enabled() and primary_study.bounding_box()['y']<kana_entry.bounding_box()['y'])
   p.locator('[data-action="kana-open"]').click();p.wait_for_selector('.kana-grid');check('18 hiragana rows available',p.locator('.kana-lesson').count()==18)
   p.locator('[data-action="kana-script"][data-script="k"]').click();p.wait_for_timeout(200);check('katakana rows use katakana','ア イ ウ エ オ'in p.locator('.kana-grid').inner_text())
   for width,height in [(320,740),(390,780),(768,900),(1440,900)]:

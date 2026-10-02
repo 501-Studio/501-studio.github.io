@@ -1,0 +1,12 @@
+{
+  "appName": "JLPT 단어장 - 코토바",
+  "packageName": "com.studio501.kotoba",
+  "appId": "ca-app-pub-7047481394406378~2408479323",
+  "bannerId": "ca-app-pub-7047481394406378/2057125539",
+  "interstitialId": "ca-app-pub-7047481394406378/1941575467",
+  "publisherId": "pub-7047481394406378",
+  "accountReviewStatus": "pending",
+  "storeLinkStatus": "not-yet-listed",
+  "registeredAt": "2026-10-03",
+  "note": "Public identifiers provisioned in AdMob. Debug builds use Google sample IDs. Account/app approval and device consent tests remain required."
+}

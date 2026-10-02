@@ -80,3 +80,4 @@ html[data-motion=off] *,html[data-motion=off] *:before,html[data-motion=off] *:a
  .page .review-summary>div{min-width:0}
  .page .review-summary h2{font-size:20px;overflow-wrap:anywhere}
 }
+.page .level-tabs.kana-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}

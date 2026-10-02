@@ -21,6 +21,13 @@ def main():
     payload=json.loads((ROOT/'editorial/overrides036.json').read_text())
     digest=hashlib.sha256('\n'.join(w['id'] for w in allwords).encode()).hexdigest()
     if digest!=payload['baseVocabularyIdsSha256']:raise ValueError('Source vocabulary order changed; reconcile editorial overrides first.')
+    by_id={w['id']:w for w in allwords}
+    for entry in payload.get('readingCorrections',[]):
+        w=by_id[entry['id']]
+        if w['word']!=entry['word'] or not re.fullmatch(r'[ぁ-ゖァ-ヺー・\s]+',entry['reading']):
+            raise ValueError('Invalid explicit reading correction: '+entry['id'])
+        w.setdefault('pre036Reading',w['reading'])
+        w['reading']=entry['reading']
     for index,meaning in payload['corrections']:
         w=dict(allwords[index]);w['meaning']=meaning
         keyed[w['id']]=w;pairs.setdefault(w['word']+'|'+w['reading'],w)
@@ -31,6 +38,9 @@ def main():
     for level in ['N5','N4','N3','N2','N1']:
         path=ROOT/'data'/f'{level}.json';pack=json.loads(path.read_text());nchange=nreview=nprop=0
         for w in pack['words']:
+            corrected=by_id[w['id']]
+            if 'pre036Reading' in corrected:
+                w.update(reading=corrected['reading'],pre036Reading=corrected['pre036Reading'])
             old=w['meaning'];before=w.get('pre036Meaning',old)
             e=keyed.get(w['id']);scope='id'
             if e is None:e=pairs.get(w['word']+'|'+w['reading']);scope='same-word-reading'
