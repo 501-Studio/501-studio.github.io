@@ -1,4 +1,5 @@
 import {STARTER_ROWS} from '../data/starter.js';
+import {REVIEWED_IDENTITIES} from './reviewed-identities.js';
 export const LEVELS=['N5','N4','N3','N2','N1'];
 export const EXPECTED={N5:662,N4:632,N3:1784,N2:1793,N1:3463};
 export const CHAPTER_SIZE=30;
@@ -8,13 +9,8 @@ export const TITLES={N5:'기초 한자와 일상',N4:'일상에서 한 걸음 �
 export const UNIT_TITLES={N5:['자연에서 시작하는 한자','학교에서 만나는 단어','하늘과 날씨','하루의 시간','읽고 쓰고 듣기','매일 하는 행동','우리 동네','가족 이야기','크기와 새로움','가격과 색깔','공부하는 하루','살아 있는 것들'],N4:['묻고 약속하기','배움을 준비하기','경험과 가치','연락과 일정','기억과 시작','스스로 고르기','함께하는 행동','몸과 건강','여행과 이동','문화와 생활','의견과 이유','가능성과 미래'],N3:['이유와 결과','상황과 방법','지식과 기술','노력과 변화','참여와 책임','사회 이해','자연과 자원','건강한 생활','마음의 표현','생각을 전하기','계획과 해결','구체적으로 표현하기'],N2:['판단의 시작','문제의 기준','자료를 분석하기','논리의 기초','기업과 시장','계약과 비용','운영과 개선','효과와 구조','변화를 관찰하기','주장과 비판','신중한 태도','행동을 다듬기'],N1:['개념을 정교하게','관찰과 인식','사건의 맥락','실천과 억제','상황을 조정하기','관계와 기여','정밀한 표현','크기와 영향','판단의 정확성','사회의 규범','이어지고 쌓이는 것','깊이 있는 동사']};
 export function hash(text){let h=2166136261;for(const c of text){h^=c.codePointAt(0);h=Math.imul(h,16777619);}return (h>>>0).toString(36);}
 export function idFor(level,word,reading){return `${level}-${hash(word+'|'+reading)}`;}
-// These source readings were corrupt when progress IDs were first assigned.
-// Keep only these reviewed aliases so existing chapters and saved study remain valid.
-const reviewedReadingIds=new Map([
- ['N3-1b97nrt',['とん','とん']],
- ['N3-1d6ofkx',['賛成','さんせい']]
-]);
-function validWordId(w){const reviewed=reviewedReadingIds.get(w.id);return w.id===idFor(w.level,w.word,w.reading)||(w.level==='N3'&&reviewed?.[0]===w.word&&reviewed?.[1]===w.reading);}
+// Only explicit, source-checked aliases may retain a legacy progress ID.
+function validWordId(w){const reviewed=REVIEWED_IDENTITIES[w.id];return w.id===idFor(w.level,w.word,w.reading)||(w.id.startsWith(w.level+'-')&&reviewed?.[0]===w.word&&reviewed?.[1]===w.reading);}
 export function hiragana(text){return String(text).normalize('NFKC').replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-96));}
 export function canonical(raw){const parts=String(raw).normalize('NFKC').split(/[\/／;,、]/).map(x=>x.replace(/\([^)]*\)|（[^）]*）/g,'').trim()).filter(Boolean);return parts.find(x=>/\p{Script=Han}/u.test(x))||parts[0]||'';}
 export function makeWord(level,word,reading,meaning,extra={}){const form=canonical(word),r=canonical(reading)||(/\p{Script=Han}/u.test(form)?'':hiragana(form));return {id:idFor(level,form,r),level,word:form,reading:r,meaning,language:'ko',source:'kotoba-editorial',...extra};}

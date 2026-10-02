@@ -16,6 +16,7 @@ import {configureAudio} from './audio.js';
 import {fitHeadwords} from './fit-text.js';
 import {premiumScreen,refreshCommerce,commerceStatus,handleCommerceAction,notifyScreen} from './commerce.js';
 import {LEVELS,TITLES,courses,writingChars,writingPattern} from './catalog.js';
+import {CONTENT_REVISION} from './reviewed-identities.js';
 import {fresh,current,createClass,classifySurvey,createReview,submit,next,remediate,unresolved,levelStats,dueItems,dueLabel,dayKey,streak,keyOf,validateState,courseLaps} from './course-engine.js';
 import {openStore,loadState,commit,rawState,replaceBackup,ConflictError} from './storage.js';
 import {packs,catalog,initializePacks,packInfo} from './packs.js';
@@ -42,7 +43,7 @@ function mergeWords(){
  words=catalog();lookup=new Map(words.map(w=>[w.id,w]));
  for(const session of [state.session,state.suspendedSession].filter(Boolean)){
   const old=new Map((session.wordSnapshots||[]).map(w=>[w.id,w]));
-  if(session.contentRevision!=='036-editorial-1'){
+  if(session.contentRevision!==CONTENT_REVISION){
    for(const t of session.queue){
     if(t.phase==='quiz'&&t.skill==='meaning'){
      const replacements=new Map();for(const [id,w]of old){if(lookup.has(id))replacements.set(w.meaning,lookup.get(id).meaning);}
@@ -53,7 +54,7 @@ function mergeWords(){
      if(t.options.length<4){for(const w of words){if(w.level===W(t.wordId)?.level&&!t.options.includes(w.meaning))t.options.push(w.meaning);if(t.options.length===4)break;}}
     }
    }
-   session.selection=null;session.contentRevision='036-editorial-1';
+   session.selection=null;session.contentRevision=CONTENT_REVISION;
   }
   session.wordSnapshots=session.wordIds.map(id=>lookup.get(id)||old.get(id)).filter(Boolean);
  }

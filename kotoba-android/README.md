@@ -22,6 +22,22 @@ Browser suites and Android instrumentation also verify lesson recreation, playba
 
 ## Production configuration
 
-Defaults use Google test ad IDs and disable sales. Product and existing purchase queries may still connect to Google Play. Purchase and restore actions require configured sales, an HTTPS verification endpoint and an entitlement public key. `billing-server/` is not deployed and does not implement authenticated RTDN, durable token ownership or refund synchronization.
+Debug builds use Google test ad IDs. Production IDs are read from `jlpt-quest/release/admob-production.json`, whose account review remains pending. Sales default to disabled. Product and existing purchase queries may still connect to Google Play. Purchase and restore actions require configured sales, an HTTPS verification endpoint, an entitlement public key, a Google OAuth client and a Play Integrity project. `billing-server/` implements authenticated RTDN, encrypted durable ownership and refund synchronization, but has not been deployed or connected to real Google credentials.
+
+## Signed Play testing bundles
+
+The `.debug` package cannot establish the real app's Play App Signing certificate or test real product ownership. Build the separate `playTest` variant with package `com.studio501.kotoba` to begin Play's internal testing before production QA is complete. It inherits release optimization, is not debuggable, and retains `-play-test` plus manifest metadata `com.studio501.kotoba.BUILD_STAGE` for artifact inspection. Production gates still apply to `bundleRelease`.
+
+Supply `KOTOBA_UPLOAD_KEYSTORE`, `KOTOBA_UPLOAD_STORE_PASSWORD`, `KOTOBA_UPLOAD_KEY_ALIAS` and `KOTOBA_UPLOAD_KEY_PASSWORD` through a private local environment or secret store. Preserve the upload key securely; do not put keys, passwords or secret environment files in Git or command-line arguments. Set a new `KOTOBA_VERSION_CODE` for each uploaded bundle.
+
+Choose `KOTOBA_PLAY_TEST_STAGE=bootstrap` explicitly for initial Play App Signing setup. This forces Google sample ads and disables sales, identity and verification configuration even if production environment values are present. Once Play provides the app signing certificate, configure Integrity with that certificate (not the upload certificate), OAuth, the server and test products. Then choose `KOTOBA_PLAY_TEST_STAGE=sandbox` and the commerce environment above to test purchases and restores. Both stages use Google sample ad IDs.
+
+```sh
+gradle --no-daemon bundlePlayTest
+```
+
+Distribute these bundles only through internal testing. Confirm every purchaser is a Google Play license tester and selects a test payment method; an internal track by itself does not prevent real charges. Test success is evidence, not a production approval. Play Console permits promotion of test bundles, so inspect the actual final bundle's stage, sample IDs and purchase configuration before production submission. Only a `production` bundle built after all recorded gates pass may be submitted for the requested release.
+
+References: [Android build variants](https://developer.android.com/build/build-variants), [Play App Signing](https://developer.android.com/studio/publish/app-signing), [billing test accounts](https://developer.android.com/google/play/billing/test).
 
 Release builds require actual AdMob IDs, verified commerce infrastructure, upload signing, content/policy evidence, physical-device QA, Play App Signing and account testing. Record approval only after completing each check. Display name: Studio 501; support: 501.dingerlab@gmail.com. The requested release country is Korea and intended audience is ages 13 and older. Non-personalized/G-rated ads alone do not certify youth privacy or consent compliance; verify final under-age-of-consent settings and actual content suitability. If the actual app targets children, review Families requirements as well. See `jlpt-quest/release/GOOGLE_PLAY_RELEASE_AUDIT.md` and `PLAY_CONSOLE_FIELDS_KO.md` for confirmed operator information and remaining requirements.
