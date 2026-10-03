@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kotoba-billing-verifier",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-03",
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": false },
+  "vars": {
+    "PLAY_PACKAGE": "com.studio501.kotoba",
+    "BILLING_EVENT_MODE": "poll",
+    "POLLING_OPERATIONS_VERIFIED": "false",
+    "RECEIPT_VERIFICATION_ENABLED": "false",
+    "ACCOUNT_DELETION_ENABLED": "false",
+    "RECONCILIATION_ENABLED": "false"
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "BILLING_STATE", "class_name": "BillingCoordinator" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["BillingCoordinator"] }],
+  "rules": [{ "type": "Text", "globs": ["**/*.html"], "fallthrough": true }]
+}

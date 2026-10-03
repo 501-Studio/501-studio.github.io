@@ -16,6 +16,7 @@ import {configureAudio} from './audio.js';
 import {fitHeadwords} from './fit-text.js';
 import {premiumScreen,refreshCommerce,commerceStatus,handleCommerceAction,notifyScreen} from './commerce.js';
 import {LEVELS,TITLES,courses,writingChars,writingPattern} from './catalog.js';
+import {refreshSessionContent} from './content-migration.js';
 import {fresh,current,createClass,classifySurvey,createReview,submit,next,remediate,unresolved,levelStats,dueItems,dueLabel,dayKey,streak,keyOf,validateState,courseLaps} from './course-engine.js';
 import {openStore,loadState,commit,rawState,replaceBackup,ConflictError} from './storage.js';
 import {packs,catalog,initializePacks,packInfo} from './packs.js';
@@ -25,11 +26,13 @@ import {SNAP_MODE,validPrefix} from './stroke-match.js';
 import {loadStrokeBank,characterStrokes,requireStrokes} from './stroke-bank.js';
 import {speak,speakSentence,stopAudio} from './audio.js';
 import {isNative,callNative,installBridge} from './native.js';
+import {speechSetupGuide,updateSpeechGuide} from './speech-guide.js';
 import {applyMotion,haptic,celebrate} from './motion.js';
 
 const root=document.querySelector('#app'),modal=document.querySelector('#modal-root');
 let state=fresh(),words=[],lookup=new Map(),ready=false,saving=false,busy=false,ink=null,storageOK=true,warning='',toastTimer,epoch=0,audioNonce=0,gradeNonce=0,autoVoiceWarned=false;
 let modalFit=()=>{},footerObserver=null,budgetTimer=null,promptClock={id:null,at:0};
+let lessonSpeechFailure={taskId:null,message:''};
 let tutorialRecord=freshTutorial(),tutorialSession=null,tutorialWrites=Promise.resolve(),tutorialSuppressed=false,tutorialSaveFailed=false;
 let statsView={days:7,level:'all',date:null},practiceWordId=null,practiceRepeats=3;
 let filter='due',wordFilter='all',search='',limit=80,courseLimit=24,pendingCourse=null,imported=null,priorFocus=null;
@@ -40,25 +43,28 @@ const advancedContext=()=>({state,words,save,render,toast,go,openModal,closeModa
 const W=id=>lookup.get(id)||state.session?.wordSnapshots?.find(w=>w.id===id)||state.suspendedSession?.wordSnapshots?.find(w=>w.id===id);
 function mergeWords(){
  words=catalog();lookup=new Map(words.map(w=>[w.id,w]));
- for(const session of [state.session,state.suspendedSession].filter(Boolean)){
-  const old=new Map((session.wordSnapshots||[]).map(w=>[w.id,w]));
-  if(session.contentRevision!=='036-editorial-1'){
-   for(const t of session.queue){
-    if(t.phase==='quiz'&&t.skill==='meaning'){
-     const replacements=new Map();for(const [id,w]of old){if(lookup.has(id))replacements.set(w.meaning,lookup.get(id).meaning);}
-     t.options=(t.options||[]).map(x=>replacements.get(x)||x);
-     const correct=lookup.get(t.wordId)?.meaning;
-     if(correct&&!t.options.includes(correct))t.options[0]=correct;
-     t.options=[...new Set(t.options)];
-     if(t.options.length<4){for(const w of words){if(w.level===W(t.wordId)?.level&&!t.options.includes(w.meaning))t.options.push(w.meaning);if(t.options.length===4)break;}}
-    }
-   }
-   session.selection=null;session.contentRevision='036-editorial-1';
-  }
-  session.wordSnapshots=session.wordIds.map(id=>lookup.get(id)||old.get(id)).filter(Boolean);
- }
+ refreshSessionContent(state,words);
 }
 function toast(text){const t=document.querySelector('#toast');t.textContent=text;t.className='on show';clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.className='',4500);}
+function speechGuideTarget(status,lesson=false){
+ if(lesson)return document.querySelector('#lesson-speech-guide');
+ const container=status?.closest('.wordbook-item,.detail-word,.example-pane,.speech-settings-panel')||modal.querySelector('.sheet');
+ if(!container)return null;
+ if(container.matches('.speech-settings-panel'))return null;
+ let target=container.querySelector(':scope > .speech-problem');
+ if(!target){target=document.createElement('div');target.className='speech-problem';container.append(target);}
+ return target;
+}
+function showSpeechFailure(error,status=null,lesson=false){
+ const message=error?.message||'기기 음성을 사용할 수 없어요.';
+ if(lesson)lessonSpeechFailure={taskId:current(state.session)?.id,message};
+ if(status?.isConnected)status.textContent=message;
+ updateSpeechGuide(speechGuideTarget(status,lesson),message);
+}
+function clearSpeechFailure(status=null,lesson=false){
+ if(lesson)lessonSpeechFailure={taskId:null,message:''};
+ updateSpeechGuide(speechGuideTarget(status,lesson));
+}
 function save(){
  state.uiRoute=route();const snapshot=structuredClone(state),generation=epoch;
  const job=tail.then(async()=>{if(generation!==epoch||!storageOK)return false;saving=true;
@@ -71,23 +77,17 @@ function go(name){if(route()===name)render();else location.hash=name;}
 function showReading(w){return state.settings.furigana&&w.reading?`<span class="reading" lang="ja">${esc(w.reading)}</span>`:'';}
 function wordHTML(w,large=false){return `<div class="${large?'big-japanese':'japanese'}"><strong lang="ja" ${large?'data-fit-word data-max-font="60"':''}>${esc(w.word)}</strong>${showReading(w)}</div>`;}
 function levelButtons(){return `<div class="level-tabs" role="group" aria-label="학습 급수">${LEVELS.map(l=>`<button data-action="level" data-level="${l}" class="${state.settings.level===l?'active':''}" aria-pressed="${state.settings.level===l}">${l}</button>`).join('')}</div>`;}
-const menus=[['home','home','홈'],['course','book','커리큘럼'],['review','refresh','복습'],['words','library','단어장'],['profile','chart','내 기록']];
+const menus=[['home','home','홈'],['course','book','학습'],['review','refresh','복습'],['words','library','단어장'],['profile','chart','내 기록']];
 function nav(mobile=false){return `<nav class="${mobile?'bottom-nav':'side-nav'}" aria-label="${mobile?'모바일 메뉴':'주 메뉴'}">${menus.map(([id,ic,label])=>`<a href="#${id}" class="${route()===id?'active':''}" ${route()===id?'aria-current="page"':''}>${icon(ic)}<span>${label}</span></a>`).join('')}</nav>`;}
-function shell(body){const d=state.daily[dayKey()]?.keys.length||0;return `<aside class="sidebar"><a class="brand" href="#home">${mark()}<span>kotoba</span></a>${nav()}<div class="sidebar-bottom"><button class="quiet-link" data-action="settings">${icon('settings')}설정</button><a href="./privacy.html">개인정보처리방침</a><a href="./terms.html">이용약관</a><a href="./licenses.html">오픈소스·저작권</a></div></aside><div class="workspace">${warning?`<div class="store-warning" role="alert">${esc(warning)}</div>`:''}<header class="appbar"><a class="mobile-brand" href="#home">${mark()}<b>코토바</b></a><span class="desktop-title">나의 일본어 수업</span><div class="appbar-tools"><button class="reading-toggle ${state.settings.furigana?'active':''}" data-action="furigana" aria-pressed="${state.settings.furigana}" aria-label="히라가나 ${state.settings.furigana?'끄기':'켜기'}"><span lang="ja">あ</span><span>${state.settings.furigana?'켜짐':'꺼짐'}</span></button><button class="icon-btn" data-action="settings" aria-label="설정">${icon('settings')}</button></div></header><div class="layout"><main class="page" id="main">${body}</main><aside class="right-rail"><section class="panel rail-goal"><div class="today-summary"><span>오늘 푼 문제</span><b>${d}개</b><span>${streak(state)}일 연속 학습</span></div></section><section class="panel"><h3>수업 순서</h3><ol class="class-flow"><li>새 단어와 뜻 확인</li><li>발음을 듣고 한자 쓰기</li><li>모르는 단어만 확인</li><li>오답 복습</li></ol><p class="fine">오답을 모두 통과하면 완료됩니다.</p></section></aside></div></div>${nav(true)}`;}
+function shell(body){const d=state.daily[dayKey()]?.keys.length||0;return `<aside class="sidebar"><a class="brand" href="#home">${mark()}<span>JLPT 코토바</span></a>${nav()}<div class="sidebar-bottom"><button class="quiet-link" data-action="settings">${icon('settings')}설정</button><a href="./privacy.html">개인정보처리방침</a><a href="./terms.html">이용약관</a><a href="./licenses.html">오픈소스·저작권</a></div></aside><div class="workspace">${warning?`<div class="store-warning" role="alert">${esc(warning)}</div>`:''}<header class="appbar"><a class="mobile-brand" href="#home">${mark()}<b>JLPT 코토바</b></a><span class="desktop-title">나의 일본어 수업</span><div class="appbar-tools"><button class="reading-toggle ${state.settings.furigana?'active':''}" data-action="furigana" aria-pressed="${state.settings.furigana}" aria-label="히라가나 ${state.settings.furigana?'끄기':'켜기'}"><span lang="ja">あ</span><span>${state.settings.furigana?'켜짐':'꺼짐'}</span></button><button class="icon-btn" data-action="settings" aria-label="설정">${icon('settings')}</button></div></header><div class="layout"><main class="page" id="main">${body}</main><aside class="right-rail"><section class="panel rail-goal"><div class="today-summary"><span>오늘 푼 문제</span><b>${d}개</b><span>${streak(state)}일 연속 학습</span></div></section><section class="panel"><h3>수업 순서</h3><ol class="class-flow"><li>새 단어와 뜻 확인</li><li>발음을 듣고 한자 쓰기</li><li>모르는 단어만 확인</li><li>오답 복습</li></ol><p class="fine">오답을 모두 통과하면 완료됩니다.</p></section></aside></div></div>${nav(true)}`;}
 function resume(){return [state.session,state.suspendedSession].map((s,i)=>s&&!s.finished?`<section class="resume"><div><b>${esc(lessonName(s))} · ${i?'보관 중':'진행 중'}</b><p>${s.index+1} / ${s.queue.length}단계 · 필기와 답 선택도 저장돼요</p></div><div class="resume-actions">${btn(i?'switch-session':'resume','이어서 하기','soft')}${i?'':btn('restart-session','이번 회차 처음부터','text')}</div></section>`:'').join('');}
 function home(){
- const l=state.settings.level,list=courses(words,l),c=list.find(c=>!state.completed[c.id])||list[0],stats=levelStats(state,words,l),p=packInfo(l),lap=courseLaps(state,c.id)+1;
- return `${heading('단어 학습','챕터당 최대 30단어 · 모르는 단어만 학습')}${hubEntry()}${resume()}${practiceResume()}${kanaEntry(state)}
+ const l=state.settings.level,list=courses(words,l),c=list.find(c=>!state.completed[c.id])||list[0],due=dueItems(state,words).length,lap=courseLaps(state,c.id)+1;
+ return `<div class="home-dashboard">${heading('JLPT 단어 학습','급수를 고르고, 모르는 단어부터 차근차근')}${resume()}${practiceResume()}${levelButtons()}
+ <section class="panel study-start" aria-labelledby="study-start-title"><div class="study-start-copy"><span class="label">${l} · ${lap}회독</span><h2 id="study-start-title">제${c.index}장 · ${esc(c.title)}</h2><p>${c.wordIds.length}단어를 확인하고, 모르는 단어만 듣고 써요.</p><ol class="study-start-steps" aria-label="학습 순서"><li>단어 확인</li><li>듣기·쓰기</li><li>시험·복습</li></ol></div>${btn('start-course',`${icon('next')} ${l} 제${c.index}장 학습 시작`,'primary wide',`data-id="${c.id}" ${storageOK?'':'disabled'}`)}<a class="study-chapters" href="#course">전체 ${list.length}개 챕터 보기 ${icon('next')}</a></section>
+ <div class="home-shortcuts"><a class="panel shortcut" href="#review"><span class="soft-icon lavender">${icon('refresh')}</span><div><b>오늘 복습</b><p>${due?`${l} · 지금 ${due}문제`:'복습 일정 · 미리 복습'}</p></div>${icon('next')}</a><a class="panel shortcut" href="#words"><span class="soft-icon mint">${icon('library')}</span><div><b>단어장</b><p>검색 · 별표 · 듣기·쓰기</p></div>${icon('next')}</a></div>
  <section class="panel levels-panel"><div class="section-title"><h2>급수별 학습 현황</h2><span>학습 현황</span></div><div class="level-progress-grid">${LEVELS.map(level=>{const st=levelStats(state,words,level);return `<button data-action="level" data-level="${level}" class="level-progress ${level===l?'selected':''}" aria-pressed="${level===l}"><div><b>${level}</b><span>${st.learned}<small> / ${st.total.toLocaleString()}</small></span></div><span class="line-progress"><i style="width:${st.total?st.learned/st.total*100:0}%"></i></span><small>아는 단어 ${st.known} · 복습 ${st.due}</small></button>`;}).join('')}</div></section>
- <section class="chapter-book featured" data-action="start-course" data-id="${c.id}" role="button" tabindex="0" aria-label="${l} 제${c.index}장 ${lap}회독 시작">
-   <span class="book-ribbon">${state.session?.course?.id===c.id&&!state.session.finished?'진행중':'다음 회독'}</span>
-   <div class="book-spine"></div>
-   <div class="book-copy"><b>${l}</b><strong>第${c.index}章</strong><span>${lap}회독</span><small>No.${c.startNo}~${c.endNo}</small></div>
-   <span class="book-open">${icon('book')}</span>
- </section>
- <div class="chapter-summary"><b>${esc(c.title)}</b><p>30단어 빠른 회독 → 모르는 단어만 듣기·쓰기 → 모르는 단어만 시험</p>${btn('start-course',`${icon('next')} 제${c.index}장 ${lap}회독 시작`,'primary wide',`data-id="${c.id}" ${storageOK?'':'disabled'}`)}</div>
- <div class="home-shortcuts"><button class="panel shortcut" data-action="review-start"><span class="soft-icon lavender">${icon('refresh')}</span><div><b>복습</b><p>${stats.due?`${stats.due}문제`:'복습 일정 보기'}</p></div>${icon('next')}</button><a class="panel shortcut" href="#course"><span class="soft-icon mint">${icon('book')}</span><div><b>전체 챕터</b><p>${list.length}개 챕터 · 챕터당 최대 30단어</p></div>${icon('next')}</a></div>
- `;
+ ${hubEntry()}${kanaEntry(state)}</div>`;
 }
 function curriculum(){
  const l=state.settings.level,p=packInfo(l),list=courses(words,l);
@@ -99,13 +99,19 @@ function curriculum(){
 }
 function review(){
  const now=Date.now(),rows=dueItems(state,words,now,filter),due=dueItems(state,words,now),early=dueItems(state,words,now,'preview');
- return `${heading('복습')}${hubEntry()}<div class="timebox-options">${[5,10,20].map(n=>btn('timebox-start',n+'분 복습','soft',`data-minutes="${n}"`)).join('')}${btn('spread-open','일정 분산','text')}</div>${resume()}${levelButtons()}<section class="panel review-summary"><span class="soft-icon lavender">${icon('refresh')}</span><div><h2>지금 복습 ${due.length}문제</h2><p>${state.settings.level} · 미리 복습 ${early.length}문제</p></div>${btn('review-start','복습 시작','primary',due.length?'':'disabled')}</section><div class="review-toolbar">${btn('preview-start','미리 복습','soft',early.length?'':'disabled')}${filter==='weak'&&rows.length?btn('weak-start','오답 복습','soft'):''}</div><div class="filter-chips" role="group" aria-label="복습 필터">${[['due','지금 복습'],['preview','미리 복습'],['weak','오답'],['all','전체 일정']].map(([id,label])=>`<button class="${filter===id?'active':''}" data-action="filter" data-id="${id}">${label}</button>`).join('')}</div><section class="panel word-list">${rows.slice(0,80).map(r=>{const w=W(r.wordId);return `<button class="word-row" data-action="word" data-id="${w.id}">${wordHTML(w)}<div class="word-detail"><p>${esc(w.meaning)}</p><small>${names[r.skill]} · ${r.knownPreview?'아는 단어 · 시험 전':dueLabel(r.due)}</small></div>${icon('next')}</button>`;}).join('')||empty('복습할 문제가 없습니다.','수업을 진행하거나 단어장에서 연습할 수 있습니다.')}</section><p class="fine spaced">미리 복습에서 맞힌 문제는 예정된 복습일을 유지합니다. 틀린 문제는 10분 뒤 다시 출제됩니다. 아는 단어로만 표시했던 단어도 시험할 수 있습니다.</p>`;
+ return `${heading('복습','기억이 흐려질 때 다시 확인하세요.')}${resume()}${levelButtons()}
+ <section class="panel review-summary"><span class="soft-icon lavender">${icon('refresh')}</span><div><h2>${due.length?`지금 복습 ${due.length}문제`:'지금 예정된 복습이 없어요'}</h2><p>${state.settings.level} · ${early.length?`미리 복습 ${early.length}문제`:'학습하면 복습 일정이 생겨요.'}</p></div>${due.length?btn('review-start','복습 시작','primary'):early.length?btn('preview-start','미리 복습 시작','primary'):btn('home','새 단어 학습하기','primary')}</section>
+ <div class="review-toolbar">${due.length&&early.length?btn('preview-start','미리 복습','soft'):''}${filter==='weak'&&rows.length?btn('weak-start','오답 복습','soft'):''}</div>
+ <div class="filter-chips" role="group" aria-label="복습 필터">${[['due','지금 복습'],['preview','미리 복습'],['weak','오답'],['all','전체 일정']].map(([id,label])=>`<button class="${filter===id?'active':''}" data-action="filter" data-id="${id}" aria-pressed="${filter===id}">${label}</button>`).join('')}</div><section class="panel word-list">${rows.slice(0,80).map(r=>{const w=W(r.wordId);return `<button class="word-row" data-action="word" data-id="${w.id}">${wordHTML(w)}<div class="word-detail"><p>${esc(w.meaning)}</p><small>${names[r.skill]} · ${r.knownPreview?'아는 단어 · 시험 전':dueLabel(r.due)}</small></div>${icon('next')}</button>`;}).join('')||empty('복습할 문제가 없습니다.','수업을 진행하거나 단어장에서 연습할 수 있습니다.')}</section><p class="fine spaced">미리 복습에서 맞힌 문제는 예정된 복습일을 유지합니다. 틀린 문제는 10분 뒤 다시 출제됩니다. 아는 단어로만 표시했던 단어도 시험할 수 있습니다.</p>
+ <div class="timebox-options">${[5,10,20].map(n=>btn('timebox-start',n+'분 복습','soft',`data-minutes="${n}"`)).join('')}${btn('spread-open','일정 분산','text')}</div>${hubEntry()}`;
 }
-function matchingWords(){let list=words.filter(w=>w.level===state.settings.level&&(wordFilter!=='star'||state.starred.includes(w.id))&&(wordFilter!=='known'||state.known[w.id])&&(wordFilter!=='learning'||state.encountered[w.id]&&!state.known[w.id]&&!state.learned[w.id])&&(wordFilter!=='today'||state.encountered[w.id]&&dayKey(state.encountered[w.id])===dayKey())&&(wordFilter!=='long'||['meaning','listening','writing'].every(k=>(state.memory[keyOf(w.id,k)]?.stage??-1)>=3))&&(!search||[w.word,w.reading,w.meaning].some(v=>v.toLowerCase().includes(search.toLowerCase()))));if(advanced.sort){const order=new Map(advanced.order.map((id,i)=>[id,i]));list.sort((a,b)=>(order.get(a.id)??0)-(order.get(b.id)??0));}return list;}
+function matchingWords(){const query=search.trim().toLowerCase();let list=words.filter(w=>w.level===state.settings.level&&(wordFilter!=='star'||state.starred.includes(w.id))&&(wordFilter!=='known'||state.known[w.id])&&(wordFilter!=='learning'||state.encountered[w.id]&&!state.known[w.id]&&!state.learned[w.id])&&(wordFilter!=='today'||state.encountered[w.id]&&dayKey(state.encountered[w.id])===dayKey())&&(wordFilter!=='long'||['meaning','listening','writing'].every(k=>(state.memory[keyOf(w.id,k)]?.stage??-1)>=3))&&(!query||[w.word,w.reading,w.meaning].some(v=>v.toLowerCase().includes(query))));if(advanced.sort){const order=new Map(advanced.order.map((id,i)=>[id,i]));list.sort((a,b)=>(order.get(a.id)??0)-(order.get(b.id)??0));}return list;}
 function wordActions(w){return `<div class="wordbook-actions">${btn('word-audio',icon('sound')+' 단어 듣기','soft',`data-id="${w.id}" aria-label="${esc(w.word)} 단어 듣기"`)}${btn('word-example-audio',icon('sound')+' 예문 듣기','soft',`data-id="${w.id}" aria-label="${esc(w.word)} 예문 듣기" ${examplesFor(w).length?'':'disabled'}`)}${btn('practice-options',icon('pen')+(/\p{Script=Han}/u.test(w.word)?'한자 쓰기':'가나 쓰기'),'soft',`data-id="${w.id}" aria-label="${esc(w.word)} 쓰기 연습"`)}</div>`;}
 function wordRows(){const list=matchingWords();return `${list.slice(0,limit).map(w=>`<div class="wordbook-item">${selectedWordButton(w)}<div class="word-row"><button class="word-button" data-action="word" data-id="${w.id}">${wordHTML(w)}<div class="word-detail"><p>${esc(w.meaning)}</p><small>${state.known[w.id]?'아는 단어 · 직접 표시':state.learned[w.id]?'수업 완료':state.encountered[w.id]?'학습 중':'미학습'}</small></div></button><button class="icon-btn ${state.starred.includes(w.id)?'starred':''}" data-action="star" data-id="${w.id}" aria-label="${esc(w.word)} 별표" aria-pressed="${state.starred.includes(w.id)}">${icon('star')}</button></div>${wordActions(w)}<p class="word-audio-status" aria-live="polite"></p></div>`).join('')||empty('검색 결과가 없습니다.','한자, 읽기 또는 뜻으로 검색하세요.')}${list.length>limit?btn('more-words',`${list.length-limit}개 더 보기`,'soft wide'):''}`;}
 function practiceResume(){const p=state.wordPractice;return p&&!p.finished?`<section class="resume"><div><b>단어장 쓰기 · ${esc(W(p.wordId)?.word||'')}</b><p>${p.completed} / ${p.repeats}회 완료 · 필기 저장됨</p></div>${btn('practice-resume','이어서 쓰기','soft')}</section>`:'';}
-function wordPage(){return `${heading('단어장')}${wordSelectionBar()}${practiceResume()}${levelButtons()}<label class="word-search">${icon('search')}<input id="search" type="search" value="${esc(search)}" aria-label="단어 검색" placeholder="한자, 읽기, 한국어 뜻" autocomplete="off"></label><div class="filter-chips">${[['all','전체'],['star','별표'],['known','아는 단어'],['learning','학습 중'],['today','오늘 처음 본 단어'],['long','7일 이상 복습']].map(([id,label])=>`<button data-action="word-filter" data-id="${id}" class="${wordFilter===id?'active':''}">${label}</button>`).join('')}</div><section class="panel word-list" id="word-results">${wordRows()}</section>`;}
+function wordResultsLabel(){return `${state.settings.level} · ${matchingWords().length.toLocaleString()}단어${search.trim()?' · 검색 결과':''}`;}
+function refreshWordResults(){document.querySelector('#word-results').innerHTML=wordRows();document.querySelector('#word-results-status').textContent=wordResultsLabel();document.querySelector('[data-action="clear-search"]').hidden=!search;}
+function wordPage(){return `${heading('단어장','한자, 읽기, 한국어 뜻으로 찾고 바로 연습하세요.')}${wordSelectionBar()}${practiceResume()}${levelButtons()}<div class="word-search" role="search" aria-label="단어장 검색">${icon('search')}<input id="search" type="search" value="${esc(search)}" aria-label="단어 검색" aria-controls="word-results" aria-describedby="word-results-status" placeholder="한자, 읽기, 한국어 뜻" autocomplete="off">${btn('clear-search',icon('close'),'icon-btn',`aria-label="검색어 지우기" ${search?'':'hidden'}`)}</div><div class="filter-chips" role="group" aria-label="단어장 필터">${[['all','전체'],['star','별표'],['known','아는 단어'],['learning','학습 중'],['today','오늘 처음 본 단어'],['long','7일 이상 복습']].map(([id,label])=>`<button data-action="word-filter" data-id="${id}" class="${wordFilter===id?'active':''}" aria-pressed="${wordFilter===id}" aria-controls="word-results">${label}</button>`).join('')}</div><p class="word-results-status fine" id="word-results-status" role="status" aria-live="polite">${wordResultsLabel()}</p><section class="panel word-list" id="word-results">${wordRows()}</section>`;}
 
 function profile(){return statisticsView(state,words,statsView)+monthlyPanel(state,words)+hubEntry();}
 function ensureInk(s,w){
@@ -128,7 +134,8 @@ function questionPage(){const s=state.session;if(!s)return `<div class="focus-sh
  if((training&&!(t.skill==='trace'&&t.guided===false))||(t.skill==='survey'&&s.surveyMeaning))body+=exampleButton(w);
  if(s.feedback&&!s.feedback.training)body=`<section class="answer-reveal feedback-card"><span class="label">정답 확인</span>${wordHTML(w,true)}<p class="word-meaning">${esc(w.meaning)}</p>${exampleBody(w,state.settings.furigana,s.exampleIndex||0,{headword:false})}</section>`;
  else if(s.showExample&&((training&&!(t.skill==='trace'&&t.guided===false))||(t.skill==='survey'&&s.surveyMeaning)||s.assisted))body=`<section class="answer-reveal feedback-card">${wordHTML(w)}<p>${esc(w.meaning)}</p>${exampleBody(w,state.settings.furigana,s.exampleIndex||0,{headword:false})}${btn('hide-examples','문제로 돌아가기','text')}</section>`;
- const chapterLabel=s.kind==='class'&&s.course?`${s.course.level} · 第${s.course.index}章 · ${courseLaps(state,s.course.id)+1}회독`:s.level||w.level||state.settings.level;return `<div class="focus-shell"><header class="focus-top"><button class="icon-btn" data-action="pause" aria-label="수업 중단 메뉴">${icon('close')}</button><div class="session-progress"><div class="line-progress"><i style="width:${s.index/s.queue.length*100}%"></i></div></div><button class="reading-toggle" data-action="furigana" aria-pressed="${state.settings.furigana}" aria-label="히라가나 표시 전환"><span lang="ja">あ</span>${state.settings.furigana?'ON':'OFF'}</button></header><div class="session-label"><span>${chapterLabel} · ${s.kind==='review'?(s.reviewMode==='preview'?'미리 복습':'복습'):t.phase==='survey'?'빠른 회독':training?'모르는 단어 학습':'모르는 단어 시험'}${t.attempt?' · 다시 확인':''}</span><span>${t.phase==='survey'?`${s.index+1}/${s.wordIds.length}`:`${s.index+1}/${s.queue.length}`}</span></div><main class="question" id="main">${s.budgetMs?'<p class="timebox-clock">남은 시간 <b id="budget-clock">'+Math.max(0,Math.ceil((s.budgetMs-(s.elapsedMs||0))/1000))+'초</b></p>':''}${body}</main></div>${footer(s,t)}`;
+ const speechNotice=lessonSpeechFailure.taskId===t.id?`<div id="lesson-speech-guide">${speechSetupGuide({error:lessonSpeechFailure.message})}</div>`:'<div id="lesson-speech-guide"></div>';
+ const chapterLabel=s.kind==='class'&&s.course?`${s.course.level} · 第${s.course.index}章 · ${courseLaps(state,s.course.id)+1}회독`:s.level||w.level||state.settings.level;return `<div class="focus-shell"><header class="focus-top"><button class="icon-btn" data-action="pause" aria-label="수업 중단 메뉴">${icon('close')}</button><div class="session-progress"><div class="line-progress"><i style="width:${s.index/s.queue.length*100}%"></i></div></div><button class="reading-toggle" data-action="furigana" aria-pressed="${state.settings.furigana}" aria-label="히라가나 표시 전환"><span lang="ja">あ</span>${state.settings.furigana?'ON':'OFF'}</button></header><div class="session-label"><span>${chapterLabel} · ${s.kind==='review'?(s.reviewMode==='preview'?'미리 복습':'복습'):t.phase==='survey'?'빠른 회독':training?'모르는 단어 학습':'모르는 단어 시험'}${t.attempt?' · 다시 확인':''}</span><span>${t.phase==='survey'?`${s.index+1}/${s.wordIds.length}`:`${s.index+1}/${s.queue.length}`}</span></div><main class="question" id="main">${s.budgetMs?'<p class="timebox-clock">남은 시간 <b id="budget-clock">'+Math.max(0,Math.ceil((s.budgetMs-(s.elapsedMs||0))/1000))+'초</b></p>':''}${s.feedback||s.showExample?body+speechNotice:speechNotice+body}</main></div>${footer(s,t)}`;
 }
 function options(t,w){return `<div class="options" role="group" aria-label="답 선택">${t.options.map((o,i)=>{const selected=state.session.selection===o,correct=o===(t.skill==='listening'?w.word:w.meaning);const f=state.session.feedback,locked=t.skill==='listening'&&!state.session.heard;return `<button class="answer-option ${selected?'selected':''} ${f?(correct?'correct':selected?'wrong':''):''}" data-action="option" data-index="${i}" aria-pressed="${selected}" ${f||locked?'disabled':''}><span>${i+1}</span><b ${t.skill==='listening'?'lang="ja"':''}>${esc(o)}</b></button>`;}).join('')}</div>`;}
 function canAnswer(){const s=state.session,t=current(s);return !!s&&!s.feedback&&!s.finished&&!!s.selection&&(t.skill!=='listening'||s.heard);}
@@ -244,7 +251,7 @@ function handleTutorialAction(action){
 function switchSetting(key,label,description=''){
  return `<div class="setting-row"><div><b>${label}</b>${description?`<small>${description}</small>`:''}</div><label class="setting-switch"><input type="checkbox" role="switch" data-setting="${key}" aria-label="${label}" ${state.settings[key]?'checked':''}><span class="switch-track" aria-hidden="true"><i></i></span></label></div>`;
 }
-function settings(){openModal(`${modalHead('설정')}<button class="premium-entry" data-action="premium">${icon('spark')}<div><b>광고 없이 사용</b><small>코토바 프리미엄</small></div>${icon('next')}</button><section class="settings-section"><button type="button" class="btn soft tutorial-replay" data-action="tutorial-open">${icon('book')}<span>튜토리얼 다시 보기<small>학습·복습·단어장 사용법</small></span>${icon('next')}</button></section>${switchSetting('furigana','히라가나 표시')}${switchSetting('motion','애니메이션')}<div class="setting-row"><b>듣기 속도</b><select data-setting="rate" aria-label="듣기 속도">${[.7,.85,1].map(n=>`<option value="${n}" ${n===state.settings.rate?'selected':''}>${n}×</option>`).join('')}</select></div><div class="setting-row"><b>펜 굵기</b><select data-setting="penWidth" aria-label="펜 굵기">${[4,6,8].map(n=>`<option value="${n}" ${n===state.settings.penWidth?'selected':''}>${n===4?'보통':n===6?'굵게':'더 굵게'}</option>`).join('')}</select></div><section class="settings-section"><h3>학습 강도</h3><select data-setting="intensity" aria-label="학습 강도">${Object.entries(INTENSITIES).map(([k,p])=>`<option value="${k}" ${state.settings.intensity===k?'selected':''}>${p.label}</option>`).join('')}</select><p id="intensity-description" class="fine">${policyDescription(state.settings.intensity)}</p><p class="fine">모르는 단어 기준입니다. 새 회차부터 적용하며 진행 중인 수업은 바꾸지 않습니다.</p>${switchSetting('adaptiveSRS','개인별 복습 간격')}<p class="fine">자동 채점 기록에 따라 간격을 조절합니다. 이미 정해진 복습일은 다음 채점 전까지 유지됩니다.</p></section><section class="settings-section"><h3>쓰기 연습</h3>${switchSetting('kanjiOnlyPractice','한자만 쓰기 연습','수업에서 가나만 있는 단어의 따라 쓰기를 생략합니다. 쓰기 시험은 유지합니다.')}</section><section class="settings-section"><h3>일본어 음성</h3><p class="setting-note">단어·예문·가나는 기기의 일본어 음성으로 재생합니다. 일본어 오프라인 음성이 설치되어 있어야 합니다.</p>${btn('speech-settings','기기 음성 설정','soft')}${btn('speech-test','음성 테스트','text')}</section><section class="settings-section"><h3>알림</h3>${switchSetting('reviewNotifications','복습 알림','오전 9시~오후 10시 · 하루 최대 2회')}${btn('reminder-permission','알림 권한 확인','text')}</section><div class="modal-actions">${btn('export','기록 백업','soft')}${btn('import','백업 가져오기','soft')}</div><input id="backup-file" type="file" accept="application/json,.json" class="sr-only"><div class="legal-links">${btn('restore-purchases','구매 복원','text')}${btn('manage-subscription','구독 관리','text')}${btn('privacy-options','광고 개인정보 선택','text')}<a href="./privacy.html">개인정보처리방침</a><a href="./terms.html">이용약관</a><a href="./licenses.html">오픈소스·저작권</a></div><div class="spaced">${btn('reset','학습 기록 초기화','text danger')}</div><p class="fine">코토바 0.4.1 · 내부 테스트</p>`);}
+function settings(){openModal(`${modalHead('설정')}<button class="premium-entry" data-action="premium">${icon('spark')}<div><b>광고 없이 사용</b><small>코토바 프리미엄</small></div>${icon('next')}</button><section class="settings-section"><button type="button" class="btn soft tutorial-replay" data-action="tutorial-open">${icon('book')}<span>튜토리얼 다시 보기<small>학습·복습·단어장 사용법</small></span>${icon('next')}</button></section>${switchSetting('furigana','히라가나 표시')}${switchSetting('motion','애니메이션')}<div class="setting-row"><b>듣기 속도</b><select data-setting="rate" aria-label="듣기 속도">${[.7,.85,1].map(n=>`<option value="${n}" ${n===state.settings.rate?'selected':''}>${n}×</option>`).join('')}</select></div><div class="setting-row"><b>펜 굵기</b><select data-setting="penWidth" aria-label="펜 굵기">${[4,6,8].map(n=>`<option value="${n}" ${n===state.settings.penWidth?'selected':''}>${n===4?'보통':n===6?'굵게':'더 굵게'}</option>`).join('')}</select></div><section class="settings-section"><h3>학습 강도</h3><select data-setting="intensity" aria-label="학습 강도">${Object.entries(INTENSITIES).map(([k,p])=>`<option value="${k}" ${state.settings.intensity===k?'selected':''}>${p.label}</option>`).join('')}</select><p id="intensity-description" class="fine">${policyDescription(state.settings.intensity)}</p><p class="fine">모르는 단어 기준입니다. 새 회차부터 적용하며 진행 중인 수업은 바꾸지 않습니다.</p>${switchSetting('adaptiveSRS','개인별 복습 간격')}<p class="fine">자동 채점 기록에 따라 간격을 조절합니다. 이미 정해진 복습일은 다음 채점 전까지 유지됩니다.</p></section><section class="settings-section"><h3>쓰기 연습</h3>${switchSetting('kanjiOnlyPractice','한자만 쓰기 연습','수업에서 가나만 있는 단어의 따라 쓰기를 생략합니다. 쓰기 시험은 유지합니다.')}</section><section class="settings-section speech-settings-panel">${speechSetupGuide({settings:true,includeMeaning:true})}<p id="speech-test-status" class="speech-test-status" role="status" aria-live="polite"></p></section><section class="settings-section"><h3>알림</h3>${switchSetting('reviewNotifications','복습 알림','오전 9시~오후 10시 · 하루 최대 2회')}${btn('reminder-permission','알림 권한 확인','text')}</section><div class="modal-actions">${btn('export','기록 백업','soft')}${btn('import','백업 가져오기','soft')}</div><input id="backup-file" type="file" accept="application/json,.json" class="sr-only"><div class="legal-links">${btn('restore-purchases','구매 복원','text')}${btn('manage-subscription','구독 관리','text')}${btn('privacy-options','광고 개인정보 선택','text')}<a href="./privacy.html">개인정보처리방침</a><a href="./terms.html">이용약관</a><a href="./licenses.html">오픈소스·저작권</a><a href="./data-deletion.html">계정 연결·데이터 삭제 요청</a></div><div class="spaced">${btn('reset','학습 기록 초기화','text danger')}</div><p class="fine">코토바 0.4.2 · 내부 테스트</p>`);}
 function detail(id){
  const w=W(id);if(!w)return;
  const rows=['meaning','writing','listening'].map(k=>{const v=wordStatus(state,id,k);return `<div class="memory-row"><b>${{meaning:'뜻',writing:'쓰기',listening:'듣기'}[k]}</b><span>${v.kind==='tested'?dueLabel(v.record.due):v.kind==='known'?'아는 단어로 분류 · 시험 전':'시험 기록 없음'}</span></div>`;}).join('');
@@ -286,20 +293,21 @@ async function autoPronounceOnce(s,t,w){
  try{
   await speak(w.id,state.settings.rate,{text:w.reading||w.word});
   if(nonce!==audioNonce||route()!=='lesson'||state.session!==s||current(s)?.id!==t.id)return;
+  clearSpeechFailure(null,true);
   if(stage.bit===AUTO_SPEECH_PROMPT&&['audio','listening'].includes(t.skill)){
    s.heard=true;await save();const status=document.querySelector('#audio-status');if(status)status.textContent='재생 완료';
    document.querySelectorAll('.answer-option').forEach(el=>el.disabled=!!s.feedback);syncButtons();
   }
  }catch(e){
-  if(nonce===audioNonce&&!autoVoiceWarned){autoVoiceWarned=true;toast(e.message||'기기의 일본어 음성을 확인해 주세요.');}
+  if(nonce===audioNonce&&route()==='lesson'&&state.session===s&&current(s)?.id===t.id){showSpeechFailure(e,document.querySelector('#audio-status'),true);if(!autoVoiceWarned){autoVoiceWarned=true;toast(e.message||'기기의 일본어 음성을 확인해 주세요.');}}
  }finally{
   if(nonce===audioNonce&&!document.hidden&&!modal.firstChild&&stage.bit===AUTO_SPEECH_PROMPT&&state.session===s&&current(s)?.id===t.id&&!s.feedback)promptClock={id:t.id,at:performance.now(),invalid:false};
  }
 }
 async function play(slow=false,wordId=null,auto=false){const s=state.session,t=wordId?null:current(s),w=W(wordId||t?.wordId);if(!w)return;const nonce=++audioNonce,rate=slow?.7:state.settings.rate;const status=wordId?document.querySelector('.sheet .word-audio-status')||document.querySelector(`.wordbook-item:has([data-id="${wordId}"]) .word-audio-status`):document.querySelector('#audio-status');if(status)status.textContent='재생 중';document.querySelector('.audio-main')?.classList.add('playing');
  try{await speak(w.id,rate,{text:w.reading||w.word});
- if(nonce!==audioNonce)return;if(status)status.textContent='재생 완료';if(t&&state.session===s&&current(s)?.id===t.id&&route()==='lesson'){s.heard=true;await save();if(status)status.textContent='재생 완료';document.querySelectorAll('.answer-option').forEach(el=>el.disabled=!!s.feedback);syncButtons();}}
- catch(e){if(nonce===audioNonce){if(status)status.textContent=e.message;toast(e.message);}}
+ if(nonce!==audioNonce)return;clearSpeechFailure(status,!!t&&route()==='lesson');if(status)status.textContent='재생 완료';if(t&&state.session===s&&current(s)?.id===t.id&&route()==='lesson'){s.heard=true;await save();if(status)status.textContent='재생 완료';document.querySelectorAll('.answer-option').forEach(el=>el.disabled=!!s.feedback);syncButtons();}}
+ catch(e){if(nonce===audioNonce){showSpeechFailure(e,status,!!t&&route()==='lesson');toast(e.message);}}
  finally{if(nonce===audioNonce)document.querySelector('.audio-main')?.classList.remove('playing');}
 }
 function downloadJSON(object,name){const url=URL.createObjectURL(new Blob([JSON.stringify(object)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
@@ -313,11 +321,16 @@ document.addEventListener('click',async event=>{
  if(a==='stats-range'){statsView.days=Number(el.dataset.days);statsView.date=null;render();return;}
  if(a==='stats-level'){statsView.level=el.dataset.level;statsView.date=null;render();return;}
  if(a==='stat-day'){statsView.date=el.dataset.date;const y=scrollY;render();scrollTo(0,y);return;}
- if(a==='speech-test'){await speakSentence('こんにちは。日本語の音声テストです。',state.settings.rate);toast('음성 테스트 완료');return;}
+ if(a==='speech-test'){
+  const status=document.querySelector('#speech-test-status'),nonce=++audioNonce;el.disabled=true;if(status)status.textContent='일본어 테스트 재생 중';
+  try{await speakSentence('こんにちは。日本語の音声テストです。',state.settings.rate);if(nonce===audioNonce){clearSpeechFailure(status);if(status?.isConnected)status.textContent='일본어 테스트 재생이 완료됐어요.';toast('일본어 음성 테스트 완료');}}
+  catch(error){if(nonce===audioNonce){showSpeechFailure(error,status);toast(error.message);}}
+  finally{if(el.isConnected)el.disabled=false;}return;
+ }
  if(a==='word-example-audio'){
   const w=W(el.dataset.id),e=examplesFor(w)[0];if(!e)return;const nonce=++audioNonce;
   const status=el.closest('.wordbook-item,.detail-word')?.querySelector('.word-audio-status');if(status)status.textContent='예문 재생 중';
-  try{await speakSentence(e.speechText||e.ja,state.settings.rate);if(nonce===audioNonce&&status?.isConnected)status.textContent='예문 재생 완료';}catch(error){if(nonce===audioNonce){if(status?.isConnected)status.textContent=error.message;toast(error.message);}}return;
+  try{await speakSentence(e.speechText||e.ja,state.settings.rate);if(nonce===audioNonce){clearSpeechFailure(status);if(status?.isConnected)status.textContent='예문 재생 완료';}}catch(error){if(nonce===audioNonce){showSpeechFailure(error,status);toast(error.message);}}return;
  }
  if(a==='practice-options'){practiceOptions(el.dataset.id);return;}
  if(a==='practice-repeat'){practiceRepeats=Number(el.dataset.count);practiceOptions(practiceWordId);return;}
@@ -346,7 +359,7 @@ document.addEventListener('click',async event=>{
  if(a==='examples'){const w=W(el.dataset.id);if(w){cancelWork();if(route()==='lesson'&&!modal.firstChild){s.showExample=true;s.exampleIndex=0;await save();render();scrollTo(0,0);}else{openModal(`${modalHead('문장 속에서 기억해요')}${exampleBody(w,state.settings.furigana)}`);const sheet=modal.firstChild;setTimeout(()=>{if(!document.hidden&&modal.firstChild===sheet&&sheet?.querySelector('.example-pane'))play(false,w.id,true);},90);}}}
  else if(a==='hide-examples'&&s){cancelWork();s.showExample=false;await save();render();}
  else if(a==='example-page'){cancelWork();const w=W(el.dataset.id),i=Number(el.dataset.index);if(!w||!Number.isSafeInteger(i)||i<0||i>=examplesFor(w).length)return;if(modal.firstChild)openModal(`${modalHead('문장 속에서 기억해요')}${exampleBody(w,state.settings.furigana,i)}`);else if(s){s.exampleIndex=i;await save();render();}}
- else if(a==='example-audio'){const w=W(el.dataset.id),e=examplesFor(w)[Number(el.dataset.index)];if(!e)return;const nonce=++audioNonce;const status=el.closest('.example-pane')?.querySelector('.example-audio-status');el.setAttribute('aria-busy','true');if(status)status.textContent='예문 재생 중';try{await speakSentence(e.speechText||e.ja,el.dataset.slow==='true'?.7:state.settings.rate);if(nonce===audioNonce&&status?.isConnected)status.textContent='재생 완료';}catch(error){if(nonce===audioNonce){if(status?.isConnected)status.textContent=error.message;toast(error.message);}}finally{if(el.isConnected)el.removeAttribute('aria-busy');}}
+ else if(a==='example-audio'){const w=W(el.dataset.id),e=examplesFor(w)[Number(el.dataset.index)];if(!e)return;const nonce=++audioNonce;const status=el.closest('.example-pane')?.querySelector('.example-audio-status');el.setAttribute('aria-busy','true');if(status)status.textContent='예문 재생 중';try{await speakSentence(e.speechText||e.ja,el.dataset.slow==='true'?.7:state.settings.rate);if(nonce===audioNonce){clearSpeechFailure(status);if(status?.isConnected)status.textContent='재생 완료';}}catch(error){if(nonce===audioNonce){showSpeechFailure(error,status);toast(error.message);}}finally{if(el.isConnected)el.removeAttribute('aria-busy');}}
  else if(a==='example-stop'){cancelWork();document.querySelectorAll('.example-audio-status').forEach(e=>e.textContent='재생을 멈췄어요.');}
  else if(a==='reminder-permission'){const p=await requestReviewPermission();toast(p.granted?'복습할 때 자동으로 알려드려요.':'알림 권한을 허용하면 복습 알림을 받을 수 있어요.');}
  else if(a==='speech-settings'){if(isNative())await callNative('speechSettings');else toast('Android 앱에서 사용할 수 있어요.');}
@@ -356,7 +369,7 @@ document.addEventListener('click',async event=>{
  else if(a==='close-modal'){closeModal();if(route()==='lesson')render();}
  else if(a==='furigana'){state.settings.furigana=!state.settings.furigana;await save();render();}
  else if(a==='writing-auto-advance'){state.settings.writingAutoAdvance=!state.settings.writingAutoAdvance;await save();render();toast(state.settings.writingAutoAdvance?'글자를 완성하면 다음 글자로 자동 이동합니다.':'자동 넘기기를 껐습니다. 다음 글자는 직접 선택하세요.');}
- else if(a==='level'){state.settings.level=el.dataset.level;search='';limit=80;courseLimit=24;await save();render();}
+ else if(a==='level'){const level=el.dataset.level,progress=el.classList.contains('level-progress');state.settings.level=level;search='';limit=80;courseLimit=24;await save();render();document.querySelector(`${progress?'.level-progress-grid':'.level-tabs'} [data-level="${level}"]`)?.focus({preventScroll:true});}
  else if(a==='start-course')await startCourse(el.dataset.id);
  else if(a==='replace-course'){await startCourse(pendingCourse,true);pendingCourse=null;}
  else if(a==='resume'){closeModal();go('lesson');}
@@ -370,8 +383,8 @@ document.addEventListener('click',async event=>{
  else if(a==='survey-listen'&&t?.skill==='survey'){
   const w=W(t.wordId),status=document.querySelector('#survey-audio-status'),nonce=++audioNonce;
   el.setAttribute('aria-busy','true');if(status)status.textContent='재생 중';
-  try{await speak(w.id,state.settings.rate,{text:w.reading||w.word});if(nonce===audioNonce&&status?.isConnected)status.textContent='재생 완료';}
-  catch(error){if(nonce===audioNonce){if(status?.isConnected)status.textContent=error.message;toast(error.message);}}
+  try{await speak(w.id,state.settings.rate,{text:w.reading||w.word});if(nonce===audioNonce){clearSpeechFailure(status,true);if(status?.isConnected)status.textContent='재생 완료';}}
+  catch(error){if(nonce===audioNonce){showSpeechFailure(error,status,true);toast(error.message);}}
   finally{if(el.isConnected)el.removeAttribute('aria-busy');}
  }
  else if(a==='survey-reading'&&t?.phase==='survey'){s.surveyReading=!s.surveyReading;await save();render();}
@@ -396,11 +409,12 @@ document.addEventListener('click',async event=>{
  else if(a==='finish'&&s?.finished){if(state.session?.completed&&isNative())await callNative('commerceBreak',{},120000).catch(()=>{});const restored=finishSession(state);cancelWork();if(await save())go(restored?'lesson':'home');}
  else if(a==='next-course'&&s?.finished&&s.kind==='class'){if(state.session?.completed&&isNative())await callNative('commerceBreak',{},120000).catch(()=>{});state.session=null;const c=courses(words,state.settings.level).find(c=>!state.completed[c.id]);await save();if(c)await startCourse(c.id);else{toast('설치된 수업을 모두 마쳤어요. 복습으로 기억을 이어가세요.');go('review');}}
  else if(a==='review-start'||a==='weak-start'||a==='preview-start'){cancelWork();ink?.destroy();ink=null;const result=enterReview(state,words,a==='weak-start'?'weak':a==='preview-start'?'preview':'due');closeModal();if(await save())go(result==='empty'?'review':'lesson');if(result==='empty')toast('복습할 문제가 없습니다. 기존 수업은 유지됩니다.');else if(result==='resume')toast('진행 중인 복습을 이어서 열었습니다.');}
- else if(a==='filter'){filter=el.dataset.id;render();}
- else if(a==='word-filter'){wordFilter=el.dataset.id;limit=80;render();}
+ else if(a==='filter'){filter=el.dataset.id;render();document.querySelector(`[data-action="filter"][data-id="${filter}"]`)?.focus({preventScroll:true});}
+ else if(a==='word-filter'){wordFilter=el.dataset.id;limit=80;render();document.querySelector(`[data-action="word-filter"][data-id="${wordFilter}"]`)?.focus({preventScroll:true});}
+ else if(a==='clear-search'){search='';limit=80;document.querySelector('#search').value='';refreshWordResults();document.querySelector('#search').focus({preventScroll:true});}
  else if(a==='word')detail(el.dataset.id);
  else if(a==='star'){const id=el.dataset.id;state.starred=state.starred.includes(id)?state.starred.filter(x=>x!==id):[...state.starred,id];await save();render();}
- else if(a==='more-words'){limit+=80;document.querySelector('#word-results').innerHTML=wordRows();}
+ else if(a==='more-words'){const previous=limit;limit+=80;refreshWordResults();document.querySelectorAll('#word-results .word-button')[previous]?.focus({preventScroll:true});}
  else if(a==='more-courses'){courseLimit+=24;render();}
 
 
@@ -414,7 +428,7 @@ document.addEventListener('click',async event=>{
  }catch(e){toast(e.message||'작업을 완료하지 못했어요.');}
 });
 document.addEventListener('input',event=>{
- if(event.target.id==='search'){search=event.target.value;limit=80;document.querySelector('#word-results').innerHTML=wordRows();}
+ if(event.target.id==='search'){search=event.target.value;limit=80;refreshWordResults();}
  if(event.target.id==='practice-repeats'){
   const count=Number(event.target.value);
   if(Number.isSafeInteger(count)&&count>=1&&count<=20)practiceRepeats=count;

@@ -59,10 +59,10 @@ def main():
     parser=argparse.ArgumentParser();parser.add_argument('--from-pack');args=parser.parse_args()
     # Reuse the exact JavaScript curriculum target rule, including Unicode Han iteration marks.
     code="import fs from 'node:fs';import {writingChars} from './src/catalog.js';import {ALL_KANA} from './src/kana-engine.js';const words=['N5','N4','N3','N2','N1'].flatMap(l=>JSON.parse(fs.readFileSync('data/'+l+'.json')).words);console.log(JSON.stringify([...new Set([...words.flatMap(writingChars),...ALL_KANA.map(x=>x.char)])].sort()));"
-    required=json.loads(subprocess.check_output(['node','--input-type=module','-e',code],cwd=ROOT,text=True))
+    required=json.loads(subprocess.check_output(['node','--input-type=module','-e',code],cwd=ROOT,text=True,encoding='utf-8'))
     licenses=ROOT/'data/licenses';licenses.mkdir(exist_ok=True,parents=True)
     if args.from_pack:
-        source=json.loads(Path(args.from_pack).read_text());assert source['meta']['commit']==REV;bank=source['chars']
+        source=json.loads(Path(args.from_pack).read_text(encoding='utf-8'));assert source['meta']['commit']==REV;bank=source['chars']
     else:
         raw=download(f'https://codeload.github.com/KanjiVG/kanjivg/zip/{REV}')
         if hashlib.sha256(raw).hexdigest()!=ARCHIVE_SHA:raise ValueError('Pinned KanjiVG archive checksum mismatch')

@@ -1,0 +1,19 @@
+{
+  "sourceCommit": "7e3bd352d50419a73d572385672e08c843a6ec14",
+  "packageName": "com.studio501.kotoba",
+  "versionCode": 15,
+  "versionName": "0.4.2-play-test",
+  "stage": "play_test_bootstrap",
+  "debuggable": false,
+  "salesEnabled": false,
+  "googleSampleAdsOnly": true,
+  "apkSignatureVerified": true,
+  "aabSignatureVerifiedAgainstUploadAlias": true,
+  "uploadCertificateSha256": "21DC558302945945EAA253BC5F70446C1BD42D9536FEAA4A61942593223888D5",
+  "apkSha256": "BA2908970E921D7AB07E6BE4D39FE245A0C11C436CF0509808CA42F570A20598",
+  "aabSha256": "3CFDFED25AA1735E5127E09674AF2A87EE29E3F15BF789F2499D33D97369F943",
+  "playConsoleUploaded": false,
+  "playAppSigningConfigured": false,
+  "productionReleaseSuitable": false,
+  "offlinePortableKeyBackupComplete": false
+}

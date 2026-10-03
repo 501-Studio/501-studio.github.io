@@ -1,20 +1,45 @@
 {
-  "status": "DRAFT_NOT_SAVED_TO_PLAY_CONSOLE_OR_ADMOB",
+  "status": "SOURCE_DRAFT_ACCOUNT_STATE_PARTIALLY_VERIFIED",
+  "sourceVersion": "0.4.2",
+  "reviewedOn": "2026-10-03",
   "accountEmail": "501.dingerlab@gmail.com",
   "developerDisplayName": "Studio 501",
-  "legalOperatorName": null,
+  "legalOperatorName": "백하성",
   "operatorAddress": null,
+  "userConfirmed": {
+    "releaseCountries": [
+      "KR"
+    ],
+    "targetAudience": "13세 이상",
+    "completeAdvertisingAndBillingBeforeRelease": true
+  },
   "app": {
-    "name": "코토바: JLPT 단어 회독",
+    "name": "JLPT 단어장 - 코토바",
     "defaultLanguage": "ko-KR",
     "category": "EDUCATION",
     "packageName": "com.studio501.kotoba",
     "supportEmail": "501.dingerlab@gmail.com",
-    "shortDescription": "30단어씩 회독하고, 모르는 단어를 듣고 쓰며 익히는 일본어 학습 앱",
+    "shortDescription": "JLPT N5~N1 일본어 단어를 듣고 쓰며 학습하고, 단어장과 복습으로 기록하세요.",
+    "releaseCountries": [
+      "KR"
+    ],
+    "targetAudienceAges": [
+      "13-15",
+      "16-17",
+      "18+"
+    ],
     "containsAds": true,
-    "inAppPurchases": true,
+    "inAppPurchases": false,
+    "plannedInAppPurchases": true,
+    "sellingEnabledInCurrentDefaultBuild": false,
     "loginRequired": false,
-    "appAccessInstructions": "회원가입 없이 학습 가능합니다. 광고 제거 구매를 제외한 핵심 학습은 무료로 이용할 수 있습니다."
+    "appAccessInstructions": "회원가입 없이 핵심 학습을 무료로 이용합니다. 광고 제거 구매는 현재 준비 중이며 비활성화되어 있습니다. 광고·결제 완성과 검사 후 공개합니다.",
+    "speech": {
+      "mode": "installed-offline-japanese-tts-only",
+      "bundledAudioFiles": 0,
+      "voiceInstallationRequired": true,
+      "voiceInstallationMayRequireNetwork": true
+    }
   },
   "products": [
     {
@@ -25,11 +50,11 @@
       "renewal": "auto",
       "region": "KR",
       "currency": "KRW",
-      "price": 1800,
+      "plannedPrice": 1800,
       "title": "코토바 프리미엄 월간",
       "benefit": "광고 제거",
       "trial": null,
-      "status": "not-created"
+      "status": "production-creation-unverified-currently-disabled"
     },
     {
       "type": "subscription",
@@ -39,60 +64,108 @@
       "renewal": "auto",
       "region": "KR",
       "currency": "KRW",
-      "price": 9000,
+      "plannedPrice": 9000,
       "title": "코토바 프리미엄 연간",
       "benefit": "광고 제거",
       "trial": null,
-      "status": "not-created"
+      "status": "production-creation-unverified-currently-disabled"
     },
     {
       "type": "one-time-non-consumable",
       "productId": "kotoba_lifetime",
       "region": "KR",
       "currency": "KRW",
-      "price": 14000,
+      "plannedPrice": 14000,
       "title": "코토바 프리미엄 평생",
       "benefit": "광고 제거 영구 이용권",
-      "status": "not-created"
+      "status": "production-creation-unverified-currently-disabled"
     }
   ],
   "admob": {
     "appPlatform": "Android",
-    "appName": "코토바",
+    "appName": "JLPT 단어장 - 코토바",
     "packageName": "com.studio501.kotoba",
-    "appId": null,
-    "bannerAdUnitId": null,
-    "interstitialAdUnitId": null,
-    "testIdsOnlyInCurrentBuild": true,
+    "appId": "ca-app-pub-1681642990054558~4049608913",
+    "bannerAdUnitId": "ca-app-pub-1681642990054558/9027526869",
+    "interstitialAdUnitId": "ca-app-pub-1681642990054558/9330604184",
+    "testIdsOnlyInCurrentDefaultBuild": true,
+    "sdkVersion": "25.4.0",
+    "umpVersion": "4.0.0",
     "mediation": false,
     "adPersonalization": "non-personalized-request",
-    "umpMessagePublished": false,
-    "appAdsTxtPublisherId": null
+    "maxAdContentRating": "G",
+    "umpMessagePublished": null,
+    "appAdsTxtPublisherId": "pub-1681642990054558",
+    "youthConsentAndIdentifierHandling": "must-verify-final-release-configuration",
+    "activationStatus": "completed",
+    "accountReviewStatus": "pending",
+    "appReviewStatus": "review-required",
+    "storeLinkStatus": "not-yet-listed",
+    "appAdsTxtStatus": "prepared-not-published-or-verified"
   },
   "ownerRequired": {
-    "targetAudienceAges": null,
+    "targetAudienceAges": "user-confirmed-13-and-older-console-state-unverified",
     "iarcQuestionnaireCertification": null,
     "publicPrivacyUrl": null,
     "publicTermsUrl": null,
+    "policyEffectiveDate": null,
+    "accountVerification": null,
     "paymentsProfile": null,
     "merchantTaxInformation": null,
-    "uploadKeystore": null,
+    "uploadKeystore": {
+      "status": "generated-locally-not-registered-with-google-play",
+      "publicCertificateSha256": "21DC558302945945EAA253BC5F70446C1BD42D9536FEAA4A61942593223888D5",
+      "portableOfflineBackupComplete": false,
+      "privateKeyInGit": false
+    },
     "playAppSigning": null,
     "testerRequirementAndCompletion": null
   },
-  "neverAutomaticallyDo": [
-    "real charge",
-    "accept developer/merchant legal terms",
-    "activate production products",
-    "submit for review",
-    "publish release"
-  ],
+  "releaseAuthorization": {
+    "userRequestedRelease": true,
+    "condition": "advertising-and-billing-complete-and-verified-before-KR-release",
+    "accountConfirmationsRequired": [
+      "legal-and-payment-account-details",
+      "IARC-and-data-safety-accuracy",
+      "signing-and-test-track-status"
+    ],
+    "evidenceRequired": [
+      "actual-release-gates",
+      "physical-device-QA",
+      "content-review",
+      "ad-consent-and-youth-configuration",
+      "billing-sandbox",
+      "verified-free-account-and-google-apis-without-billing-link",
+      "live-hourly-polling-and-complete-voided-purchase-pagination",
+      "two-hour-or-future-sync-denial-and-outage-without-lease-extension",
+      "one-hour-lease-limit-and-real-refund-restore-deletion-tests",
+      "pending-purchase-reopen-and-optional-review-limitations"
+    ],
+    "unverifiedApprovalsMayNotBeSetTrue": true
+  },
   "declarations": {
     "collection": true,
-    "sharing": "Ads SDK data is collected/shared; confirm services exception semantics against actual release",
-    "encryptedInTransit": true,
-    "accountCreation": false,
-    "deleteAccountWebUrl": "not applicable to a separate app account; no account creation",
-    "privacyPolicyMustChangeFromNoCollection": true
+    "sharing": "Ads SDK handling must match actual version, consent, age and release configuration; verify applicable service-provider exceptions.",
+    "encryptedInTransit": "SDK TLS and configured HTTPS verification endpoint; verify actual release",
+    "accountCreation": true,
+    "deleteAccountWebUrl": "REQUIRED: publish data-deletion.html; Google SSO purchase identity is treated as an app account",
+    "billingBackendDeployed": false,
+    "billingBackendImplementation": "billing-worker",
+    "billingEventMode": "poll",
+    "durableTokenOwnershipImplemented": true,
+    "periodicRefundReconciliationImplemented": true,
+    "pubSubActivationAllowed": false,
+    "actualCloudflareFreeAccountVerified": false,
+    "googleApiCallsWithoutBillingLinkVerified": false,
+    "hourlyPollingScheduleVerified": false,
+    "refundReconciliationMaxAgeSeconds": 7200,
+    "entitlementLeaseMaxSeconds": 3600,
+    "unseenPurchaseDiscoveryAvailable": false,
+    "optionalRefundReviewDiscovery": "unavailable-without-rtdn",
+    "dataSafetyConsoleState": "unverified",
+    "billingEventsAndRefundsOperationallyVerified": false,
+    "legacyRtdnDeliveryOperationallyVerified": false,
+    "authenticatedAccountDeletionImplemented": true,
+    "accountDeletionOperationallyVerified": false
   }
 }

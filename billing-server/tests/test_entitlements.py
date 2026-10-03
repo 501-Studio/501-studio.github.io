@@ -22,8 +22,17 @@ class TestEntitlements(unittest.TestCase):
     def test_nonconsumable_only(self):
         self.assertTrue(decision(LIFE,{'purchaseState':0,'acknowledgementState':0},NOW)['ackNeeded'])
         self.assertFalse(decision(LIFE,{'purchaseState':0,'consumptionState':1},NOW)['active'])
-    def test_lease_expires_before_subscription(self):
-        d=decision(SUB,receipt(),NOW);c=claims('com.studio501.kotoba','installation-1234',SUB,d,NOW);self.assertEqual(c['exp'],NOW+86400)
+    def test_lease_expires_before_subscription_and_revocation_cache_limit(self):
+        d=decision(SUB,receipt(),NOW);c=claims('com.studio501.kotoba','installation-1234',SUB,d,NOW);self.assertEqual(c['exp'],NOW+3600)
+        d=decision(SUB,receipt(expiry=NOW+900),NOW);self.assertEqual(claims('com.studio501.kotoba','installation-1234',SUB,d,NOW)['exp'],NOW+900)
+    def test_lifetime_lease_is_not_a_year_long_refund_bypass(self):
+        d=decision(LIFE,{'purchaseState':0,'acknowledgementState':1},NOW)
+        self.assertEqual(claims('com.studio501.kotoba','installation-1234',LIFE,d,NOW)['exp'],NOW+3600)
+    def test_malformed_boolean_or_multi_quantity_purchase_does_not_grant(self):
+        for r in [{'purchaseState':False,'acknowledgementState':1},{'purchaseState':0},
+                  {'purchaseState':0,'acknowledgementState':1,'quantity':2},
+                  {'purchaseState':0,'acknowledgementState':1,'refundableQuantity':0}]:
+            self.assertFalse(decision(LIFE,r,NOW)['active'])
     def test_unknown_products_rejected(self):
         with self.assertRaises(ValueError):decision('hacked',{},NOW)
     def test_signatures_cover_payload(self):

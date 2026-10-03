@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>코토바 구매 계정 연결 삭제</title>
+<style>body{font:16px/1.7 system-ui,sans-serif;background:#fafbff;color:#303947;max-width:720px;margin:32px auto;padding:0 24px}h1{font-size:28px;line-height:1.4}li{margin:8px 0}button{font:inherit;min-height:48px;border:0;border-radius:12px;padding:12px 18px;background:#6250cf;color:white;cursor:pointer}button:disabled{background:#8b8b99;cursor:default}label{display:flex;gap:12px;margin:24px 0}input{min-width:22px;min-height:22px}a{color:#6250cf;overflow-wrap:anywhere}#status{min-height:48px}</style></head>
+<body><h1>구매 계정 연결·서버 데이터 삭제</h1><p>JLPT 단어장 - 코토바 · Studio 501</p>
+<p>구매·복원 때 연결한 Google 계정으로 본인을 확인하세요. 앱을 다시 설치할 필요가 없습니다. 이메일 주소나 주문번호만으로 삭제를 승인하지 않습니다.</p>
+<ul><li>구매 계정 연결과 저장한 구매 토큰을 삭제합니다. 삭제한 연결은 자동으로 복구되지 않으며 이용권 복원이 제한됩니다.</li><li>Google 계정 자체는 삭제되지 않습니다. 삭제는 Google Play 구독 해지나 환불을 실행하지 않습니다. <a href="https://play.google.com/store/account/subscriptions" target="_blank" rel="noopener noreferrer">Google Play 구독 관리</a>에서 별도로 확인하세요.</li><li>환불 처리와 부정한 재연결 방지에 필요한 최소 거래·삭제 기록은 남습니다. 이미 발급한 기기 이용권은 최대 1시간 남을 수 있습니다.</li><li>기기에만 저장한 학습 기록과 사용자가 내보낸 백업은 원격으로 지우지 않습니다.</li></ul>
+<div id="google-signin"></div>
+<label><input id="confirm" type="checkbox"><span>위 내용을 확인했고, 선택한 Google 계정의 코토바 구매 연결과 관련 서버 데이터 삭제를 요청합니다.</span></label>
+<button id="delete" type="button" disabled>계정 연결·서버 데이터 삭제</button>
+<p id="status" role="status" aria-live="polite">Google 계정을 선택한 뒤 삭제를 확인하세요. 인증은 5분 동안 유효합니다.</p>
+<p>지원: <a href="mailto:501.dingerlab@gmail.com">501.dingerlab@gmail.com</a></p>
+<script nonce="{{ script_nonce }}">
+(() => {
+  let credential = '', busy = false, finished = false;
+  const nonce = {{ confirmation_nonce|tojson }}, clientId = {{ client_id|tojson }};
+  const confirm = document.getElementById('confirm'), button = document.getElementById('delete'), status = document.getElementById('status');
+  const update = () => { button.disabled = busy || finished || !credential || !confirm.checked; };
+  window.kotobaDeletionSignInReady = () => {
+    google.accounts.id.initialize({client_id: clientId, nonce, auto_select: false, ux_mode: 'popup', callback: response => {
+      if (busy || finished) return;
+      credential = typeof response.credential === 'string' ? response.credential : '';
+      confirm.checked = false; update();
+      status.textContent = credential ? 'Google 계정 인증을 받았습니다. 삭제 내용을 확인하고 선택해 주세요.' : '인증을 완료하지 못했습니다.';
+    }});
+    google.accounts.id.renderButton(document.getElementById('google-signin'), {type:'standard', theme:'outline', size:'large', text:'signin_with'});
+  };
+  const provider = document.createElement('script');
+  provider.src = 'https://accounts.google.com/gsi/client'; provider.async = true;
+  provider.nonce = {{ script_nonce|tojson }};
+  provider.addEventListener('load', window.kotobaDeletionSignInReady);
+  provider.addEventListener('error', () => { status.textContent = 'Google 인증을 불러오지 못했습니다. 페이지를 다시 열거나 지원 이메일로 문의하세요.'; });
+  document.head.append(provider);
+  confirm.addEventListener('change', update);
+  button.addEventListener('click', async () => {
+    if (button.disabled) return;
+    busy = true; update(); status.textContent = '삭제 요청을 확인하고 있습니다.';
+    try {
+      const response = await fetch('/account/deletion', {method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json', Authorization:'Bearer ' + credential}, body:JSON.stringify({confirmDeletion:true, nonce})});
+      const value = await response.json();
+      if (!response.ok) throw new Error();
+      finished = true;
+      status.textContent = value.status === 'already_deleted' ? '이 계정의 구매 연결은 이미 삭제되었습니다.' : '구매 계정 연결과 관련 서버 데이터 삭제가 완료되었습니다. Google Play 구독과 환불 상태는 변경되지 않았습니다.';
+    } catch {
+      status.textContent = '삭제 완료를 확인하지 못했습니다. 페이지를 새로 열어 Google 계정을 다시 인증해 주세요. 필요하면 지원 이메일로 문의하세요.';
+    } finally { credential = ''; busy = false; confirm.checked = false; update(); }
+  });
+  window.addEventListener('pagehide', () => { credential = ''; confirm.checked = false; update(); });
+  window.addEventListener('pageshow', event => { if (event.persisted) location.reload(); });
+})();
+</script>
+</body></html>

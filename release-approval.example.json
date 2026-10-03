@@ -13,5 +13,7 @@
   "legalDocsPublished": false,
   "billingSandbox": false,
   "consentAndAdFree": false,
-  "rtdnAndRefunds": false
+  "billingEventMode": "poll",
+  "billingEventsAndRefunds": false,
+  "accountDeletion": false
 }
