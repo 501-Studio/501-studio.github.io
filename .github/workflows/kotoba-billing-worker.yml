@@ -13,6 +13,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   worker:
+    if: github.repository == '501-Studio/501-studio.github.io' && github.event.repository.private == false
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:
@@ -22,20 +23,50 @@ jobs:
       WRANGLER_SEND_METRICS: 'false'
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
-          cache-dependency-path: billing-worker/package-lock.json
       - run: npm ci --no-fund --no-audit
       - run: npm run check
       - name: Actual Workers runtime and SQLite regression tests
         run: npm test -- --reporter=default --reporter=json --outputFile=worker-test-results.json
       - name: Build only without cloud credentials or deployment
         run: npm run build
-      - uses: actions/upload-artifact@v4
+      - name: Summarize actual test counts without artifact storage
         if: always()
-        with:
-          name: kotoba-billing-worker-verification
-          path: billing-worker/worker-test-results.json
-          retention-days: 30
+        run: |
+          node --input-type=module <<'NODE'
+          import { appendFileSync, existsSync, readFileSync, statSync } from 'node:fs';
+          const path = 'worker-test-results.json';
+          const fields = [
+            ['Tests total', 'numTotalTests'],
+            ['Tests passed', 'numPassedTests'],
+            ['Tests failed', 'numFailedTests'],
+            ['Tests pending', 'numPendingTests'],
+            ['Tests todo', 'numTodoTests'],
+            ['Suites total', 'numTotalTestSuites'],
+            ['Suites passed', 'numPassedTestSuites'],
+            ['Suites failed', 'numFailedTestSuites'],
+            ['Suites pending', 'numPendingTestSuites'],
+          ];
+          let rows = 'Test counts unavailable: no JSON report was produced.\n';
+          if (existsSync(path)) {
+            try {
+              if (statSync(path).size > 1024 * 1024) throw new Error('Report too large');
+              const report = JSON.parse(readFileSync(path, 'utf8'));
+              const available = fields.filter(([, key]) => Object.hasOwn(report, key));
+              if (!available.some(([, key]) => key === 'numTotalTests') ||
+                  !available.every(([, key]) => Number.isSafeInteger(report[key]) && report[key] >= 0))
+                throw new Error('Invalid counts');
+              rows = '| Metric | Actual count |\n| --- | ---: |\n' +
+                available.map(([label, key]) => `| ${label} | ${report[key]} |`).join('\n') + '\n';
+            } catch {
+              rows = 'Test counts unavailable: the JSON report could not be validated.\n';
+            }
+          }
+          console.log(rows);
+          appendFileSync(process.env.GITHUB_STEP_SUMMARY, '### Worker test counts\n\n' + rows);
+          // Earlier test/typecheck/dry-run exit status remains authoritative, including when no report exists.
+          NODE
