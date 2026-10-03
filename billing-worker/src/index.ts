@@ -1,5 +1,5 @@
 import { DurableObject } from 'cloudflare:workers';
-import { configured, create_router, json } from './app';
+import { configured, operations_configured, create_router, json } from './app';
 import { Store } from './persistence';
 import { BillingService } from './service';
 import { PlayClient } from './play_api';
@@ -23,9 +23,11 @@ export class BillingCoordinator extends DurableObject<Env> {
     // Only initialization blocks the runtime input gate. Network operations use the
     // application queue below, so the 30-second initialization limit is not abused.
     ctx.blockConcurrencyWhile(async () => {
-      if (!configured(env)) return;
+      if (!operations_configured(env)) return;
       try {
         await sign({ purpose: 'configuration-key-check' }, env.ENTITLEMENT_PRIVATE_KEY_PEM!);
+        const play = new PlayClient(env.PLAY_PACKAGE, env.GOOGLE_SERVICE_ACCOUNT_JSON!);
+        await play.validate_credentials();
         const store = new Store(ctx.storage, env.TOKEN_ENCRYPTION_KEY!);
         await store.transaction(async db => {
           const previousMode = db.metadata(db, 'billing_event_mode');
@@ -45,8 +47,8 @@ export class BillingCoordinator extends DurableObject<Env> {
             db.set_metadata(db, key!, value!);
           }
         });
-        this.service = new BillingService(store, new PlayClient(env.PLAY_PACKAGE, env.GOOGLE_SERVICE_ACCOUNT_JSON!));
-        this.router = create_router(env, this.service, true);
+        this.service = new BillingService(store, play);
+        this.router = create_router(env, this.service, configured(env));
       } catch {
         // Fail closed; no fallback database and no sensitive configuration logging.
         this.service = undefined;

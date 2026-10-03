@@ -15,24 +15,30 @@ function refund_sync_max_age(env: Env): number {
   return event_mode(env) === 'poll' ? 7200 : 86400;
 }
 
-export function configured(env: Env): boolean {
+/** Validate material before constructing durable state or allowing authenticated operations. */
+export function operations_configured(env: Env): boolean {
   const keys: (keyof Env)[] = ['ENTITLEMENT_PRIVATE_KEY_PEM', 'GOOGLE_SERVICE_ACCOUNT_JSON',
     'TOKEN_ENCRYPTION_KEY', 'ACCOUNT_HMAC_KEY', 'GOOGLE_OAUTH_CLIENT_ID', 'PLAY_SIGNING_CERT_SHA256',
     'OPS_AUDIENCE', 'OPS_SERVICE_ACCOUNT_EMAIL'];
   const service_email = (value: string | undefined) => typeof value === 'string'
     && /^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+\.iam\.gserviceaccount\.com(?![\s\S])/.test(value);
   const mode = event_mode(env);
-  const base = env.RECEIPT_VERIFICATION_ENABLED === 'true'
-    && keys.every(key => typeof env[key] === 'string' && (env[key] as string).length > 0)
+  const base = keys.every(key => typeof env[key] === 'string' && (env[key] as string).length > 0)
     && new TextEncoder().encode(env.ACCOUNT_HMAC_KEY!).length >= 32
     && /^[A-Za-z0-9._-]+\.apps\.googleusercontent\.com(?![\s\S])/.test(env.GOOGLE_OAUTH_CLIENT_ID!)
     && env.OPS_AUDIENCE!.startsWith('https://') && service_email(env.OPS_SERVICE_ACCOUNT_EMAIL)
     && env.PLAY_SIGNING_CERT_SHA256!.split(',').every(value => /^[A-Za-z0-9_-]{43}(?![\s\S])/.test(value));
   if (!base || !mode) return false;
-  if (mode === 'poll') return env.RECONCILIATION_ENABLED === 'true' && env.POLLING_OPERATIONS_VERIFIED === 'true';
+  if (mode === 'poll') return env.RECONCILIATION_ENABLED === 'true';
   return Boolean(env.PUBSUB_AUDIENCE?.startsWith('https://') && service_email(env.PUBSUB_SERVICE_ACCOUNT_EMAIL)
     && env.PUBSUB_SUBSCRIPTION && env.PUBSUB_AUDIENCE !== env.OPS_AUDIENCE
     && env.PUBSUB_SERVICE_ACCOUNT_EMAIL !== env.OPS_SERVICE_ACCOUNT_EMAIL);
+}
+
+/** Customer operations stay closed while real polling and receipt integration are unverified. */
+export function configured(env: Env): boolean {
+  return operations_configured(env) && env.RECEIPT_VERIFICATION_ENABLED === 'true'
+    && (event_mode(env) !== 'poll' || env.POLLING_OPERATIONS_VERIFIED === 'true');
 }
 
 export function json(value: unknown, status = 200): Response {
@@ -94,6 +100,10 @@ export function create_router(env: Env, service: BillingService | undefined, rea
   const deletionOrigin = web_origin({ ...env });
   function require_configuration(): BillingService {
     if (!ready || !service) throw new BillingError('service_not_configured', 503);
+    return service;
+  }
+  function require_operations_configuration(): BillingService {
+    if (!service || !operations_configured(env)) throw new BillingError('service_not_configured', 503);
     return service;
   }
   async function user_identity(request: Request): Promise<JsonObject> {
@@ -196,13 +206,13 @@ export function create_router(env: Env, service: BillingService | undefined, rea
       }
       if (path === '/tasks/reconcile' && request.method === 'POST') {
         temporary = 'reconciliation_temporarily_unavailable';
-        const value = require_configuration();
+        const value = require_operations_configuration();
         await authenticate_service(request, 'OPS');
         return json({ processed: await value.reconcile_voids() });
       }
       if (path === '/tasks/status' && request.method === 'GET') {
         temporary = 'status_temporarily_unavailable';
-        const value = require_configuration();
+        const value = require_operations_configuration();
         await authenticate_service(request, 'OPS');
         return json(await value.store.transaction(async db => ({
           billingEventMode: event_mode(env),

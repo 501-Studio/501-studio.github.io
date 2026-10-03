@@ -72,7 +72,8 @@ describe('HTTP contract and actual Durable Object request serialization', () => 
     const stub = namespace.get(namespace.idFromName(crypto.randomUUID()));
     await runInDurableObject<BillingCoordinator, void>(stub, async (_instance, state) => {
       const { store, service } = await setup(state);
-      const value = { ...config(), BILLING_EVENT_MODE: 'poll' };
+      const value = { ...config(), BILLING_EVENT_MODE: 'poll', RECONCILIATION_ENABLED: 'true',
+        TOKEN_ENCRYPTION_KEY: KEY, GOOGLE_SERVICE_ACCOUNT_JSON: '{"test":"not-live"}' };
       delete value.PUBSUB_SUBSCRIPTION;
       let authentications = 0;
       const router = create_router(value, service, true, async () => {

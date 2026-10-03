@@ -1,6 +1,7 @@
-import { sign, SUB, LIFE } from './entitlements';
+import { SUB, LIFE } from './entitlements';
 import { BillingError, is_record, type JsonObject, type PlayApi } from './types';
 import { parse_google_json } from './google_json';
+import { base64url_encode, canonical_json, import_rsa_private_key, to_buffer, to_bytes } from './crypto';
 
 type Fetcher = typeof fetch;
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
@@ -51,6 +52,7 @@ async function request_json(fetcher: Fetcher, url: string, init: RequestInit,
 export class PlayClient implements PlayApi {
   private readonly email: string;
   private readonly key: string;
+  private signingKey?: Promise<CryptoKey>;
   private readonly root: string;
   private readonly access = new Map<Scope, { token: string; expires: number }>();
 
@@ -73,12 +75,34 @@ export class PlayClient implements PlayApi {
       + encodeURIComponent(packageName);
   }
 
+  private validated_key(): Promise<CryptoKey> {
+    this.signingKey ??= (async () => {
+      // Validate and prove the non-extractable PKCS8 RSA key before any durable state is initialized.
+      const key = await import_rsa_private_key(this.key);
+      await crypto.subtle.sign('RSASSA-PKCS1-v1_5', key,
+        to_buffer(to_bytes('kotoba-google-service-account-configuration-check')));
+      return key;
+    })();
+    return this.signingKey;
+  }
+
+  async validate_credentials(): Promise<void> {
+    await this.validated_key();
+  }
+
+  private async sign_assertion(payload: JsonObject): Promise<string> {
+    const content = base64url_encode(to_bytes('{"alg":"RS256","typ":"JWT"}'))
+      + '.' + base64url_encode(to_bytes(canonical_json(payload)));
+    const signature = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', await this.validated_key(), to_buffer(to_bytes(content)));
+    return content + '.' + base64url_encode(signature);
+  }
+
   private async authorization(scope: Scope): Promise<string> {
     const now = Math.floor(this.clock());
     const cached = this.access.get(scope);
     if (cached && cached.expires > now + 60) return 'Bearer ' + cached.token;
-    const assertion = await sign({ iss: this.email, scope: SCOPES[scope], aud: TOKEN_URL,
-      iat: now, exp: now + 3600 }, this.key);
+    const assertion = await this.sign_assertion({ iss: this.email, scope: SCOPES[scope], aud: TOKEN_URL,
+      iat: now, exp: now + 3600 });
     const form = new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion });
     const value = await request_json(this.fetcher, TOKEN_URL, { method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: form.toString() }, 10000);

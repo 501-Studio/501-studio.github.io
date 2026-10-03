@@ -20,11 +20,12 @@ npm run build
 database or cloud deployment. No cloud credentials are needed by these checks.
 
 The test runner executes inside workerd and uses actual SQLite Durable Object storage.
-The 69 tests cover Google RSA identity verification, scope-specific signed OAuth assertions,
+The 75 tests cover Google RSA identity verification, scope-specific signed OAuth assertions,
 Fernet compatibility with Python, canonical request/record hashes, strict raw integer fields,
 immutable purchase ownership, acknowledgement requery, linked-token conflicts, refunds,
 notification atomicity/deduplication, account deletion/redaction, pagination recovery,
-HTTP contracts, request deadlines and actor eviction with a retained deletion marker.
+HTTP contracts, request deadlines, authenticated operations with receipts still disabled,
+and actor eviction with a retained deletion marker.
 Google API responses in these tests are fixtures, not evidence of live integration.
 
 ## Durable transaction and request ordering
@@ -78,13 +79,27 @@ so that service must not be activated under the no-billing-link policy.
 
 The defaults are `RECEIPT_VERIFICATION_ENABLED=false`, `ACCOUNT_DELETION_ENABLED=false`,
 `RECONCILIATION_ENABLED=false` and `POLLING_OPERATIONS_VERIFIED=false`. No cron trigger
-is installed. Poll mode becomes configured only after both reconciliation and verified
-operations are enabled. Add the free hourly reconciliation trigger and verify actual
-Google calls, schedule execution and quota behavior before setting these flags. Purchase
+is installed. Poll mode becomes configured for customers only after both reconciliation
+and verified operations are enabled. For initial operator validation, provision the
+validated Google, identity and encryption material, set only
+`RECONCILIATION_ENABLED=true`, and keep `RECEIPT_VERIFICATION_ENABLED=false`,
+`POLLING_OPERATIONS_VERIFIED=false` and `ACCOUNT_DELETION_ENABLED=false`. Only the
+existing OPS-authenticated `/tasks/reconcile` and `/tasks/status` endpoints and the
+scheduled reconciliation handler can then operate; customer/account/deletion endpoints
+remain disabled and `/health` still reports `configured=false` and `ready=false`.
+Add the free hourly reconciliation trigger and verify actual Google calls, schedule
+execution and quota behavior before recording `POLLING_OPERATIONS_VERIFIED=true`.
+A source test does not supply that approval. Purchase
 verification always queries Google and refuses new leases when the last successful voided
 scan is more than two hours old or in the future. Existing leases keep their original
 maximum one-hour TTL; this does not promise one-hour refund detection. Indexing and polling
 can add delay, and an outage must not extend a lease or permit indefinite access.
+
+Before creating the SQLite application schema or pinning its identity fingerprints,
+initialization imports and proves both RSA signing keys. Google service-account PKCS8
+keys must be at least 2,048 bits; the non-extractable imported Google key is reused for
+OAuth assertions. Valid Google service-account key rotation remains allowed and does not
+change the persistent account or encryption fingerprints.
 
 Polling does not discover an unseen purchase token or an app-closed pending purchase that
 later completes. The Android app queries purchases when resumed. A completed purchase

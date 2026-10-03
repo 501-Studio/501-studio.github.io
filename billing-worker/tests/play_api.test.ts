@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { PlayClient } from '../src/play_api';
 import { decision, LIFE, SUB } from '../src/entitlements';
 import { base64url_decode, decode_text, to_buffer, to_bytes } from '../src/crypto';
@@ -13,6 +13,7 @@ beforeAll(async () => {
   credentials = JSON.stringify({ type: 'service_account', client_email: 'play@kotoba.iam.gserviceaccount.com',
     private_key: pem, token_uri: 'https://oauth2.googleapis.com/token' });
 });
+afterEach(() => { vi.restoreAllMocks(); });
 
 describe('Google Play client', () => {
   it('cryptographically signs scope-specific OAuth assertions and caches each scope separately', async () => {
@@ -37,6 +38,9 @@ describe('Google Play client', () => {
       return Response.json(url.includes('playintegrity') ? { tokenPayloadExternal: { requestDetails: {} } } : {});
     };
     const client = new PlayClient('com.studio501.kotoba', credentials, fetcher, () => 1000);
+    const imports = vi.spyOn(crypto.subtle, 'importKey');
+    await client.validate_credentials();
+    await client.validate_credentials();
     await client.lookup(LIFE, 'token/plus+?');
     await client.lookup(SUB, 'second-token');
     await client.decode_integrity('integrity-token');
@@ -44,6 +48,7 @@ describe('Google Play client', () => {
     expect(assertions.map(value => value.scope)).toEqual([
       'https://www.googleapis.com/auth/androidpublisher', 'https://www.googleapis.com/auth/playintegrity']);
     expect(client.receipt_url(LIFE, 'token/plus+?')).toContain('token%2Fplus%2B%3F');
+    expect(imports.mock.calls.filter(call => call[0] === 'pkcs8')).toHaveLength(1);
   });
 
   it('denies missing receipts, distinguishes transient errors and never follows purchase redirects', async () => {
