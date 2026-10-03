@@ -9,6 +9,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.app.UiAutomation;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
@@ -21,12 +22,17 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.ParcelFileDescriptor;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.service.notification.StatusBarNotification;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.speech.tts.Voice;
+import android.system.ErrnoException;
+import android.system.Os;
+import android.system.OsConstants;
+import android.system.StructPollfd;
 import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import androidx.lifecycle.Lifecycle;
@@ -43,7 +49,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.json.JSONArray;
@@ -131,13 +141,21 @@ public final class NativeVoiceRuntimeTest {
             require(automaticProgress(), "Required automatic reading/meaning/example/next-entry progression not observed");
             require(observeMedia("playing", PlaybackState.STATE_PLAYING), "Actual foreground type/notification/media state incomplete");
             require(automation.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_HOME), "Home request rejected");
-            ResolveInfo home = context.getPackageManager().resolveActivity(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME), 0);
-            require(home != null && home.activityInfo != null, "Home activity did not resolve");
-            homePackage = home.activityInfo.packageName;
-            long homeDeadline = limit(3000);
-            while (!home.activityInfo.packageName.equals(activeRootPackage()) && SystemClock.elapsedRealtime() < homeDeadline) SystemClock.sleep(100);
             report.put("homeRootPackage", bounded(activeRootPackage()));
-            require(home.activityInfo.packageName.equals(activeRootPackage()), "Actual Home root not observed");
+            ResolveInfo home = context.getPackageManager().resolveActivity(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME), 0);
+            ComponentName appHome = home == null || home.activityInfo == null ? null : new ComponentName(home.activityInfo.packageName, home.activityInfo.name);
+            report.put("appResolvedHomePackage", appHome == null ? "" : bounded(appHome.getPackageName()))
+                    .put("appResolvedHomeClass", appHome == null ? "" : bounded(appHome.getClassName()))
+                    .put("appHomeResolutionIsDefault", home != null && home.isDefault);
+            // App package visibility can affect PM lookup. Do not infer the cause of an actual mismatch.
+            ComponentName systemHome = resolveSystemHome();
+            homePackage = systemHome.getPackageName();
+            report.put("systemResolvedHomePackage", bounded(homePackage)).put("systemResolvedHomeClass", bounded(systemHome.getClassName()))
+                    .put("appAndSystemHomeResolutionMatch", systemHome.equals(appHome));
+            long homeDeadline = limit(3000);
+            while (!homePackage.equals(activeRootPackage()) && SystemClock.elapsedRealtime() < homeDeadline) SystemClock.sleep(100);
+            report.put("homeRootPackage", bounded(activeRootPackage()));
+            require(homePackage.equals(activeRootPackage()), "Actual system-resolved Home root not observed");
             require(backgroundProgress("home", false, scenario), "Home continuation incomplete");
             report.put("homeProgressObserved", true);
             report.put("screenOffInputAccepted", key(KeyEvent.KEYCODE_SLEEP));
@@ -439,6 +457,73 @@ public final class NativeVoiceRuntimeTest {
         KeyguardManager keyguard = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
         return new JSONObject().put("powerAvailable", power != null).put("keyguardAvailable", keyguard != null).put("interactive", power != null && power.isInteractive())
                 .put("keyguardLocked", keyguard != null && keyguard.isKeyguardLocked()).put("deviceLocked", keyguard != null && keyguard.isDeviceLocked());
+    }
+
+    private ComponentName resolveSystemHome() throws Exception {
+        String command = "cmd package resolve-activity --components --user current -a android.intent.action.MAIN -c android.intent.category.HOME";
+        long begin = SystemClock.elapsedRealtime(), until = limit(3000);
+        ByteArrayOutputStream output = new ByteArrayOutputStream(); boolean eof = false;
+        report.put("homeResolutionMethod", "read_only_system_package_resolve_activity").put("homeResolutionReadCompleted", false);
+        try (ParcelFileDescriptor descriptor = acquireHomeDescriptor(command, until)) {
+            require(descriptor != null && SystemClock.elapsedRealtime() < until, "System Home resolution descriptor unavailable or late");
+            java.io.FileDescriptor fd = descriptor.getFileDescriptor();
+            Os.fcntlInt(fd, OsConstants.F_SETFL, Os.fcntlInt(fd, OsConstants.F_GETFL, 0) | OsConstants.O_NONBLOCK);
+            StructPollfd watched = new StructPollfd(); watched.fd = fd;
+            watched.events = (short) (OsConstants.POLLIN | OsConstants.POLLHUP);
+            byte[] buffer = new byte[128];
+            while (SystemClock.elapsedRealtime() < until) {
+                long remaining = until - SystemClock.elapsedRealtime();
+                if (remaining <= 0) break;
+                int ready;
+                try { ready = Os.poll(new StructPollfd[]{watched}, (int) Math.min(200, remaining)); }
+                catch (ErrnoException interrupted) { if (interrupted.errno == OsConstants.EINTR) continue; throw interrupted; }
+                if (ready == 0) continue;
+                require((watched.revents & (OsConstants.POLLERR | OsConstants.POLLNVAL)) == 0, "System Home resolution pipe failed");
+                int read;
+                try { read = Os.read(fd, buffer, 0, buffer.length); }
+                catch (ErrnoException unavailable) { if (unavailable.errno == OsConstants.EAGAIN || unavailable.errno == OsConstants.EINTR) continue; throw unavailable; }
+                if (read == 0) { eof = true; break; }
+                if (output.size() + read > 512) { report.put("homeResolutionOutputTruncated", true); require(false, "System Home resolution output cap exceeded"); }
+                output.write(buffer, 0, read);
+            }
+        } finally {
+            report.put("homeResolutionReadCompleted", eof).put("homeResolutionOutputBytes", output.size())
+                    .put("homeResolutionElapsedMs", SystemClock.elapsedRealtime() - begin)
+                    .put("homeResolutionRawOutput", new String(output.toByteArray(), StandardCharsets.UTF_8));
+            report.put("homeRootPackage", bounded(activeRootPackage()));
+        }
+        require(eof && SystemClock.elapsedRealtime() < until, "System Home resolution did not complete within budget");
+        String raw = new String(output.toByteArray(), StandardCharsets.UTF_8).trim();
+        require(raw.matches("[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)+/\\.?[A-Za-z_$][A-Za-z0-9_.$]*"), "System Home resolution is not one exact component");
+        ComponentName component = ComponentName.unflattenFromString(raw);
+        require(component != null && raw.equals(component.flattenToShortString()), "System Home component round-trip failed");
+        String packageName = component.getPackageName(), className = component.getClassName();
+        require(!PACKAGE.equals(packageName) && !"android".equals(packageName) && !"com.android.systemui".equals(packageName)
+                && !"com.android.settings".equals(packageName) && !className.endsWith(".ResolverActivity") && !className.endsWith(".ChooserActivity"),
+                "System Home resolution returned an app/resolver/settings destination");
+        return component;
+    }
+
+    private ParcelFileDescriptor acquireHomeDescriptor(String command, long until) throws Exception {
+        AtomicBoolean abandoned = new AtomicBoolean(); AtomicReference<ParcelFileDescriptor> issued = new AtomicReference<>();
+        ExecutorService reader = Executors.newSingleThreadExecutor(task -> { Thread thread = new Thread(task, "kotoba-home-resolution"); thread.setDaemon(true); return thread; });
+        Future<ParcelFileDescriptor> future = reader.submit(() -> {
+            ParcelFileDescriptor descriptor = automation.executeShellCommand(command);
+            issued.set(descriptor);
+            if (abandoned.get()) { ParcelFileDescriptor late = issued.getAndSet(null); if (late != null) late.close(); return null; }
+            return descriptor;
+        });
+        try {
+            long remaining = until - SystemClock.elapsedRealtime(); require(remaining > 0, "Home descriptor acquisition budget expired");
+            ParcelFileDescriptor descriptor = future.get(remaining, TimeUnit.MILLISECONDS);
+            require(descriptor != null && SystemClock.elapsedRealtime() < until, "Home descriptor acquisition unavailable or late");
+            require(issued.compareAndSet(descriptor, null), "Home descriptor ownership unavailable");
+            return descriptor;
+        } finally {
+            // Cancellation bounds our wait, not proof that the read-only system command was terminated.
+            abandoned.set(true); future.cancel(true); reader.shutdownNow();
+            ParcelFileDescriptor pending = issued.getAndSet(null); if (pending != null) pending.close();
+        }
     }
 
     private String activeRootPackage() {

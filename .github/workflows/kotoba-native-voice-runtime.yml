@@ -348,7 +348,7 @@ jobs:
               'automaticJapaneseExampleObserved', 'automaticNextEntryObserved',
               'ownForegroundServiceObserved', 'runtimeMediaPlaybackTypeObserved',
               'activePlaylistNotificationObserved', 'mediaSessionPlayingObserved',
-              'homeProgressObserved', 'screenOffProgressObserved', 'screenOffObserved',
+              'homeResolutionReadCompleted', 'homeProgressObserved', 'screenOffProgressObserved', 'screenOffObserved',
               'pausePendingIntentVerified', 'resumePendingIntentVerified', 'stopPendingIntentVerified',
               'serviceRemovedAfterStop', 'notificationRemovedAfterStop',
               'finallyStopRequested', 'finallyServiceAndNotificationRemoved', 'initialInteractiveStateRestored',
@@ -375,6 +375,11 @@ jobs:
                        and type(report.get('sdk')) is int and report['sdk'] == 36
                        and report.get('configuredDefaultEngine') == 'com.google.android.tts'
                        and report.get('startRoute') == 'activity_integration_PlaylistService.start'
+                       and report.get('homeResolutionMethod') == 'read_only_system_package_resolve_activity'
+                       and isinstance(report.get('systemResolvedHomePackage'), str) and bool(report['systemResolvedHomePackage'])
+                       and report.get('homeRootPackage') == report['systemResolvedHomePackage']
+                       and type(report.get('homeResolutionOutputBytes')) is int and 0 < report['homeResolutionOutputBytes'] <= 512
+                       and type(report.get('homeResolutionElapsedMs')) is int and 0 <= report['homeResolutionElapsedMs'] <= 3000
                        and report.get('runtimeTypeObservationMethod') == 'own_app_service_reference_framework_getForegroundServiceType'
                        and type(report.get('runtimeForegroundServiceType')) is int and report['runtimeForegroundServiceType'] == 2
                        and report.get('payloadEntryIds') == ['N5-1ok9x3q', 'N5-mibmyg']

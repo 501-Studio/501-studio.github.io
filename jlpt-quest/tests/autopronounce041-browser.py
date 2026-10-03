@@ -69,7 +69,7 @@ with sync_playwright() as P:
   p.locator('[data-action="furigana"]').click();p.wait_for_timeout(180)
   check('failed pronunciation guidance survives rerender without unlocking',p.locator('#lesson-speech-guide .speech-error-guide').is_visible() and state(p)['session']['heard'] is False)
   p.screenshot(path=str(OUT/'missing-japanese-voice-guidance.png'),full_page=True)
-  p.evaluate("sessionStorage.removeItem('kotoba-test-no-japanese')");nav(p,'lesson');p.locator('[data-action="listen"]').click();p.wait_for_function("!document.querySelector('.answer-option').disabled && !document.querySelector('#lesson-speech-guide .speech-error-guide')")
+  p.evaluate("sessionStorage.removeItem('kotoba-test-no-japanese')");nav(p,'lesson');p.locator('[data-action="listen"]').click();p.wait_for_function("()=>!document.querySelector('.answer-option').disabled && !document.querySelector('#lesson-speech-guide .speech-error-guide')")
   check('only a completed retry removes guidance and unlocks listening',state(p)['session']['heard'] is True and p.locator('#lesson-speech-guide .speech-error-guide').count()==0)
   check('no runtime page errors',not errors)
  except Exception:
