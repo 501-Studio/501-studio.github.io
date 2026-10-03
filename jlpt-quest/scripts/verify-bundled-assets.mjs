@@ -1,0 +1,33 @@
+import {readFile,readdir} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+import {ALL_KANA} from '../src/kana-engine.js';
+import {writingChars} from '../src/catalog.js';
+const data=new URL('../data/',import.meta.url);
+const read=async name=>JSON.parse(await readFile(new URL(name,data),'utf8'));
+const levels=['N5','N4','N3','N2','N1'];
+const words=(await Promise.all(levels.map(async level=>(await read(level+'.json')).words))).flat();
+assert.equal(words.length,8451,'Complete JLPT catalogue required');
+assert.equal(ALL_KANA.length,162,'Complete beginner kana catalogue required');
+assert(words.every(w=>w.language==='ko'&&w.meaning.trim()),'Korean display meanings required');
+const manifest=await read('audio-manifest.json'),coverage=await read('audio-coverage.json');
+assert.equal(manifest.generator,'Kokoro-82M v1.0','Refuse a legacy voice downgrade');
+assert.equal(manifest.voice,'jf_alpha');assert.equal(manifest.complete,true);assert.equal(coverage.complete,true);
+const all=[...words,...ALL_KANA],names=new Set(Object.values(manifest.clips));
+assert.equal(manifest.words,all.length);assert.equal(coverage.words,all.length);
+assert(all.every(w=>manifest.clips[w.id]),'An offline pronunciation is missing');
+assert.equal(names.size,7050);assert.equal(coverage.records.length,names.size);
+const files=await readdir(new URL('audio/',data));
+assert.equal(files.filter(f=>f.endsWith('.ogg')).length,names.size);
+for(const r of coverage.records){
+ assert(names.has(r.file));assert(/^[a-f0-9]{24}\.ogg$/.test(r.file));
+ const b=await readFile(new URL('audio/'+r.file,data));assert.equal(b.subarray(0,4).toString(),'OggS');
+ assert.equal(createHash('sha256').update(b).digest('hex'),r.sha256,r.file);
+}
+const bank=await read('strokes.json');
+for(const w of words)for(const ch of writingChars(w))assert(bank.characters[ch]?.length,'Missing stroke data: '+ch);
+for(const k of ALL_KANA)assert(bank.characters[k.char]?.length,'Missing kana stroke data: '+k.char);
+const examples=await read('examples.json');assert.equal(examples.entries.length,164);
+assert(examples.entries.every(e=>e.ja&&e.ko&&e.reading&&e.source));
+for(const name of ['Kokoro-Apache-2.0.txt','KanjiVG-COPYING.txt'])assert((await readFile(new URL('licenses/'+name,data))).length>100);
+console.log(JSON.stringify({valid:true,jlpt:words.length,kana:ALL_KANA.length,audio:names.size,examples:examples.entries.length,networkFetches:0}));

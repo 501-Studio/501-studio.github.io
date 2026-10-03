@@ -1,0 +1,6 @@
+import {esc,btn,icon} from './view.js';
+let examples=new Map();
+export async function loadExamples(){const r=await fetch(new URL('../data/examples.json',import.meta.url));if(!r.ok)throw new Error('예문 자료를 읽지 못했어요.');const p=await r.json();if(p.version!==1||!Array.isArray(p.entries))throw new Error('예문 형식이 맞지 않아요.');for(const e of p.entries){if(typeof e.ja!=='string'||typeof e.ko!=='string'||!Array.isArray(e.targets))continue;for(const word of e.targets){if(!examples.has(word))examples.set(word,[]);examples.get(word).push(e);}}}
+export const examplesFor=w=>examples.get(w?.word)||[];
+export const exampleButton=w=>examplesFor(w).length?btn('examples',icon('book')+' 예문 보기','text example-button',`data-id="${esc(w.id)}"`):'';
+export function exampleBody(w,showReading=true){return `<div class="example-headword">${esc(w.word)}${showReading&&w.reading&&w.reading!==w.word?`<small lang="ja">${esc(w.reading)}</small>`:''}</div>${examplesFor(w).slice(0,3).map(e=>`<article class="example-card"><p lang="ja" class="example-ja">${esc(e.ja)}</p>${showReading&&e.reading?`<p class="example-reading" lang="ja">${esc(e.reading)}</p>`:''}<p class="example-ko">${esc(e.ko)}</p></article>`).join('')}<p class="fine">코토바 자체 작성 예문 · 번역</p>`;}

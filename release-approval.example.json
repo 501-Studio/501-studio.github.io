@@ -1,0 +1,17 @@
+{
+  "physicalDeviceInk": false,
+  "physicalDeviceAudio": false,
+  "offlineRestore": false,
+  "accessibility": false,
+  "contentEditorialReview": false,
+  "privacyAndDataSafety": false,
+  "contentRating": false,
+  "storeListing": false,
+  "signedBundle": false,
+  "playAppSigning": false,
+  "closedTesting": false,
+  "legalDocsPublished": false,
+  "billingSandbox": false,
+  "consentAndAdFree": false,
+  "rtdnAndRefunds": false
+}

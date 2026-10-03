@@ -1,0 +1,2021 @@
+{
+  "version": 1,
+  "origin": "Newly authored for Kotoba; not scraped or copied from a third-party textbook or dictionary.",
+  "rights": "Original assistant-generated text supplied for this project. No third-party sentence corpus incorporated. No assertion of exclusive copyright or universal legal clearance.",
+  "review": "Bilingual assistant review, native-speaker editorial review pending",
+  "entries": [
+    {
+      "id": "kotoba-original-001",
+      "targets": [
+        "山",
+        "川",
+        "見る"
+      ],
+      "ja": "山の上から川が見えます。",
+      "reading": "やまのうえからかわがみえます。",
+      "ko": "산 위에서 강이 보입니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-002",
+      "targets": [
+        "水",
+        "飲む",
+        "冷たい"
+      ],
+      "ja": "冷たい水を飲みます。",
+      "reading": "つめたいみずをのみます。",
+      "ko": "차가운 물을 마십니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-003",
+      "targets": [
+        "火",
+        "消す"
+      ],
+      "ja": "料理が終わったら、火を消してください。",
+      "reading": "りょうりがおわったら、ひをけしてください。",
+      "ko": "요리가 끝나면 불을 꺼 주세요.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-004",
+      "targets": [
+        "木",
+        "家",
+        "前"
+      ],
+      "ja": "家の前に大きな木があります。",
+      "reading": "いえのまえにおおきなきがあります。",
+      "ko": "집 앞에 큰 나무가 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-005",
+      "targets": [
+        "学校",
+        "行く",
+        "毎日"
+      ],
+      "ja": "毎日、歩いて学校へ行きます。",
+      "reading": "まいにち、あるいてがっこうへいきます。",
+      "ko": "매일 걸어서 학교에 갑니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-006",
+      "targets": [
+        "先生",
+        "日本語",
+        "教える"
+      ],
+      "ja": "先生は日本語を教えています。",
+      "reading": "せんせいはにほんごをおしえています。",
+      "ko": "선생님은 일본어를 가르치고 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-007",
+      "targets": [
+        "学生",
+        "図書館",
+        "勉強"
+      ],
+      "ja": "学生たちは図書館で勉強しています。",
+      "reading": "がくせいたちはとしょかんでべんきょうしています。",
+      "ko": "학생들은 도서관에서 공부하고 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-008",
+      "targets": [
+        "名前",
+        "書く",
+        "ここ"
+      ],
+      "ja": "ここに名前を書いてください。",
+      "reading": "ここになまえをかいてください。",
+      "ko": "여기에 이름을 써 주세요.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-009",
+      "targets": [
+        "友達",
+        "会う",
+        "明日"
+      ],
+      "ja": "明日、友達に会います。",
+      "reading": "あした、ともだちにあいます。",
+      "ko": "내일 친구를 만납니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-010",
+      "targets": [
+        "日",
+        "休み"
+      ],
+      "ja": "次の休みの日に、部屋を片づけます。",
+      "reading": "つぎのやすみのひに、へやをかたづけます。",
+      "ko": "다음 쉬는 날에 방을 정리합니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-011",
+      "targets": [
+        "月",
+        "夜",
+        "明るい"
+      ],
+      "ja": "今夜は月が明るいですね。",
+      "reading": "こんやはつきがあかるいですね。",
+      "ko": "오늘 밤은 달이 밝네요.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-012",
+      "targets": [
+        "空",
+        "青い"
+      ],
+      "ja": "今日は空が青いです。",
+      "reading": "きょうはそらがあおいです。",
+      "ko": "오늘은 하늘이 파랗습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-013",
+      "targets": [
+        "雨",
+        "傘",
+        "持つ"
+      ],
+      "ja": "雨が降りそうなので、傘を持っていきます。",
+      "reading": "あめがふりそうなので、かさをもっていきます。",
+      "ko": "비가 올 것 같아서 우산을 가지고 갑니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-014",
+      "targets": [
+        "天気",
+        "いい",
+        "散歩"
+      ],
+      "ja": "天気がいいので、散歩しましょう。",
+      "reading": "てんきがいいので、さんぽしましょう。",
+      "ko": "날씨가 좋으니 산책합시다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-015",
+      "targets": [
+        "今日",
+        "忙しい"
+      ],
+      "ja": "今日は仕事が忙しいです。",
+      "reading": "きょうはしごとがいそがしいです。",
+      "ko": "오늘은 일이 바쁩니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-016",
+      "targets": [
+        "昨日",
+        "本",
+        "読む"
+      ],
+      "ja": "昨日、この本を読みました。",
+      "reading": "きのう、このほんをよみました。",
+      "ko": "어제 이 책을 읽었습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-017",
+      "targets": [
+        "朝",
+        "食べる",
+        "パン"
+      ],
+      "ja": "朝はパンを食べます。",
+      "reading": "あさはぱんをたべます。",
+      "ko": "아침에는 빵을 먹습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-018",
+      "targets": [
+        "聞く",
+        "音楽",
+        "好き"
+      ],
+      "ja": "音楽を聞くのが好きです。",
+      "reading": "おんがくをきくのがすきです。",
+      "ko": "음악 듣는 것을 좋아합니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-019",
+      "targets": [
+        "来る",
+        "母"
+      ],
+      "ja": "母は来週、東京に来ます。",
+      "reading": "はははらいしゅう、とうきょうにきます。",
+      "ko": "어머니는 다음 주에 도쿄에 옵니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-020",
+      "targets": [
+        "帰る",
+        "家",
+        "早く"
+      ],
+      "ja": "今日は早く家に帰ります。",
+      "reading": "きょうははやくいえにかえります。",
+      "ko": "오늘은 일찍 집에 돌아갑니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-021",
+      "targets": [
+        "買う",
+        "店",
+        "新しい"
+      ],
+      "ja": "この店で新しい靴を買いました。",
+      "reading": "このみせであたらしいくつをかいました。",
+      "ko": "이 가게에서 새 신발을 샀습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-022",
+      "targets": [
+        "駅",
+        "電車",
+        "乗る"
+      ],
+      "ja": "駅で電車に乗ります。",
+      "reading": "えきででんしゃにのります。",
+      "ko": "역에서 전철을 탑니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-023",
+      "targets": [
+        "道",
+        "右",
+        "曲がる"
+      ],
+      "ja": "次の道を右に曲がってください。",
+      "reading": "つぎのみちをみぎにまがってください。",
+      "ko": "다음 길에서 오른쪽으로 돌아 주세요.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-024",
+      "targets": [
+        "父",
+        "兄",
+        "料理"
+      ],
+      "ja": "父と兄は台所で料理をしています。",
+      "reading": "ちちとあにはだいどころでりょうりをしています。",
+      "ko": "아버지와 형은 부엌에서 요리하고 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-025",
+      "targets": [
+        "姉",
+        "子供"
+      ],
+      "ja": "姉には子供が二人います。",
+      "reading": "あねにはこどもがふたりいます。",
+      "ko": "누나에게는 아이가 두 명 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-026",
+      "targets": [
+        "大きい",
+        "犬",
+        "小さい"
+      ],
+      "ja": "大きい犬と小さい犬が遊んでいます。",
+      "reading": "おおきいいぬとちいさいいぬがあそんでいます。",
+      "ko": "큰 개와 작은 개가 놀고 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-027",
+      "targets": [
+        "古い",
+        "写真"
+      ],
+      "ja": "古い写真を見つけました。",
+      "reading": "ふるいしゃしんをみつけました。",
+      "ko": "오래된 사진을 찾았습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-028",
+      "targets": [
+        "高い",
+        "安い"
+      ],
+      "ja": "このかばんは高いですが、あのかばんは安いです。",
+      "reading": "このかばんはたかいですが、あのかばんはやすいです。",
+      "ko": "이 가방은 비싸지만 저 가방은 쌉니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-029",
+      "targets": [
+        "白い",
+        "黒い",
+        "猫"
+      ],
+      "ja": "白い猫と黒い猫がいます。",
+      "reading": "しろいねことくろいねこがいます。",
+      "ko": "흰 고양이와 검은 고양이가 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-030",
+      "targets": [
+        "赤い",
+        "花"
+      ],
+      "ja": "赤い花を一つ買いました。",
+      "reading": "あかいはなをひとつかいました。",
+      "ko": "빨간 꽃을 하나 샀습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-031",
+      "targets": [
+        "時間",
+        "待つ"
+      ],
+      "ja": "まだ時間があるので、ここで待ちましょう。",
+      "reading": "まだじかんがあるので、ここでまちましょう。",
+      "ko": "아직 시간이 있으니 여기서 기다립시다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-032",
+      "targets": [
+        "魚",
+        "食べる"
+      ],
+      "ja": "夕食に魚を食べました。",
+      "reading": "ゆうしょくにさかなをたべました。",
+      "ko": "저녁 식사로 생선을 먹었습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-033",
+      "targets": [
+        "人",
+        "多い"
+      ],
+      "ja": "日曜日は公園に人が多いです。",
+      "reading": "にちようびはこうえんにひとがおおいです。",
+      "ko": "일요일에는 공원에 사람이 많습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-034",
+      "targets": [
+        "おまわりさん",
+        "道"
+      ],
+      "ja": "おまわりさんに駅までの道を聞きました。",
+      "reading": "おまわりさんにえきまでのみちをききました。",
+      "ko": "경찰관에게 역까지 가는 길을 물었습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-035",
+      "targets": [
+        "あさって",
+        "出発"
+      ],
+      "ja": "あさって、旅行に出発します。",
+      "reading": "あさって、りょこうにしゅっぱつします。",
+      "ko": "모레 여행을 떠납니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-036",
+      "targets": [
+        "きれい",
+        "部屋"
+      ],
+      "ja": "この部屋はきれいですね。",
+      "reading": "このへやはきれいですね。",
+      "ko": "이 방은 깨끗하네요.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-037",
+      "targets": [
+        "たくさん",
+        "野菜"
+      ],
+      "ja": "野菜をたくさん食べてください。",
+      "reading": "やさいをたくさんたべてください。",
+      "ko": "채소를 많이 드세요.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-038",
+      "targets": [
+        "ある",
+        "机"
+      ],
+      "ja": "机の上に本があります。",
+      "reading": "つくえのうえにほんがあります。",
+      "ko": "책상 위에 책이 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-039",
+      "targets": [
+        "いる",
+        "庭"
+      ],
+      "ja": "庭に猫がいます。",
+      "reading": "にわにねこがいます。",
+      "ko": "마당에 고양이가 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-040",
+      "targets": [
+        "とても",
+        "おいしい"
+      ],
+      "ja": "このスープはとてもおいしいです。",
+      "reading": "このすーぷはとてもおいしいです。",
+      "ko": "이 수프는 아주 맛있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-041",
+      "targets": [
+        "ください",
+        "メニュー"
+      ],
+      "ja": "メニューを見せてください。",
+      "reading": "めにゅーをみせてください。",
+      "ko": "메뉴를 보여 주세요.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-042",
+      "targets": [
+        "テレビ",
+        "見る"
+      ],
+      "ja": "夕食の後でテレビを見ます。",
+      "reading": "ゆうしょくのあとでてれびをみます。",
+      "ko": "저녁 식사 후에 텔레비전을 봅니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-043",
+      "targets": [
+        "ありがとう",
+        "手伝う"
+      ],
+      "ja": "手伝ってくれて、ありがとう。",
+      "reading": "てつだってくれて、ありがとう。",
+      "ko": "도와줘서 고마워.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-044",
+      "targets": [
+        "できる",
+        "一人"
+      ],
+      "ja": "一人でできるので、大丈夫です。",
+      "reading": "ひとりでできるので、だいじょうぶです。",
+      "ko": "혼자 할 수 있으니 괜찮습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-045",
+      "targets": [
+        "時計",
+        "壁"
+      ],
+      "ja": "壁に時計がかかっています。",
+      "reading": "かべにとけいがかかっています。",
+      "ko": "벽에 시계가 걸려 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-046",
+      "targets": [
+        "昼",
+        "食堂"
+      ],
+      "ja": "昼は食堂でご飯を食べます。",
+      "reading": "ひるはしょくどうでごはんをたべます。",
+      "ko": "점심때는 식당에서 밥을 먹습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-047",
+      "targets": [
+        "浴びる",
+        "シャワー"
+      ],
+      "ja": "運動の後でシャワーを浴びます。",
+      "reading": "うんどうのあとでしゃわーをあびます。",
+      "ko": "운동 후에 샤워합니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-048",
+      "targets": [
+        "質問",
+        "答え"
+      ],
+      "ja": "質問を読んで、答えを書いてください。",
+      "reading": "しつもんをよんで、こたえをかいてください。",
+      "ko": "질문을 읽고 답을 써 주세요.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-049",
+      "targets": [
+        "説明",
+        "分かる"
+      ],
+      "ja": "先生の説明で、やり方が分かりました。",
+      "reading": "せんせいのせつめいで、やりかたがわかりました。",
+      "ko": "선생님의 설명으로 방법을 이해했습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-050",
+      "targets": [
+        "予定",
+        "約束"
+      ],
+      "ja": "明日は友達と会う約束があるので、ほかの予定は入れません。",
+      "reading": "あしたはともだちとあうやくそくがあるので、ほかのよていはいれません。",
+      "ko": "내일은 친구와 만날 약속이 있어서 다른 일정은 잡지 않습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-051",
+      "targets": [
+        "準備",
+        "旅行"
+      ],
+      "ja": "旅行の準備はもうできましたか。",
+      "reading": "りょこうのじゅんびはもうできましたか。",
+      "ko": "여행 준비는 벌써 다 되었나요?",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-052",
+      "targets": [
+        "予習",
+        "復習"
+      ],
+      "ja": "授業の前に予習し、終わってから復習します。",
+      "reading": "じゅぎょうのまえによしゅうし、おわってからふくしゅうします。",
+      "ko": "수업 전에 예습하고 끝난 후에 복습합니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-053",
+      "targets": [
+        "練習",
+        "続ける"
+      ],
+      "ja": "短い時間でも、毎日練習を続けています。",
+      "reading": "みじかいじかんでも、まいにちれんしゅうをつづけています。",
+      "ko": "짧은 시간이라도 매일 연습을 이어가고 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-054",
+      "targets": [
+        "試験",
+        "必要"
+      ],
+      "ja": "試験には鉛筆が必要です。",
+      "reading": "しけんにはえんぴつがひつようです。",
+      "ko": "시험에는 연필이 필요합니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-055",
+      "targets": [
+        "経験",
+        "大切"
+      ],
+      "ja": "失敗した経験も大切にしたいです。",
+      "reading": "しっぱいしたけいけんもたいせつにしたいです。",
+      "ko": "실패했던 경험도 소중히 여기고 싶습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-056",
+      "targets": [
+        "便利",
+        "安全"
+      ],
+      "ja": "この道は便利ですが、夜は安全に気をつけてください。",
+      "reading": "このみちはべんりですが、よるはあんぜんにきをつけてください。",
+      "ko": "이 길은 편리하지만 밤에는 안전에 주의해 주세요.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-057",
+      "targets": [
+        "連絡",
+        "相談"
+      ],
+      "ja": "困ったときは連絡してください。一緒に相談しましょう。",
+      "reading": "こまったときはれんらくしてください。いっしょにそうだんしましょう。",
+      "ko": "곤란할 때는 연락해 주세요. 함께 상의합시다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-058",
+      "targets": [
+        "予約",
+        "病院"
+      ],
+      "ja": "病院の予約を取りました。",
+      "reading": "びょういんのよやくをとりました。",
+      "ko": "병원 예약을 했습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-059",
+      "targets": [
+        "案内",
+        "地図"
+      ],
+      "ja": "案内所で地図をもらいました。",
+      "reading": "あんないじょでちずをもらいました。",
+      "ko": "안내소에서 지도를 받았습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-060",
+      "targets": [
+        "都合",
+        "変える"
+      ],
+      "ja": "都合が悪くなったので、約束の時間を変えました。",
+      "reading": "つごうがわるくなったので、やくそくのじかんをかえました。",
+      "ko": "사정이 생겨서 약속 시간을 바꿨습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-061",
+      "targets": [
+        "始める",
+        "終わる"
+      ],
+      "ja": "仕事を始める前に、何時に終わるか確認します。",
+      "reading": "しごとをはじめるまえに、なんじにおわるかかくにんします。",
+      "ko": "일을 시작하기 전에 몇 시에 끝나는지 확인합니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-062",
+      "targets": [
+        "覚える",
+        "忘れる"
+      ],
+      "ja": "新しい言葉は、覚えてもすぐに忘れることがあります。",
+      "reading": "あたらしいことばは、おぼえてもすぐにわすれることがあります。",
+      "ko": "새로운 단어는 외워도 금방 잊어버릴 때가 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-063",
+      "targets": [
+        "調べる",
+        "意味"
+      ],
+      "ja": "知らない言葉の意味を調べました。",
+      "reading": "しらないことばのいみをしらべました。",
+      "ko": "모르는 단어의 뜻을 찾아봤습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-064",
+      "targets": [
+        "比べる",
+        "選ぶ"
+      ],
+      "ja": "二つの店の値段を比べてから選びます。",
+      "reading": "ふたつのみせのねだんをくらべてからえらびます。",
+      "ko": "두 가게의 가격을 비교한 뒤 고릅니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-065",
+      "targets": [
+        "決める",
+        "考える"
+      ],
+      "ja": "よく考えてから、行き先を決めましょう。",
+      "reading": "よくかんがえてから、いきさきをきめましょう。",
+      "ko": "잘 생각한 뒤 행선지를 정합시다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-066",
+      "targets": [
+        "探す",
+        "見つける"
+      ],
+      "ja": "鍵を探していたら、机の下で見つけました。",
+      "reading": "かぎをさがしていたら、つくえのしたでみつけました。",
+      "ko": "열쇠를 찾다가 책상 아래에서 발견했습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-067",
+      "targets": [
+        "働く",
+        "医者"
+      ],
+      "ja": "姉はこの病院で医者として働いています。",
+      "reading": "あねはこのびょういんでいしゃとしてはたらいています。",
+      "ko": "누나는 이 병원에서 의사로 일하고 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-068",
+      "targets": [
+        "薬",
+        "熱",
+        "気分"
+      ],
+      "ja": "熱があったので薬を飲みましたが、まだ気分がよくありません。",
+      "reading": "ねつがあったのでくすりをのみましたが、まだきぶんがよくありません。",
+      "ko": "열이 나서 약을 먹었지만 아직 몸 상태가 좋지 않습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-069",
+      "targets": [
+        "空港",
+        "交通"
+      ],
+      "ja": "空港までの交通について調べています。",
+      "reading": "くうこうまでのこうつうについてしらべています。",
+      "ko": "공항까지의 교통편을 알아보고 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-070",
+      "targets": [
+        "運転",
+        "注意"
+      ],
+      "ja": "雨の日は、特に注意して運転します。",
+      "reading": "あめのひは、とくにちゅういしてうんてんします。",
+      "ko": "비 오는 날에는 특히 주의해서 운전합니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-071",
+      "targets": [
+        "生活",
+        "文化",
+        "習慣"
+      ],
+      "ja": "その国で生活すると、文化や習慣の違いに気づきます。",
+      "reading": "そのくにでせいかつすると、ぶんかやしゅうかんのちがいにきづきます。",
+      "ko": "그 나라에서 생활하면 문화나 습관의 차이를 알게 됩니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-072",
+      "targets": [
+        "季節",
+        "景色"
+      ],
+      "ja": "季節が変わると、窓から見える景色も変わります。",
+      "reading": "きせつがかわると、まどからみえるけしきもかわります。",
+      "ko": "계절이 바뀌면 창문으로 보이는 풍경도 달라집니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-073",
+      "targets": [
+        "意見",
+        "理由"
+      ],
+      "ja": "自分の意見と、その理由を話してください。",
+      "reading": "じぶんのいけんと、そのりゆうをはなしてください。",
+      "ko": "자신의 의견과 그 이유를 말해 주세요.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-074",
+      "targets": [
+        "失敗",
+        "成功"
+      ],
+      "ja": "何度も失敗しましたが、最後には成功しました。",
+      "reading": "なんどもしっぱいしましたが、さいごにはせいこうしました。",
+      "ko": "여러 번 실패했지만 마지막에는 성공했습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-075",
+      "targets": [
+        "将来",
+        "最近"
+      ],
+      "ja": "最近、将来の仕事についてよく考えます。",
+      "reading": "さいきん、しょうらいのしごとについてよくかんがえます。",
+      "ko": "최근에 미래의 직업에 대해 자주 생각합니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-076",
+      "targets": [
+        "特別",
+        "自由"
+      ],
+      "ja": "今日は特別な予定がないので、自由に過ごします。",
+      "reading": "きょうはとくべつなよていがないので、じゆうにすごします。",
+      "ko": "오늘은 특별한 일정이 없어서 자유롭게 지냅니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-077",
+      "targets": [
+        "理解",
+        "確認"
+      ],
+      "ja": "内容を理解できたか、もう一度確認しましょう。",
+      "reading": "ないようをりかいできたか、もういちどかくにんしましょう。",
+      "ko": "내용을 이해했는지 한 번 더 확인합시다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-078",
+      "targets": [
+        "関係",
+        "原因",
+        "結果"
+      ],
+      "ja": "原因と結果の関係を図にまとめました。",
+      "reading": "げんいんとけっかのかんけいをずにまとめました。",
+      "ko": "원인과 결과의 관계를 그림으로 정리했습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-079",
+      "targets": [
+        "影響",
+        "状況"
+      ],
+      "ja": "天候の影響で、道路の状況が変わることがあります。",
+      "reading": "てんこうのえいきょうで、どうろのじょうきょうがかわることがあります。",
+      "ko": "날씨의 영향으로 도로 상황이 달라질 수 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-080",
+      "targets": [
+        "条件",
+        "参加"
+      ],
+      "ja": "参加するための条件を教えてください。",
+      "reading": "さんかするためのじょうけんをおしえてください。",
+      "ko": "참가하기 위한 조건을 알려 주세요.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-081",
+      "targets": [
+        "目的",
+        "方法"
+      ],
+      "ja": "目的に合った方法を選ぶことが大切です。",
+      "reading": "もくてきにあったほうほうをえらぶことがたいせつです。",
+      "ko": "목적에 맞는 방법을 선택하는 것이 중요합니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-082",
+      "targets": [
+        "情報",
+        "知識"
+      ],
+      "ja": "新しい情報を、これまでの知識と結びつけて考えます。",
+      "reading": "あたらしいじょうほうを、これまでのちしきとむすびつけてかんがえます。",
+      "ko": "새로운 정보를 지금까지의 지식과 연결해 생각합니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-083",
+      "targets": [
+        "能力",
+        "技術"
+      ],
+      "ja": "この仕事には、説明する能力と専門的な技術が必要です。",
+      "reading": "このしごとには、せつめいするのうりょくとせんもんてきなぎじゅつがひつようです。",
+      "ko": "이 일에는 설명하는 능력과 전문적인 기술이 필요합니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-084",
+      "targets": [
+        "研究",
+        "努力"
+      ],
+      "ja": "研究を進めるために、毎日の努力を重ねています。",
+      "reading": "けんきゅうをすすめるために、まいにちのどりょくをかさねています。",
+      "ko": "연구를 진행하기 위해 매일 노력을 거듭하고 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-085",
+      "targets": [
+        "成長",
+        "進歩"
+      ],
+      "ja": "小さな進歩の積み重ねが、大きな成長につながります。",
+      "reading": "ちいさなしんぽのつみかさねが、おおきなせいちょうにつながります。",
+      "ko": "작은 진보의 축적이 큰 성장으로 이어집니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-086",
+      "targets": [
+        "発展",
+        "変化"
+      ],
+      "ja": "町の発展とともに、人々の生活にも変化がありました。",
+      "reading": "まちのはってんとともに、ひとびとのせいかつにもへんかがありました。",
+      "ko": "도시의 발전과 함께 사람들의 생활에도 변화가 있었습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-087",
+      "targets": [
+        "協力",
+        "活動"
+      ],
+      "ja": "地域の人たちと協力して、清掃活動を行いました。",
+      "reading": "ちいきのひとたちときょうりょくして、せいそうかつどうをおこないました。",
+      "ko": "지역 사람들과 협력해 청소 활동을 했습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-088",
+      "targets": [
+        "行動",
+        "責任"
+      ],
+      "ja": "自分の行動には責任を持ちたいです。",
+      "reading": "じぶんのこうどうにはせきにんをもちたいです。",
+      "ko": "자신의 행동에는 책임을 지고 싶습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-089",
+      "targets": [
+        "社会",
+        "経済",
+        "政治"
+      ],
+      "ja": "社会の問題を考えるには、経済や政治を学ぶことも役立ちます。",
+      "reading": "しゃかいのもんだいをかんがえるには、けいざいやせいじをまなぶこともやくだちます。",
+      "ko": "사회의 문제를 생각할 때는 경제나 정치를 배우는 것도 도움이 됩니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-090",
+      "targets": [
+        "産業",
+        "農業"
+      ],
+      "ja": "この地域では、農業が重要な産業になっています。",
+      "reading": "このちいきでは、のうぎょうがじゅうようなさんぎょうになっています。",
+      "ko": "이 지역에서는 농업이 중요한 산업입니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-091",
+      "targets": [
+        "環境",
+        "自然",
+        "守る"
+      ],
+      "ja": "自然を守るために、環境への負担を減らしましょう。",
+      "reading": "しぜんをまもるために、かんきょうへのふたんをへらしましょう。",
+      "ko": "자연을 지키기 위해 환경에 주는 부담을 줄입시다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-092",
+      "targets": [
+        "地球",
+        "資源",
+        "森林"
+      ],
+      "ja": "地球の資源について学び、森林の大切さを知りました。",
+      "reading": "ちきゅうのしげんについてまなび、しんりんのたいせつさをしりました。",
+      "ko": "지구의 자원에 대해 배우고 숲의 소중함을 알게 되었습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-093",
+      "targets": [
+        "健康",
+        "運動",
+        "栄養"
+      ],
+      "ja": "健康のために、運動と栄養の両方に気を配っています。",
+      "reading": "けんこうのために、うんどうとえいようのりょうほうにきをくばっています。",
+      "ko": "건강을 위해 운동과 영양 모두에 신경 쓰고 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-094",
+      "targets": [
+        "睡眠",
+        "疲労"
+      ],
+      "ja": "睡眠が足りず、疲労を感じています。",
+      "reading": "すいみんがたりず、ひろうをかんじています。",
+      "ko": "수면이 부족해서 피로를 느끼고 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-095",
+      "targets": [
+        "希望",
+        "不安"
+      ],
+      "ja": "新しい生活への希望もありますが、不安もあります。",
+      "reading": "あたらしいせいかつへのきぼうもありますが、ふあんもあります。",
+      "ko": "새로운 생활에 대한 희망도 있지만 불안도 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-096",
+      "targets": [
+        "満足",
+        "結果"
+      ],
+      "ja": "今回の結果には満足しています。",
+      "reading": "こんかいのけっかにはまんぞくしています。",
+      "ko": "이번 결과에는 만족하고 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-097",
+      "targets": [
+        "感動",
+        "印象"
+      ],
+      "ja": "あの映画に感動し、強い印象を受けました。",
+      "reading": "あのえいがにかんどうし、つよいいんしょうをうけました。",
+      "ko": "그 영화에 감동했고 강한 인상을 받았습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-098",
+      "targets": [
+        "伝える",
+        "認める"
+      ],
+      "ja": "間違いを認め、そのことを相手に伝えました。",
+      "reading": "まちがいをみとめ、そのことをあいてにつたえました。",
+      "ko": "잘못을 인정하고 그 사실을 상대에게 전했습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-099",
+      "targets": [
+        "求める",
+        "支える"
+      ],
+      "ja": "困っている人が助けを求めたら、できる範囲で支えたいです。",
+      "reading": "こまっているひとがたすけをもとめたら、できるはんいでささえたいです。",
+      "ko": "곤란한 사람이 도움을 구하면 가능한 범위에서 돕고 싶습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-100",
+      "targets": [
+        "決定",
+        "計画",
+        "変更"
+      ],
+      "ja": "計画の変更は、会議で決定しました。",
+      "reading": "けいかくのへんこうは、かいぎでけっていしました。",
+      "ko": "계획 변경은 회의에서 결정했습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-101",
+      "targets": [
+        "実現",
+        "解決"
+      ],
+      "ja": "夢の実現には、目の前の問題を一つずつ解決することも必要です。",
+      "reading": "ゆめのじつげんには、めのまえのもんだいをひとつずつかいけつすることもひつようです。",
+      "ko": "꿈을 실현하려면 당면한 문제를 하나씩 해결하는 것도 필요합니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-102",
+      "targets": [
+        "必要性",
+        "可能性"
+      ],
+      "ja": "新しい方法の必要性と、実行できる可能性を考えました。",
+      "reading": "あたらしいほうほうのひつようせいと、じっこうできるかのうせいをかんがえました。",
+      "ko": "새로운 방법의 필요성과 실행할 수 있는 가능성을 생각했습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-103",
+      "targets": [
+        "共通",
+        "具体的"
+      ],
+      "ja": "共通の目標に向けて、具体的な計画を立てました。",
+      "reading": "きょうつうのもくひょうにむけて、ぐたいてきなけいかくをたてました。",
+      "ko": "공통의 목표를 향해 구체적인 계획을 세웠습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-104",
+      "targets": [
+        "積極的",
+        "参加"
+      ],
+      "ja": "授業では、積極的に話し合いに参加しています。",
+      "reading": "じゅぎょうでは、せっきょくてきにはなしあいにさんかしています。",
+      "ko": "수업에서는 토론에 적극적으로 참여하고 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-105",
+      "targets": [
+        "判断",
+        "検討"
+      ],
+      "ja": "すぐに判断せず、資料を読んでから検討します。",
+      "reading": "すぐにはんだんせず、しりょうをよんでからけんとうします。",
+      "ko": "바로 판단하지 않고 자료를 읽은 뒤 검토합니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-106",
+      "targets": [
+        "提案",
+        "資料"
+      ],
+      "ja": "提案の内容を、資料にまとめました。",
+      "reading": "ていあんのないようを、しりょうにまとめました。",
+      "ko": "제안 내용을 자료로 정리했습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-107",
+      "targets": [
+        "制度",
+        "課題"
+      ],
+      "ja": "新しい制度には、まだ解決すべき課題があります。",
+      "reading": "あたらしいせいどには、まだかいけつすべきかだいがあります。",
+      "ko": "새로운 제도에는 아직 해결해야 할 과제가 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-108",
+      "targets": [
+        "方針",
+        "対策"
+      ],
+      "ja": "会社の方針に沿って、具体的な対策を決めました。",
+      "reading": "かいしゃのほうしんにそって、ぐたいてきなたいさくをきめました。",
+      "ko": "회사의 방침에 따라 구체적인 대책을 정했습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-109",
+      "targets": [
+        "基準",
+        "評価"
+      ],
+      "ja": "評価の基準を、事前に説明してください。",
+      "reading": "ひょうかのきじゅんを、じぜんにせつめいしてください。",
+      "ko": "평가 기준을 사전에 설명해 주세요.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-110",
+      "targets": [
+        "分析",
+        "調査",
+        "統計"
+      ],
+      "ja": "調査で集めたデータを、統計の方法で分析します。",
+      "reading": "ちょうさであつめたでーたを、とうけいのほうほうでぶんせきします。",
+      "ko": "조사에서 모은 데이터를 통계적인 방법으로 분석합니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-111",
+      "targets": [
+        "比較",
+        "予測"
+      ],
+      "ja": "過去の結果との比較から、今後の変化を予測しました。",
+      "reading": "かこのけっかとのひかくから、こんごのへんかをよそくしました。",
+      "ko": "과거 결과와의 비교를 통해 앞으로의 변화를 예측했습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-112",
+      "targets": [
+        "証明",
+        "仮定"
+      ],
+      "ja": "その仮定が正しいことを証明する必要があります。",
+      "reading": "そのかていがただしいことをしょうめいするひつようがあります。",
+      "ko": "그 가정이 옳다는 것을 증명할 필요가 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-113",
+      "targets": [
+        "結論",
+        "根本",
+        "本質"
+      ],
+      "ja": "結論を急ぐ前に、問題の根本と本質を考えましょう。",
+      "reading": "けつろんをいそぐまえに、もんだいのこんぽんとほんしつをかんがえましょう。",
+      "ko": "결론을 서두르기 전에 문제의 근원과 본질을 생각합시다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-114",
+      "targets": [
+        "企業",
+        "経営",
+        "利益"
+      ],
+      "ja": "企業の経営には、利益だけでなく社会への責任も関わります。",
+      "reading": "きぎょうのけいえいには、りえきだけでなくしゃかいへのせきにんもかかわります。",
+      "ko": "기업 경영에는 이익뿐 아니라 사회에 대한 책임도 관련됩니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-115",
+      "targets": [
+        "需要",
+        "供給"
+      ],
+      "ja": "需要が増えたため、供給を増やす計画です。",
+      "reading": "じゅようがふえたため、きょうきゅうをふやすけいかくです。",
+      "ko": "수요가 늘었기 때문에 공급을 늘릴 계획입니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-116",
+      "targets": [
+        "契約",
+        "取引",
+        "交渉"
+      ],
+      "ja": "取引の条件を交渉した後、契約を結びました。",
+      "reading": "とりひきのじょうけんをこうしょうしたあと、けいやくをむすびました。",
+      "ko": "거래 조건을 협상한 뒤 계약을 맺었습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-117",
+      "targets": [
+        "費用",
+        "負担"
+      ],
+      "ja": "修理にかかる費用は、会社が負担します。",
+      "reading": "しゅうりにかかるひようは、かいしゃがふたんします。",
+      "ko": "수리에 드는 비용은 회사가 부담합니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-118",
+      "targets": [
+        "設備",
+        "施設",
+        "管理"
+      ],
+      "ja": "この施設の設備は、専門の担当者が管理しています。",
+      "reading": "このしせつのせつびは、せんもんのたんとうしゃがかんりしています。",
+      "ko": "이 시설의 설비는 전문 담당자가 관리하고 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-119",
+      "targets": [
+        "維持",
+        "改善"
+      ],
+      "ja": "品質を維持しながら、作業の方法を改善しました。",
+      "reading": "ひんしつをいじしながら、さぎょうのほうほうをかいぜんしました。",
+      "ko": "품질을 유지하면서 작업 방법을 개선했습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-120",
+      "targets": [
+        "効率",
+        "効果"
+      ],
+      "ja": "この方法には効果がありますが、効率はまだ改善できそうです。",
+      "reading": "このほうほうにはこうかがありますが、こうりつはまだかいぜんできそうです。",
+      "ko": "이 방법은 효과가 있지만 효율은 아직 개선할 수 있을 것 같습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-121",
+      "targets": [
+        "機能",
+        "構造",
+        "特徴"
+      ],
+      "ja": "製品の機能と構造を調べ、その特徴をまとめました。",
+      "reading": "せいひんのきのうとこうぞうをしらべ、そのとくちょうをまとめました。",
+      "ko": "제품의 기능과 구조를 조사해 특징을 정리했습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-122",
+      "targets": [
+        "傾向",
+        "現象",
+        "変動"
+      ],
+      "ja": "この現象には、季節によって変動する傾向があります。",
+      "reading": "このげんしょうには、きせつによってへんどうするけいこうがあります。",
+      "ko": "이 현상에는 계절에 따라 변동하는 경향이 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-123",
+      "targets": [
+        "増加",
+        "減少"
+      ],
+      "ja": "利用者は増加しましたが、待ち時間は減少しました。",
+      "reading": "りようしゃはぞうかしましたが、まちじかんはげんしょうしました。",
+      "ko": "이용자는 증가했지만 대기 시간은 감소했습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-124",
+      "targets": [
+        "強調",
+        "主張"
+      ],
+      "ja": "彼は自分の主張の重要な点を強調しました。",
+      "reading": "かれはじぶんのしゅちょうのじゅうようなてんをきょうちょうしました。",
+      "ko": "그는 자기 주장의 중요한 점을 강조했습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-125",
+      "targets": [
+        "批判",
+        "尊重"
+      ],
+      "ja": "相手を尊重しながら、その意見を批判することはできます。",
+      "reading": "あいてをそんちょうしながら、そのいけんをひはんすることはできます。",
+      "ko": "상대를 존중하면서 그 의견을 비판할 수는 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-126",
+      "targets": [
+        "賛成",
+        "反対"
+      ],
+      "ja": "賛成する理由と反対する理由を、それぞれ聞きました。",
+      "reading": "さんせいするりゆうとはんたいするりゆうを、それぞれききました。",
+      "ko": "찬성하는 이유와 반대하는 이유를 각각 들었습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-127",
+      "targets": [
+        "信頼",
+        "慎重"
+      ],
+      "ja": "信頼できる情報かどうか、慎重に確認します。",
+      "reading": "しんらいできるじょうほうかどうか、しんちょうにかくにんします。",
+      "ko": "신뢰할 수 있는 정보인지 신중하게 확인합니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-128",
+      "targets": [
+        "適切",
+        "重大"
+      ],
+      "ja": "重大な問題が起きたときこそ、適切な対応が必要です。",
+      "reading": "じゅうだいなもんだいがおきたときこそ、てきせつなたいおうがひつようです。",
+      "ko": "중대한 문제가 생겼을 때야말로 적절한 대응이 필요합니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-129",
+      "targets": [
+        "優れる",
+        "劣る"
+      ],
+      "ja": "この製品は軽さでは優れていますが、丈夫さでは劣ります。",
+      "reading": "このせいひんはかるさではすぐれていますが、じょうぶさではおとります。",
+      "ko": "이 제품은 가벼운 점에서는 뛰어나지만 튼튼한 점에서는 뒤떨어집니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-130",
+      "targets": [
+        "補う",
+        "備える",
+        "努める"
+      ],
+      "ja": "不足を補い、次の課題に備えるよう努めています。",
+      "reading": "ふそくをおぎない、つぎのかだいにそなえるようつとめています。",
+      "ko": "부족한 점을 보완하고 다음 과제에 대비하도록 노력하고 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-131",
+      "targets": [
+        "概念",
+        "根拠"
+      ],
+      "ja": "まず概念を整理し、主張の根拠を示してください。",
+      "reading": "まずがいねんをせいりし、しゅちょうのこんきょをしめしてください。",
+      "ko": "먼저 개념을 정리하고 주장의 근거를 제시해 주세요.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-132",
+      "targets": [
+        "矛盾",
+        "指摘"
+      ],
+      "ja": "二つの説明の間に矛盾があると指摘されました。",
+      "reading": "ふたつのせつめいのあいだにむじゅんがあるとしてきされました。",
+      "ko": "두 설명 사이에 모순이 있다는 지적을 받았습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-133",
+      "targets": [
+        "配慮",
+        "妥協"
+      ],
+      "ja": "互いの事情に配慮し、妥協できる点を探しました。",
+      "reading": "たがいのじじょうにはいりょし、だきょうできるてんをさがしました。",
+      "ko": "서로의 사정을 배려하고 타협할 수 있는 점을 찾았습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-134",
+      "targets": [
+        "把握",
+        "認識"
+      ],
+      "ja": "現状を把握した上で、問題の深刻さを認識しました。",
+      "reading": "げんじょうをはあくしたうえで、もんだいのしんこくさをにんしきしました。",
+      "ko": "현황을 파악한 뒤 문제의 심각성을 인식했습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-135",
+      "targets": [
+        "洞察",
+        "推測"
+      ],
+      "ja": "彼の洞察は鋭いですが、事実と推測は区別する必要があります。",
+      "reading": "かれのどうさつはするどいですが、じじつとすいそくはくべつするひつようがあります。",
+      "ko": "그의 통찰은 날카롭지만 사실과 추측은 구별할 필요가 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-136",
+      "targets": [
+        "推進",
+        "展開"
+      ],
+      "ja": "新しい事業の展開を推進しています。",
+      "reading": "あたらしいじぎょうのてんかいをすいしんしています。",
+      "ko": "새로운 사업의 전개를 추진하고 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-137",
+      "targets": [
+        "過程",
+        "経緯",
+        "背景"
+      ],
+      "ja": "決定に至る過程を理解するため、経緯と背景を調べました。",
+      "reading": "けっていにいたるかていをりかいするため、けいいとはいけいをしらべました。",
+      "ko": "결정에 이르는 과정을 이해하기 위해 경위와 배경을 조사했습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-138",
+      "targets": [
+        "実態",
+        "実践"
+      ],
+      "ja": "現場の実態を踏まえて、学んだ方法を実践します。",
+      "reading": "げんばのじったいをふまえて、まなんだほうほうをじっせんします。",
+      "ko": "현장의 실태를 바탕으로 배운 방법을 실천합니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-139",
+      "targets": [
+        "遂行",
+        "達成"
+      ],
+      "ja": "任務を遂行し、目標を達成しました。",
+      "reading": "にんむをすいこうし、もくひょうをたっせいしました。",
+      "ko": "임무를 수행하고 목표를 달성했습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-140",
+      "targets": [
+        "促進",
+        "抑制"
+      ],
+      "ja": "交流を促進しつつ、無駄な支出は抑制する方針です。",
+      "reading": "こうりゅうをそくしんしつつ、むだなししゅつはよくせいするほうしんです。",
+      "ko": "교류를 촉진하되 불필요한 지출은 억제하는 방침입니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-141",
+      "targets": [
+        "是正",
+        "緩和"
+      ],
+      "ja": "格差を是正し、生活への負担を緩和する案が出ました。",
+      "reading": "かくさをぜせいし、せいかつへのふたんをかんわするあんがでました。",
+      "ko": "격차를 시정하고 생활의 부담을 완화하는 안이 나왔습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-142",
+      "targets": [
+        "排除",
+        "妨害"
+      ],
+      "ja": "話し合いを妨害する要因を排除する必要があります。",
+      "reading": "はなしあいをぼうがいするよういんをはいじょするひつようがあります。",
+      "ko": "논의를 방해하는 요인을 제거할 필요가 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-143",
+      "targets": [
+        "撤回",
+        "発言"
+      ],
+      "ja": "誤解を招いた発言を撤回しました。",
+      "reading": "ごかいをまねいたはつげんをてっかいしました。",
+      "ko": "오해를 부른 발언을 철회했습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-144",
+      "targets": [
+        "貢献",
+        "献身",
+        "奉仕"
+      ],
+      "ja": "彼女は地域への奉仕に献身し、福祉の向上に貢献しました。",
+      "reading": "かのじょはちいきへのほうしにけんしんし、ふくしのこうじょうにこうけんしました。",
+      "ko": "그녀는 지역 봉사에 헌신하고 복지 향상에 기여했습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-145",
+      "targets": [
+        "依存",
+        "執着"
+      ],
+      "ja": "一つの方法に依存せず、結果への執着も手放してみましょう。",
+      "reading": "ひとつのほうほうにいぞんせず、けっかへのしゅうちゃくもてばなしてみましょう。",
+      "ko": "하나의 방법에 의존하지 말고 결과에 대한 집착도 내려놓아 봅시다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-146",
+      "targets": [
+        "柔軟",
+        "厳密"
+      ],
+      "ja": "発想は柔軟に、検証は厳密に行います。",
+      "reading": "はっそうはじゅうなんに、けんしょうはげんみつにおこないます。",
+      "ko": "발상은 유연하게, 검증은 엄밀하게 합니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-147",
+      "targets": [
+        "精密",
+        "緻密"
+      ],
+      "ja": "精密な測定には、緻密な準備が欠かせません。",
+      "reading": "せいみつなそくていには、ちみつなじゅんびがかかせません。",
+      "ko": "정밀한 측정에는 치밀한 준비가 꼭 필요합니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-148",
+      "targets": [
+        "巧妙",
+        "仕組み"
+      ],
+      "ja": "この仕組みは巧妙に設計されています。",
+      "reading": "このしくみはこうみょうにせっけいされています。",
+      "ko": "이 구조는 교묘하게 설계되어 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-149",
+      "targets": [
+        "顕著",
+        "著しい"
+      ],
+      "ja": "改善の効果が顕著に現れ、著しい進歩が見られました。",
+      "reading": "かいぜんのこうかがけんちょにあらわれ、いちじるしいしんぽがみられました。",
+      "ko": "개선 효과가 뚜렷하게 나타나 현저한 진보가 보였습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-150",
+      "targets": [
+        "著名",
+        "研究者"
+      ],
+      "ja": "著名な研究者の講演を聞きました。",
+      "reading": "ちょめいなけんきゅうしゃのこうえんをききました。",
+      "ko": "저명한 연구자의 강연을 들었습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-151",
+      "targets": [
+        "膨大",
+        "莫大"
+      ],
+      "ja": "膨大な資料を整理するには、莫大な時間がかかりました。",
+      "reading": "ぼうだいなしりょうをせいりするには、ばくだいなじかんがかかりました。",
+      "ko": "방대한 자료를 정리하는 데는 막대한 시간이 걸렸습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-152",
+      "targets": [
+        "疎か",
+        "基本"
+      ],
+      "ja": "忙しくても、基本の確認を疎かにしてはいけません。",
+      "reading": "いそがしくても、きほんのかくにんをおろそかにしてはいけません。",
+      "ko": "바쁘더라도 기본적인 확인을 소홀히 해서는 안 됩니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-153",
+      "targets": [
+        "曖昧",
+        "漠然"
+      ],
+      "ja": "説明が曖昧だったため、漠然とした不安が残りました。",
+      "reading": "せつめいがあいまいだったため、ばくぜんとしたふあんがのこりました。",
+      "ko": "설명이 모호해서 막연한 불안이 남았습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-154",
+      "targets": [
+        "的確",
+        "妥当"
+      ],
+      "ja": "状況を的確に捉え、妥当な結論を出しました。",
+      "reading": "じょうきょうをてきかくにとらえ、だとうなけつろんをだしました。",
+      "ko": "상황을 정확하게 파악하고 타당한 결론을 내렸습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-155",
+      "targets": [
+        "均衡",
+        "秩序"
+      ],
+      "ja": "社会の秩序を保つには、権利と責任の均衡も大切です。",
+      "reading": "しゃかいのちつじょをたもつには、けんりとせきにんのきんこうもたいせつです。",
+      "ko": "사회 질서를 유지하려면 권리와 책임의 균형도 중요합니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-156",
+      "targets": [
+        "規範",
+        "倫理",
+        "尊厳"
+      ],
+      "ja": "倫理的な規範は、人の尊厳を守るためにも必要です。",
+      "reading": "りんりてきなきはんは、ひとのそんげんをまもるためにもひつようです。",
+      "ko": "윤리적 규범은 사람의 존엄을 지키기 위해서도 필요합니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-157",
+      "targets": [
+        "享受",
+        "繁栄"
+      ],
+      "ja": "地域の繁栄による恩恵を、多くの人が享受しています。",
+      "reading": "ちいきのはんえいによるおんけいを、おおくのひとがきょうじゅしています。",
+      "ko": "지역 번영에 따른 혜택을 많은 사람이 누리고 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-158",
+      "targets": [
+        "継承",
+        "蓄積"
+      ],
+      "ja": "蓄積された知識を、次の世代へ継承します。",
+      "reading": "ちくせきされたちしきを、つぎのせだいへけいしょうします。",
+      "ko": "축적된 지식을 다음 세대로 계승합니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-159",
+      "targets": [
+        "衰退",
+        "産業"
+      ],
+      "ja": "産業の衰退を防ぐため、新しい技術を取り入れました。",
+      "reading": "さんぎょうのすいたいをふせぐため、あたらしいぎじゅつをとりいれました。",
+      "ko": "산업의 쇠퇴를 막기 위해 새로운 기술을 도입했습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-160",
+      "targets": [
+        "覆す",
+        "予想"
+      ],
+      "ja": "彼の成功は、周囲の予想を覆しました。",
+      "reading": "かれのせいこうは、しゅういのよそうをくつがえしました。",
+      "ko": "그의 성공은 주변의 예상을 뒤집었습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-161",
+      "targets": [
+        "損なう",
+        "信頼"
+      ],
+      "ja": "事実を隠すと、信頼を損なうおそれがあります。",
+      "reading": "じじつをかくすと、しんらいをそこなうおそれがあります。",
+      "ko": "사실을 숨기면 신뢰를 해칠 우려가 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-162",
+      "targets": [
+        "賄う",
+        "費用"
+      ],
+      "ja": "必要な費用は、自分の貯金で賄いました。",
+      "reading": "ひつようなひようは、じぶんのちょきんでまかないました。",
+      "ko": "필요한 비용은 자신의 저축으로 충당했습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-163",
+      "targets": [
+        "培う",
+        "経験"
+      ],
+      "ja": "現場で培った経験が、今の仕事に生きています。",
+      "reading": "げんばでつちかったけいけんが、いまのしごとにいきています。",
+      "ko": "현장에서 쌓은 경험이 지금의 일에 도움이 되고 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    },
+    {
+      "id": "kotoba-original-164",
+      "targets": [
+        "阻む",
+        "成長"
+      ],
+      "ja": "失敗を恐れる気持ちが、成長を阻むこともあります。",
+      "reading": "しっぱいをおそれるきもちが、せいちょうをはばむこともあります。",
+      "ko": "실패를 두려워하는 마음이 성장을 가로막을 때도 있습니다.",
+      "source": "Kotoba original, assistant-authored 2026-09-27",
+      "review": "assistant bilingual review; not an independent native-speaker review"
+    }
+  ],
+  "coverage": {
+    "sentences": 164,
+    "wordIds": 482,
+    "totalJlptWords": 8451
+  }
+}

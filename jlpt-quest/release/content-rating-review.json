@@ -1,0 +1,95 @@
+{
+  "note": "Dictionary terms, not graphic scenes. Owner must answer the actual IARC questionnaire honestly. Do not auto-select no sexual/violence/drug references.",
+  "items": [
+    {
+      "level": "N4",
+      "word": "戦争",
+      "meaning": "전쟁"
+    },
+    {
+      "level": "N3",
+      "word": "自殺",
+      "meaning": "자살"
+    },
+    {
+      "level": "N3",
+      "word": "大戦",
+      "meaning": "큰 전쟁, 큰 전투"
+    },
+    {
+      "level": "N2",
+      "word": "粗い",
+      "meaning": "거칠다, 성기다, 조잡하다"
+    },
+    {
+      "level": "N1",
+      "word": "暗殺",
+      "meaning": "살인"
+    },
+    {
+      "level": "N1",
+      "word": "軍",
+      "meaning": "전쟁, 전투, 캠페인"
+    },
+    {
+      "level": "N1",
+      "word": "殺人",
+      "meaning": "살인"
+    },
+    {
+      "level": "N1",
+      "word": "仕掛ける",
+      "meaning": "시작하기, 녹기 (광산), 설정하기 (단계), 월급하기 (전쟁), 도전하기"
+    },
+    {
+      "level": "N1",
+      "word": "心中",
+      "meaning": "두 번의 자살, 사랑하는 자살"
+    },
+    {
+      "level": "N1",
+      "word": "戦",
+      "meaning": "전쟁, 전투, 캠페인"
+    },
+    {
+      "level": "N1",
+      "word": "戦災",
+      "meaning": "전쟁 손상"
+    },
+    {
+      "level": "N1",
+      "word": "戦力",
+      "meaning": "전쟁 잠재력"
+    },
+    {
+      "level": "N1",
+      "word": "賭け",
+      "meaning": "도박"
+    },
+    {
+      "level": "N1",
+      "word": "内乱",
+      "meaning": "시민전쟁, 반란, 내부 갈등"
+    },
+    {
+      "level": "N1",
+      "word": "敗戦",
+      "meaning": "패배, 전쟁을 잃는"
+    },
+    {
+      "level": "N1",
+      "word": "彼処",
+      "meaning": "1. 거기, 거기 위, 그 장소, 2. 성기"
+    },
+    {
+      "level": "N1",
+      "word": "捕虜",
+      "meaning": "전쟁의 죄수"
+    },
+    {
+      "level": "N1",
+      "word": "役",
+      "meaning": "전쟁, 캠페인, 전투"
+    }
+  ]
+}
