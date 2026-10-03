@@ -9,7 +9,7 @@ from qa_tutorial import dismiss_tutorial
 OUT=Path(os.environ.get('KOTOBA_EVIDENCE_DIR','/tmp/kotoba040-qa'))/'autopronounce041';OUT.mkdir(parents=True,exist_ok=True)
 BASE=os.environ.get('KOTOBA_TEST_URL','http://127.0.0.1:4173/')
 checks=[];errors=[]
-TTS="""window.__spoken=[];Object.defineProperty(window,'SpeechSynthesisUtterance',{configurable:true,value:class{constructor(t){this.text=t;}}});Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{getVoices:()=>[{lang:'ja-JP',localService:true},{lang:'ko-KR',localService:true}],speak(u){window.__spoken.push({text:u.text,lang:u.lang,rate:u.rate});setTimeout(()=>{u.onstart?.();u.onend?.()},70);},cancel(){},addEventListener(){},removeEventListener(){}}});"""
+TTS="""window.__spoken=[];Object.defineProperty(window,'SpeechSynthesisUtterance',{configurable:true,value:class{constructor(t){this.text=t;}}});Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{getVoices:()=>sessionStorage.getItem('kotoba-test-no-japanese')==='1'?[{lang:'en-US',localService:true}]:[{lang:'ja-JP',localService:true},{lang:'ko-KR',localService:true}],speak(u){window.__spoken.push({text:u.text,lang:u.lang,rate:u.rate});setTimeout(()=>{u.onstart?.();u.onend?.()},70);},cancel(){},addEventListener(){},removeEventListener(){}}});"""
 def check(name,value):
  checks.append({'name':name,'pass':bool(value)})
  if not value:raise AssertionError(name)
@@ -61,6 +61,16 @@ with sync_playwright() as P:
   check('successful automatic listening unlocks choices',state(p)['session']['heard'] is True)
   p.locator('[data-action="furigana"]').click();p.wait_for_timeout(220)
   check('listening rerender also stays one-time',len(spoken(p))==1)
+  target=seed(p,'listening');p.evaluate("sessionStorage.setItem('kotoba-test-no-japanese','1')");nav(p,'lesson');p.wait_for_selector('#lesson-speech-guide .speech-error-guide')
+  check('missing Japanese voice leaves listening choices locked',state(p)['session']['heard'] is False and p.locator('.answer-option:disabled').count()==p.locator('.answer-option').count())
+  check('missing Japanese voice shows visible installation guidance',p.locator('#lesson-speech-guide .speech-error-guide').is_visible() and '일본어 오프라인 음성' in p.locator('#lesson-speech-guide').inner_text())
+  p.wait_for_timeout(4700)
+  check('installation guidance remains after the toast disappears',p.locator('#lesson-speech-guide .speech-error-guide').is_visible() and not p.locator('#toast').get_attribute('class'))
+  p.locator('[data-action="furigana"]').click();p.wait_for_timeout(180)
+  check('failed pronunciation guidance survives rerender without unlocking',p.locator('#lesson-speech-guide .speech-error-guide').is_visible() and state(p)['session']['heard'] is False)
+  p.screenshot(path=str(OUT/'missing-japanese-voice-guidance.png'),full_page=True)
+  p.evaluate("sessionStorage.removeItem('kotoba-test-no-japanese')");nav(p,'lesson');p.locator('[data-action="listen"]').click();p.wait_for_function("!document.querySelector('.answer-option').disabled && !document.querySelector('#lesson-speech-guide .speech-error-guide')")
+  check('only a completed retry removes guidance and unlocks listening',state(p)['session']['heard'] is True and p.locator('#lesson-speech-guide .speech-error-guide').count()==0)
   check('no runtime page errors',not errors)
  except Exception:
   (OUT/'failure.txt').write_text(traceback.format_exc());p.screenshot(path=str(OUT/'failure.png'),full_page=True);raise

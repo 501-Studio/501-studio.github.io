@@ -2,6 +2,7 @@ import test from 'node:test';import assert from 'node:assert/strict';import fs f
 import {speak,speakSentence,configureAudio,stopAudio} from '../src/audio.js';
 import {fresh,validateState} from '../src/course-engine.js';
 import {installBridge} from '../src/native.js';
+import {speechSetupGuide} from '../src/speech-guide.js';
 const read=p=>fs.readFileSync(new URL(p,import.meta.url),'utf8');
 function browser(fn,voices=[{lang:'ja-JP',localService:true}]){
  const oldS=globalThis.speechSynthesis,oldU=globalThis.SpeechSynthesisUtterance;globalThis.SpeechSynthesisUtterance=class{constructor(text){this.text=text;}};
@@ -21,5 +22,20 @@ test('successful native completion is required; no pre-generated audio dependenc
 test('native speech errors are propagated rather than treated as completed listening',async()=>{
  globalThis.KotobaNative={postMessage(raw){const m=JSON.parse(raw);queueMicrotask(()=>globalThis.KotobaNative.onmessage({data:JSON.stringify({id:m.id,error:m.type==='speechSpeak'?'일본어 음성 없음':null,result:{}})}));}};installBridge();
  try{await assert.rejects(speak('N5-id',1,{text:'やま'}),/음성 없음/);}finally{stopAudio();delete globalThis.KotobaNative;}
+});
+test('voice recovery guides explain installation without offering cloud or automatic playback',()=>{
+ const guide=speechSetupGuide({error:'설치된 오프라인 일본어 음성이 없어요.',native:true});
+ assert.match(guide,/일본어 오프라인 음성/);assert.match(guide,/data-action="speech-settings"/);assert.match(guide,/앱으로 돌아와 다시 듣기/);
+ assert.doesNotMatch(guide,/한국어 오프라인 음성|data-action="speech-test"|Cloud|API/);
+});
+test('meaning playback guidance keeps Korean optional and setup test Japanese',()=>{
+ const guide=speechSetupGuide({includeMeaning:true,settings:true,native:true});
+ assert.match(guide,/한국어 뜻 듣기를 켜면/);assert.match(guide,/뜻 듣기를 끄면 일본어 음성만/);assert.match(guide,/일본어 음성 테스트/);
+ assert.doesNotMatch(speechSetupGuide({includeMeaning:false,native:true}),/한국어 오프라인 음성/);
+ assert.doesNotMatch(speechSetupGuide({includeMeaning:true,settings:true,test:false,native:true}),/data-action="speech-test"/);
+});
+test('voice errors are escaped and browser help does not promise to open Android settings',()=>{
+ const guide=speechSetupGuide({error:'<img src=x onerror=alert(1)>',native:false});
+ assert.match(guide,/&lt;img/);assert.doesNotMatch(guide,/<img|data-action="speech-settings"/);assert.match(guide,/Android 앱에서/);
 });
 test('no microphone permission; Android still declares the system TTS query',()=>{const m=read('../../kotoba-android/app/src/main/AndroidManifest.xml');assert.doesNotMatch(m,/RECORD_AUDIO/);assert.match(m,/TTS_SERVICE/);});

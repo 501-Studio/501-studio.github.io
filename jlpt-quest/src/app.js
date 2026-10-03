@@ -26,11 +26,13 @@ import {SNAP_MODE,validPrefix} from './stroke-match.js';
 import {loadStrokeBank,characterStrokes,requireStrokes} from './stroke-bank.js';
 import {speak,speakSentence,stopAudio} from './audio.js';
 import {isNative,callNative,installBridge} from './native.js';
+import {speechSetupGuide,updateSpeechGuide} from './speech-guide.js';
 import {applyMotion,haptic,celebrate} from './motion.js';
 
 const root=document.querySelector('#app'),modal=document.querySelector('#modal-root');
 let state=fresh(),words=[],lookup=new Map(),ready=false,saving=false,busy=false,ink=null,storageOK=true,warning='',toastTimer,epoch=0,audioNonce=0,gradeNonce=0,autoVoiceWarned=false;
 let modalFit=()=>{},footerObserver=null,budgetTimer=null,promptClock={id:null,at:0};
+let lessonSpeechFailure={taskId:null,message:''};
 let tutorialRecord=freshTutorial(),tutorialSession=null,tutorialWrites=Promise.resolve(),tutorialSuppressed=false,tutorialSaveFailed=false;
 let statsView={days:7,level:'all',date:null},practiceWordId=null,practiceRepeats=3;
 let filter='due',wordFilter='all',search='',limit=80,courseLimit=24,pendingCourse=null,imported=null,priorFocus=null;
@@ -44,6 +46,25 @@ function mergeWords(){
  refreshSessionContent(state,words);
 }
 function toast(text){const t=document.querySelector('#toast');t.textContent=text;t.className='on show';clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.className='',4500);}
+function speechGuideTarget(status,lesson=false){
+ if(lesson)return document.querySelector('#lesson-speech-guide');
+ const container=status?.closest('.wordbook-item,.detail-word,.example-pane,.speech-settings-panel')||modal.querySelector('.sheet');
+ if(!container)return null;
+ if(container.matches('.speech-settings-panel'))return null;
+ let target=container.querySelector(':scope > .speech-problem');
+ if(!target){target=document.createElement('div');target.className='speech-problem';container.append(target);}
+ return target;
+}
+function showSpeechFailure(error,status=null,lesson=false){
+ const message=error?.message||'기기 음성을 사용할 수 없어요.';
+ if(lesson)lessonSpeechFailure={taskId:current(state.session)?.id,message};
+ if(status?.isConnected)status.textContent=message;
+ updateSpeechGuide(speechGuideTarget(status,lesson),message);
+}
+function clearSpeechFailure(status=null,lesson=false){
+ if(lesson)lessonSpeechFailure={taskId:null,message:''};
+ updateSpeechGuide(speechGuideTarget(status,lesson));
+}
 function save(){
  state.uiRoute=route();const snapshot=structuredClone(state),generation=epoch;
  const job=tail.then(async()=>{if(generation!==epoch||!storageOK)return false;saving=true;
@@ -113,7 +134,7 @@ function questionPage(){const s=state.session;if(!s)return `<div class="focus-sh
  if((training&&!(t.skill==='trace'&&t.guided===false))||(t.skill==='survey'&&s.surveyMeaning))body+=exampleButton(w);
  if(s.feedback&&!s.feedback.training)body=`<section class="answer-reveal feedback-card"><span class="label">정답 확인</span>${wordHTML(w,true)}<p class="word-meaning">${esc(w.meaning)}</p>${exampleBody(w,state.settings.furigana,s.exampleIndex||0,{headword:false})}</section>`;
  else if(s.showExample&&((training&&!(t.skill==='trace'&&t.guided===false))||(t.skill==='survey'&&s.surveyMeaning)||s.assisted))body=`<section class="answer-reveal feedback-card">${wordHTML(w)}<p>${esc(w.meaning)}</p>${exampleBody(w,state.settings.furigana,s.exampleIndex||0,{headword:false})}${btn('hide-examples','문제로 돌아가기','text')}</section>`;
- const chapterLabel=s.kind==='class'&&s.course?`${s.course.level} · 第${s.course.index}章 · ${courseLaps(state,s.course.id)+1}회독`:s.level||w.level||state.settings.level;return `<div class="focus-shell"><header class="focus-top"><button class="icon-btn" data-action="pause" aria-label="수업 중단 메뉴">${icon('close')}</button><div class="session-progress"><div class="line-progress"><i style="width:${s.index/s.queue.length*100}%"></i></div></div><button class="reading-toggle" data-action="furigana" aria-pressed="${state.settings.furigana}" aria-label="히라가나 표시 전환"><span lang="ja">あ</span>${state.settings.furigana?'ON':'OFF'}</button></header><div class="session-label"><span>${chapterLabel} · ${s.kind==='review'?(s.reviewMode==='preview'?'미리 복습':'복습'):t.phase==='survey'?'빠른 회독':training?'모르는 단어 학습':'모르는 단어 시험'}${t.attempt?' · 다시 확인':''}</span><span>${t.phase==='survey'?`${s.index+1}/${s.wordIds.length}`:`${s.index+1}/${s.queue.length}`}</span></div><main class="question" id="main">${s.budgetMs?'<p class="timebox-clock">남은 시간 <b id="budget-clock">'+Math.max(0,Math.ceil((s.budgetMs-(s.elapsedMs||0))/1000))+'초</b></p>':''}${body}</main></div>${footer(s,t)}`;
+ const chapterLabel=s.kind==='class'&&s.course?`${s.course.level} · 第${s.course.index}章 · ${courseLaps(state,s.course.id)+1}회독`:s.level||w.level||state.settings.level;return `<div class="focus-shell"><header class="focus-top"><button class="icon-btn" data-action="pause" aria-label="수업 중단 메뉴">${icon('close')}</button><div class="session-progress"><div class="line-progress"><i style="width:${s.index/s.queue.length*100}%"></i></div></div><button class="reading-toggle" data-action="furigana" aria-pressed="${state.settings.furigana}" aria-label="히라가나 표시 전환"><span lang="ja">あ</span>${state.settings.furigana?'ON':'OFF'}</button></header><div class="session-label"><span>${chapterLabel} · ${s.kind==='review'?(s.reviewMode==='preview'?'미리 복습':'복습'):t.phase==='survey'?'빠른 회독':training?'모르는 단어 학습':'모르는 단어 시험'}${t.attempt?' · 다시 확인':''}</span><span>${t.phase==='survey'?`${s.index+1}/${s.wordIds.length}`:`${s.index+1}/${s.queue.length}`}</span></div><main class="question" id="main">${s.budgetMs?'<p class="timebox-clock">남은 시간 <b id="budget-clock">'+Math.max(0,Math.ceil((s.budgetMs-(s.elapsedMs||0))/1000))+'초</b></p>':''}${lessonSpeechFailure.taskId===t.id?`<div id="lesson-speech-guide">${speechSetupGuide({error:lessonSpeechFailure.message})}</div>`:'<div id="lesson-speech-guide"></div>'}${body}</main></div>${footer(s,t)}`;
 }
 function options(t,w){return `<div class="options" role="group" aria-label="답 선택">${t.options.map((o,i)=>{const selected=state.session.selection===o,correct=o===(t.skill==='listening'?w.word:w.meaning);const f=state.session.feedback,locked=t.skill==='listening'&&!state.session.heard;return `<button class="answer-option ${selected?'selected':''} ${f?(correct?'correct':selected?'wrong':''):''}" data-action="option" data-index="${i}" aria-pressed="${selected}" ${f||locked?'disabled':''}><span>${i+1}</span><b ${t.skill==='listening'?'lang="ja"':''}>${esc(o)}</b></button>`;}).join('')}</div>`;}
 function canAnswer(){const s=state.session,t=current(s);return !!s&&!s.feedback&&!s.finished&&!!s.selection&&(t.skill!=='listening'||s.heard);}
@@ -229,7 +250,7 @@ function handleTutorialAction(action){
 function switchSetting(key,label,description=''){
  return `<div class="setting-row"><div><b>${label}</b>${description?`<small>${description}</small>`:''}</div><label class="setting-switch"><input type="checkbox" role="switch" data-setting="${key}" aria-label="${label}" ${state.settings[key]?'checked':''}><span class="switch-track" aria-hidden="true"><i></i></span></label></div>`;
 }
-function settings(){openModal(`${modalHead('설정')}<button class="premium-entry" data-action="premium">${icon('spark')}<div><b>광고 없이 사용</b><small>코토바 프리미엄</small></div>${icon('next')}</button><section class="settings-section"><button type="button" class="btn soft tutorial-replay" data-action="tutorial-open">${icon('book')}<span>튜토리얼 다시 보기<small>학습·복습·단어장 사용법</small></span>${icon('next')}</button></section>${switchSetting('furigana','히라가나 표시')}${switchSetting('motion','애니메이션')}<div class="setting-row"><b>듣기 속도</b><select data-setting="rate" aria-label="듣기 속도">${[.7,.85,1].map(n=>`<option value="${n}" ${n===state.settings.rate?'selected':''}>${n}×</option>`).join('')}</select></div><div class="setting-row"><b>펜 굵기</b><select data-setting="penWidth" aria-label="펜 굵기">${[4,6,8].map(n=>`<option value="${n}" ${n===state.settings.penWidth?'selected':''}>${n===4?'보통':n===6?'굵게':'더 굵게'}</option>`).join('')}</select></div><section class="settings-section"><h3>학습 강도</h3><select data-setting="intensity" aria-label="학습 강도">${Object.entries(INTENSITIES).map(([k,p])=>`<option value="${k}" ${state.settings.intensity===k?'selected':''}>${p.label}</option>`).join('')}</select><p id="intensity-description" class="fine">${policyDescription(state.settings.intensity)}</p><p class="fine">모르는 단어 기준입니다. 새 회차부터 적용하며 진행 중인 수업은 바꾸지 않습니다.</p>${switchSetting('adaptiveSRS','개인별 복습 간격')}<p class="fine">자동 채점 기록에 따라 간격을 조절합니다. 이미 정해진 복습일은 다음 채점 전까지 유지됩니다.</p></section><section class="settings-section"><h3>쓰기 연습</h3>${switchSetting('kanjiOnlyPractice','한자만 쓰기 연습','수업에서 가나만 있는 단어의 따라 쓰기를 생략합니다. 쓰기 시험은 유지합니다.')}</section><section class="settings-section"><h3>일본어 음성</h3><p class="setting-note">단어·예문·가나는 기기의 일본어 음성으로 재생합니다. 일본어 오프라인 음성이 설치되어 있어야 합니다.</p>${btn('speech-settings','기기 음성 설정','soft')}${btn('speech-test','음성 테스트','text')}</section><section class="settings-section"><h3>알림</h3>${switchSetting('reviewNotifications','복습 알림','오전 9시~오후 10시 · 하루 최대 2회')}${btn('reminder-permission','알림 권한 확인','text')}</section><div class="modal-actions">${btn('export','기록 백업','soft')}${btn('import','백업 가져오기','soft')}</div><input id="backup-file" type="file" accept="application/json,.json" class="sr-only"><div class="legal-links">${btn('restore-purchases','구매 복원','text')}${btn('manage-subscription','구독 관리','text')}${btn('privacy-options','광고 개인정보 선택','text')}<a href="./privacy.html">개인정보처리방침</a><a href="./terms.html">이용약관</a><a href="./licenses.html">오픈소스·저작권</a><a href="./data-deletion.html">계정 연결·데이터 삭제 요청</a></div><div class="spaced">${btn('reset','학습 기록 초기화','text danger')}</div><p class="fine">코토바 0.4.2 · 내부 테스트</p>`);}
+function settings(){openModal(`${modalHead('설정')}<button class="premium-entry" data-action="premium">${icon('spark')}<div><b>광고 없이 사용</b><small>코토바 프리미엄</small></div>${icon('next')}</button><section class="settings-section"><button type="button" class="btn soft tutorial-replay" data-action="tutorial-open">${icon('book')}<span>튜토리얼 다시 보기<small>학습·복습·단어장 사용법</small></span>${icon('next')}</button></section>${switchSetting('furigana','히라가나 표시')}${switchSetting('motion','애니메이션')}<div class="setting-row"><b>듣기 속도</b><select data-setting="rate" aria-label="듣기 속도">${[.7,.85,1].map(n=>`<option value="${n}" ${n===state.settings.rate?'selected':''}>${n}×</option>`).join('')}</select></div><div class="setting-row"><b>펜 굵기</b><select data-setting="penWidth" aria-label="펜 굵기">${[4,6,8].map(n=>`<option value="${n}" ${n===state.settings.penWidth?'selected':''}>${n===4?'보통':n===6?'굵게':'더 굵게'}</option>`).join('')}</select></div><section class="settings-section"><h3>학습 강도</h3><select data-setting="intensity" aria-label="학습 강도">${Object.entries(INTENSITIES).map(([k,p])=>`<option value="${k}" ${state.settings.intensity===k?'selected':''}>${p.label}</option>`).join('')}</select><p id="intensity-description" class="fine">${policyDescription(state.settings.intensity)}</p><p class="fine">모르는 단어 기준입니다. 새 회차부터 적용하며 진행 중인 수업은 바꾸지 않습니다.</p>${switchSetting('adaptiveSRS','개인별 복습 간격')}<p class="fine">자동 채점 기록에 따라 간격을 조절합니다. 이미 정해진 복습일은 다음 채점 전까지 유지됩니다.</p></section><section class="settings-section"><h3>쓰기 연습</h3>${switchSetting('kanjiOnlyPractice','한자만 쓰기 연습','수업에서 가나만 있는 단어의 따라 쓰기를 생략합니다. 쓰기 시험은 유지합니다.')}</section><section class="settings-section speech-settings-panel">${speechSetupGuide({settings:true,includeMeaning:true})}<p id="speech-test-status" class="speech-test-status" role="status" aria-live="polite"></p></section><section class="settings-section"><h3>알림</h3>${switchSetting('reviewNotifications','복습 알림','오전 9시~오후 10시 · 하루 최대 2회')}${btn('reminder-permission','알림 권한 확인','text')}</section><div class="modal-actions">${btn('export','기록 백업','soft')}${btn('import','백업 가져오기','soft')}</div><input id="backup-file" type="file" accept="application/json,.json" class="sr-only"><div class="legal-links">${btn('restore-purchases','구매 복원','text')}${btn('manage-subscription','구독 관리','text')}${btn('privacy-options','광고 개인정보 선택','text')}<a href="./privacy.html">개인정보처리방침</a><a href="./terms.html">이용약관</a><a href="./licenses.html">오픈소스·저작권</a><a href="./data-deletion.html">계정 연결·데이터 삭제 요청</a></div><div class="spaced">${btn('reset','학습 기록 초기화','text danger')}</div><p class="fine">코토바 0.4.2 · 내부 테스트</p>`);}
 function detail(id){
  const w=W(id);if(!w)return;
  const rows=['meaning','writing','listening'].map(k=>{const v=wordStatus(state,id,k);return `<div class="memory-row"><b>${{meaning:'뜻',writing:'쓰기',listening:'듣기'}[k]}</b><span>${v.kind==='tested'?dueLabel(v.record.due):v.kind==='known'?'아는 단어로 분류 · 시험 전':'시험 기록 없음'}</span></div>`;}).join('');
@@ -271,20 +292,21 @@ async function autoPronounceOnce(s,t,w){
  try{
   await speak(w.id,state.settings.rate,{text:w.reading||w.word});
   if(nonce!==audioNonce||route()!=='lesson'||state.session!==s||current(s)?.id!==t.id)return;
+  clearSpeechFailure(null,true);
   if(stage.bit===AUTO_SPEECH_PROMPT&&['audio','listening'].includes(t.skill)){
    s.heard=true;await save();const status=document.querySelector('#audio-status');if(status)status.textContent='재생 완료';
    document.querySelectorAll('.answer-option').forEach(el=>el.disabled=!!s.feedback);syncButtons();
   }
  }catch(e){
-  if(nonce===audioNonce&&!autoVoiceWarned){autoVoiceWarned=true;toast(e.message||'기기의 일본어 음성을 확인해 주세요.');}
+  if(nonce===audioNonce&&route()==='lesson'&&state.session===s&&current(s)?.id===t.id){showSpeechFailure(e,document.querySelector('#audio-status'),true);if(!autoVoiceWarned){autoVoiceWarned=true;toast(e.message||'기기의 일본어 음성을 확인해 주세요.');}}
  }finally{
   if(nonce===audioNonce&&!document.hidden&&!modal.firstChild&&stage.bit===AUTO_SPEECH_PROMPT&&state.session===s&&current(s)?.id===t.id&&!s.feedback)promptClock={id:t.id,at:performance.now(),invalid:false};
  }
 }
 async function play(slow=false,wordId=null,auto=false){const s=state.session,t=wordId?null:current(s),w=W(wordId||t?.wordId);if(!w)return;const nonce=++audioNonce,rate=slow?.7:state.settings.rate;const status=wordId?document.querySelector('.sheet .word-audio-status')||document.querySelector(`.wordbook-item:has([data-id="${wordId}"]) .word-audio-status`):document.querySelector('#audio-status');if(status)status.textContent='재생 중';document.querySelector('.audio-main')?.classList.add('playing');
  try{await speak(w.id,rate,{text:w.reading||w.word});
- if(nonce!==audioNonce)return;if(status)status.textContent='재생 완료';if(t&&state.session===s&&current(s)?.id===t.id&&route()==='lesson'){s.heard=true;await save();if(status)status.textContent='재생 완료';document.querySelectorAll('.answer-option').forEach(el=>el.disabled=!!s.feedback);syncButtons();}}
- catch(e){if(nonce===audioNonce){if(status)status.textContent=e.message;toast(e.message);}}
+ if(nonce!==audioNonce)return;clearSpeechFailure(status,!!t&&route()==='lesson');if(status)status.textContent='재생 완료';if(t&&state.session===s&&current(s)?.id===t.id&&route()==='lesson'){s.heard=true;await save();if(status)status.textContent='재생 완료';document.querySelectorAll('.answer-option').forEach(el=>el.disabled=!!s.feedback);syncButtons();}}
+ catch(e){if(nonce===audioNonce){showSpeechFailure(e,status,!!t&&route()==='lesson');toast(e.message);}}
  finally{if(nonce===audioNonce)document.querySelector('.audio-main')?.classList.remove('playing');}
 }
 function downloadJSON(object,name){const url=URL.createObjectURL(new Blob([JSON.stringify(object)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
@@ -298,11 +320,16 @@ document.addEventListener('click',async event=>{
  if(a==='stats-range'){statsView.days=Number(el.dataset.days);statsView.date=null;render();return;}
  if(a==='stats-level'){statsView.level=el.dataset.level;statsView.date=null;render();return;}
  if(a==='stat-day'){statsView.date=el.dataset.date;const y=scrollY;render();scrollTo(0,y);return;}
- if(a==='speech-test'){await speakSentence('こんにちは。日本語の音声テストです。',state.settings.rate);toast('음성 테스트 완료');return;}
+ if(a==='speech-test'){
+  const status=document.querySelector('#speech-test-status'),nonce=++audioNonce;el.disabled=true;if(status)status.textContent='일본어 테스트 재생 중';
+  try{await speakSentence('こんにちは。日本語の音声テストです。',state.settings.rate);if(nonce===audioNonce){clearSpeechFailure(status);if(status?.isConnected)status.textContent='일본어 테스트 재생이 완료됐어요.';toast('일본어 음성 테스트 완료');}}
+  catch(error){if(nonce===audioNonce){showSpeechFailure(error,status);toast(error.message);}}
+  finally{if(el.isConnected)el.disabled=false;}return;
+ }
  if(a==='word-example-audio'){
   const w=W(el.dataset.id),e=examplesFor(w)[0];if(!e)return;const nonce=++audioNonce;
   const status=el.closest('.wordbook-item,.detail-word')?.querySelector('.word-audio-status');if(status)status.textContent='예문 재생 중';
-  try{await speakSentence(e.speechText||e.ja,state.settings.rate);if(nonce===audioNonce&&status?.isConnected)status.textContent='예문 재생 완료';}catch(error){if(nonce===audioNonce){if(status?.isConnected)status.textContent=error.message;toast(error.message);}}return;
+  try{await speakSentence(e.speechText||e.ja,state.settings.rate);if(nonce===audioNonce){clearSpeechFailure(status);if(status?.isConnected)status.textContent='예문 재생 완료';}}catch(error){if(nonce===audioNonce){showSpeechFailure(error,status);toast(error.message);}}return;
  }
  if(a==='practice-options'){practiceOptions(el.dataset.id);return;}
  if(a==='practice-repeat'){practiceRepeats=Number(el.dataset.count);practiceOptions(practiceWordId);return;}
@@ -331,7 +358,7 @@ document.addEventListener('click',async event=>{
  if(a==='examples'){const w=W(el.dataset.id);if(w){cancelWork();if(route()==='lesson'&&!modal.firstChild){s.showExample=true;s.exampleIndex=0;await save();render();scrollTo(0,0);}else{openModal(`${modalHead('문장 속에서 기억해요')}${exampleBody(w,state.settings.furigana)}`);const sheet=modal.firstChild;setTimeout(()=>{if(!document.hidden&&modal.firstChild===sheet&&sheet?.querySelector('.example-pane'))play(false,w.id,true);},90);}}}
  else if(a==='hide-examples'&&s){cancelWork();s.showExample=false;await save();render();}
  else if(a==='example-page'){cancelWork();const w=W(el.dataset.id),i=Number(el.dataset.index);if(!w||!Number.isSafeInteger(i)||i<0||i>=examplesFor(w).length)return;if(modal.firstChild)openModal(`${modalHead('문장 속에서 기억해요')}${exampleBody(w,state.settings.furigana,i)}`);else if(s){s.exampleIndex=i;await save();render();}}
- else if(a==='example-audio'){const w=W(el.dataset.id),e=examplesFor(w)[Number(el.dataset.index)];if(!e)return;const nonce=++audioNonce;const status=el.closest('.example-pane')?.querySelector('.example-audio-status');el.setAttribute('aria-busy','true');if(status)status.textContent='예문 재생 중';try{await speakSentence(e.speechText||e.ja,el.dataset.slow==='true'?.7:state.settings.rate);if(nonce===audioNonce&&status?.isConnected)status.textContent='재생 완료';}catch(error){if(nonce===audioNonce){if(status?.isConnected)status.textContent=error.message;toast(error.message);}}finally{if(el.isConnected)el.removeAttribute('aria-busy');}}
+ else if(a==='example-audio'){const w=W(el.dataset.id),e=examplesFor(w)[Number(el.dataset.index)];if(!e)return;const nonce=++audioNonce;const status=el.closest('.example-pane')?.querySelector('.example-audio-status');el.setAttribute('aria-busy','true');if(status)status.textContent='예문 재생 중';try{await speakSentence(e.speechText||e.ja,el.dataset.slow==='true'?.7:state.settings.rate);if(nonce===audioNonce){clearSpeechFailure(status);if(status?.isConnected)status.textContent='재생 완료';}}catch(error){if(nonce===audioNonce){showSpeechFailure(error,status);toast(error.message);}}finally{if(el.isConnected)el.removeAttribute('aria-busy');}}
  else if(a==='example-stop'){cancelWork();document.querySelectorAll('.example-audio-status').forEach(e=>e.textContent='재생을 멈췄어요.');}
  else if(a==='reminder-permission'){const p=await requestReviewPermission();toast(p.granted?'복습할 때 자동으로 알려드려요.':'알림 권한을 허용하면 복습 알림을 받을 수 있어요.');}
  else if(a==='speech-settings'){if(isNative())await callNative('speechSettings');else toast('Android 앱에서 사용할 수 있어요.');}
@@ -355,8 +382,8 @@ document.addEventListener('click',async event=>{
  else if(a==='survey-listen'&&t?.skill==='survey'){
   const w=W(t.wordId),status=document.querySelector('#survey-audio-status'),nonce=++audioNonce;
   el.setAttribute('aria-busy','true');if(status)status.textContent='재생 중';
-  try{await speak(w.id,state.settings.rate,{text:w.reading||w.word});if(nonce===audioNonce&&status?.isConnected)status.textContent='재생 완료';}
-  catch(error){if(nonce===audioNonce){if(status?.isConnected)status.textContent=error.message;toast(error.message);}}
+  try{await speak(w.id,state.settings.rate,{text:w.reading||w.word});if(nonce===audioNonce){clearSpeechFailure(status,true);if(status?.isConnected)status.textContent='재생 완료';}}
+  catch(error){if(nonce===audioNonce){showSpeechFailure(error,status,true);toast(error.message);}}
   finally{if(el.isConnected)el.removeAttribute('aria-busy');}
  }
  else if(a==='survey-reading'&&t?.phase==='survey'){s.surveyReading=!s.surveyReading;await save();render();}

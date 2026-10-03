@@ -35,3 +35,17 @@
 @media(orientation:landscape) and (max-height:550px){html[data-snap="true"] .question{overflow-y:auto;display:block;padding-bottom:110px}html[data-snap="true"] .ink-pad{width:260px;height:260px;min-height:260px;margin:12px auto}.kana-prompt{max-width:480px;margin:auto}html[data-snap="true"] .focus-shell{height:auto;min-height:100dvh;overflow:visible}html[data-snap="true"] .lesson-footer{position:fixed}.kana-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
 .kana-letterline{width:100%;min-width:0;overflow:hidden}.kana-letterline strong{display:block;max-width:100%;white-space:nowrap;line-height:1.5}.kana-tabs button.active{background:#ece6ff;color:#5d47c6;font-weight:700}.example-headword{font-weight:700;margin-bottom:16px}.example-headword small{display:block;font-weight:400;color:#77718b;margin-top:5px}
+.speech-guide{margin:16px 0;padding:18px;border:1px solid #ded7f3;border-radius:18px;background:#faf8ff;text-align:left;overflow-wrap:anywhere}
+.speech-guide h3{font-size:16px;line-height:1.5;color:#423460;margin:0 0 10px}
+.speech-guide p,.speech-guide li{font-size:13px;line-height:1.75;color:#5e576d;margin:8px 0}
+.speech-guide ol{padding-left:21px;margin:12px 0}
+.speech-guide .speech-error-message{color:#714923;font-weight:600}
+.speech-guide-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.speech-guide-actions:empty{display:none}
+.speech-guide-actions .btn{min-height:48px;max-width:100%;white-space:normal}
+.speech-guide .speech-guide-note{font-size:12px;color:#706a7d;margin-bottom:0}
+.speech-settings-panel>.speech-setup{padding:0;border:0;background:transparent;margin:6px 0}
+.speech-test-status{font-size:13px;line-height:1.7;color:#5e576d;min-height:0}
+.speech-test-status:empty,.speech-problem:empty,#lesson-speech-guide:empty,#playlist-start-guide:empty,#playlist-speech-guide:empty{display:none}
+.playlist-voice-help{margin-top:14px}.playlist-voice-help>summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-size:13px;font-weight:600;color:#5b48a5}.playlist-voice-help>summary:after{content:'＋';margin-left:auto}.playlist-voice-help[open]>summary:after{content:'−'}
+@media(max-width:700px){.speech-guide{padding:16px;border-radius:16px}.speech-guide-actions{flex-direction:column;align-items:stretch}.speech-guide-actions .btn{width:100%}}

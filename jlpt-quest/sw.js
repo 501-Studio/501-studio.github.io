@@ -1,4 +1,4 @@
-const NAME='kotoba-course-0.4.2-editorial1';
+const NAME='kotoba-course-0.4.2-voice-guide1';
 const CORE=[
  './tutorial.css','./src/tutorial.js','./src/tutorial-state.js',
  './src/advanced-ui.js','./src/learning-policy.js','./src/study-data.js','./src/example-quality.js','./src/exam-engine.js','./src/playlist.js','./data/context040.js','./data/study040-seed.js',
@@ -8,7 +8,7 @@ const CORE=[
  './src/kana-engine.js','./src/kana-ui.js','./src/examples.js','./src/reminders.js','./data/examples.json','./data/examples-expanded.json',
  './src/statistics.js','./src/statistics-ui.js','./src/word-practice.js','./src/practice-ui.js',
  './src/session-controls.js','./src/app.js','./src/fit-text.js','./src/commerce.js','./src/catalog.js','./src/reviewed-identities.js','./src/content-migration.js','./src/course-engine.js','./src/storage.js','./src/packs.js',
- './src/native.js','./src/shape-grader.js','./src/audio.js','./src/ink.js','./src/view.js',
+ './src/native.js','./src/shape-grader.js','./src/audio.js','./src/speech-guide.js','./src/ink.js','./src/view.js',
  './src/ui.js','./src/motion.js','./src/stroke-match.js','./src/stroke-bank.js','./src/stroke-pad.js',
  './data/starter.js','./data/strokes.json','./data/coverage.json',
  './data/N1.json','./data/N2.json','./data/N3.json','./data/N4.json','./data/N5.json',

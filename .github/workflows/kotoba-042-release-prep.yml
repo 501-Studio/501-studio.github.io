@@ -11,12 +11,15 @@ concurrency:
   cancel-in-progress: true
 jobs:
   verify:
+    if: github.repository == '501-Studio/501-studio.github.io' && github.event.repository.private == false
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
       KOTOBA_EVIDENCE_DIR: /tmp/kotoba042-qa
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -24,6 +27,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Unit tests and learning assets
+        id: unit_tests
         working-directory: jlpt-quest
         run: |
           mkdir -p /tmp/kotoba042-qa
@@ -31,11 +35,13 @@ jobs:
           npm test 2>&1 | tee /tmp/kotoba042-qa/node.txt
           node scripts/verify-bundled-assets.mjs
       - name: Receipt verification tests
+        id: receipt_tests
         working-directory: billing-server
         run: |
           pip install -r requirements.txt
           python -m unittest discover -s tests -v
       - name: Docker privilege drop and durable storage smoke test
+        id: docker_smoke
         run: |
           docker build -t kotoba-verifier-test billing-server
           docker volume create kotoba-qa-data
@@ -48,6 +54,7 @@ jobs:
           curl --fail --retry 20 --retry-all-errors --retry-delay 1 --retry-max-time 45 --connect-timeout 2 --max-time 5 http://127.0.0.1:8080/health > /tmp/kotoba042-qa/backend-health-restarted.json
           docker exec -u app kotoba-verifier-test python -c "import os,sqlite3,stat; p='/var/data/kotoba/receipts.sqlite3'; assert stat.S_IMODE(os.stat(p).st_mode)==0o600; db=sqlite3.connect(p); assert db.execute('SELECT value FROM smoke').fetchone()[0]=='durable'; db.close(); print('Non-root durable restart passed')"
       - name: Browser regression
+        id: browser_regression
         working-directory: jlpt-quest
         run: |
           pip install playwright==1.57.0
@@ -62,6 +69,7 @@ jobs:
           done
           exit "$STATUS"
       - name: Verify unresolved production checks remain visible
+        id: release_gate
         working-directory: jlpt-quest
         run: |
           set +e
@@ -70,17 +78,42 @@ jobs:
           set -e
           test "$STATUS" -ne 0
           grep -q 'RELEASE BLOCKED' /tmp/kotoba042-qa/release-gate.txt
-      - uses: actions/upload-artifact@v4
+      - name: Summarize verification without stored artifacts
         if: always()
-        with:
-          name: jlpt-kotoba-042-web-verification
-          path: /tmp/kotoba042-qa/
-          retention-days: 30
+        env:
+          UNIT_OUTCOME: ${{ steps.unit_tests.outcome }}
+          RECEIPT_OUTCOME: ${{ steps.receipt_tests.outcome }}
+          DOCKER_OUTCOME: ${{ steps.docker_smoke.outcome }}
+          BROWSER_OUTCOME: ${{ steps.browser_regression.outcome }}
+          RELEASE_GATE_OUTCOME: ${{ steps.release_gate.outcome }}
+        run: |
+          python3 - <<'QA_SUMMARY'
+          import json, os, pathlib, re
+          root = pathlib.Path('/tmp/kotoba042-qa')
+          log = (root / 'node.txt').read_text(errors='replace') if (root / 'node.txt').exists() else ''
+          counts = {}
+          for key in ['tests', 'suites', 'pass', 'fail', 'cancelled', 'skipped', 'todo']:
+              matches = re.findall(r'^# ' + key + r' (\d+)$', log, re.M)
+              counts[key] = int(matches[-1]) if matches else None
+          result = {'schemaVersion': 1, 'nodeCounts': counts,
+                    'stepOutcomes': {key: os.environ.get(key, 'unknown') for key in
+                                     ['UNIT_OUTCOME', 'RECEIPT_OUTCOME', 'DOCKER_OUTCOME', 'BROWSER_OUTCOME', 'RELEASE_GATE_OUTCOME']},
+                    'artifactUploadPerformed': False, 'cacheUploadPerformed': False,
+                    'productionReleaseApproved': False}
+          print('KOTOBA_WEB_VERIFICATION_JSON=' + json.dumps(result, separators=(',', ':')))
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+              summary.write('### Web and backend regression\n\n')
+              summary.write('Existing test/build/blocked-release checks retain their exit status. No cache or artifact upload. Results and failures remain in the job log. No deployment or release approval.\n\n')
+              summary.write('```json\n' + json.dumps(result, indent=2) + '\n```\n')
+          QA_SUMMARY
   android:
+    if: github.repository == '501-Studio/501-studio.github.io' && github.event.repository.private == false
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -98,13 +131,16 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.13'
+          cache-disabled: true
       - name: Android internal APK and AAB, JVM tests and lint
+        id: android_build
         working-directory: kotoba-android
         run: |
           mkdir -p /tmp/kotoba042-qa
           set -o pipefail
           gradle --no-daemon assembleDebug bundleDebug assembleDebugAndroidTest testDebugUnitTest lintDebug 2>&1 | tee /tmp/kotoba042-qa/gradle.txt
       - name: Verify internal package identity and APK signature
+        id: identity_guard
         working-directory: kotoba-android
         run: |
           APK=app/build/outputs/apk/debug/app-debug.apk
@@ -114,6 +150,7 @@ jobs:
           grep -q "versionName='0.4.2-internal'" /tmp/kotoba042-qa/package.txt
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$APK" > /tmp/kotoba042-qa/signature.txt
       - name: Optimized Play testing build and configuration guards
+        id: play_test_guard
         working-directory: kotoba-android
         run: |
           set +e
@@ -290,6 +327,7 @@ jobs:
           trap - EXIT
           CAPTURE_SCRIPT
       - name: Actual Android lifecycle instrumentation
+        id: native_lifecycle
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 36
@@ -313,26 +351,40 @@ jobs:
             rm -f /tmp/kotoba-play-test-smoke.apk
             gradle --no-daemon connectedDebugAndroidTest
             bash /tmp/kotoba-capture-store-screenshots.sh
-      - uses: actions/upload-artifact@v4
+      - name: Summarize actual Android checks without stored artifacts
         if: always()
-        with:
-          name: jlpt-kotoba-042-android-store-screenshots
-          path: /tmp/kotoba042-qa/store-screenshots/
-          if-no-files-found: error
-          retention-days: 30
-      - uses: actions/upload-artifact@v4
-        with:
-          name: jlpt-kotoba-042-internal
-          path: |
-            kotoba-android/app/build/outputs/apk/debug/*.apk
-            kotoba-android/app/build/outputs/bundle/debug/*.aab
-          retention-days: 30
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: jlpt-kotoba-042-android-verification
-          path: |
-            /tmp/kotoba042-qa/
-            kotoba-android/app/build/reports/
-            kotoba-android/app/build/test-results/
-          retention-days: 30
+        env:
+          BUILD_OUTCOME: ${{ steps.android_build.outcome }}
+          IDENTITY_OUTCOME: ${{ steps.identity_guard.outcome }}
+          PLAY_TEST_OUTCOME: ${{ steps.play_test_guard.outcome }}
+          NATIVE_LIFECYCLE_OUTCOME: ${{ steps.native_lifecycle.outcome }}
+        run: |
+          python3 - <<'ANDROID_SUMMARY'
+          import json, os, pathlib, xml.etree.ElementTree as ET
+          totals = {'tests': 0, 'failures': 0, 'errors': 0, 'skipped': 0}
+          files = []
+          for pattern in ['kotoba-android/app/build/test-results/**/*.xml', 'kotoba-android/app/build/outputs/androidTest-results/**/*.xml']:
+              for path in sorted(pathlib.Path('.').glob(pattern)):
+                  tree = ET.parse(path).getroot()
+                  suites = [tree] if tree.tag == 'testsuite' else list(tree.iter('testsuite'))
+                  for suite in suites:
+                      for key in totals:
+                          totals[key] += int(suite.get(key, '0'))
+                  files.append(str(path))
+          path = pathlib.Path('/tmp/kotoba042-qa/store-screenshots/capture-manifest.json')
+          capture = json.loads(path.read_text(encoding='utf-8')) if path.exists() else None
+          result = {'schemaVersion': 1, 'stepOutcomes': {key: os.environ.get(key, 'unknown') for key in
+                    ['BUILD_OUTCOME', 'IDENTITY_OUTCOME', 'PLAY_TEST_OUTCOME', 'NATIVE_LIFECYCLE_OUTCOME']},
+                    'junitTotals': totals, 'junitXmlFileCount': len(files),
+                    'captureStatus': capture.get('status') if isinstance(capture, dict) else None,
+                    'captureValidation': capture.get('artifactValidation') if isinstance(capture, dict) else None,
+                    'captureScreens': [{key: row.get(key) for key in ['file', 'width', 'height', 'bytes', 'sha256']}
+                                       for row in capture.get('screens', [])] if isinstance(capture, dict) else [],
+                    'artifactUploadPerformed': False, 'cacheUploadPerformed': False,
+                    'imagesExportedForVisualReview': False, 'demonstrationVideoCreated': False, 'productionReleaseApproved': False}
+          print('KOTOBA_ANDROID_VERIFICATION_JSON=' + json.dumps(result, separators=(',', ':')))
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+              summary.write('### Android regression and capture diagnostics\n\n')
+              summary.write('Existing build, signature, JVM/lint, actual instrumentation and capture/cleanup gates retain their exit status. No cache or artifact upload. Images/binaries are temporary runner files; no image export or visual review is claimed by this summary. It does not prove speech/FGS/video, Play installation, ads, billing or release.\n\n')
+              summary.write('```json\n' + json.dumps(result, indent=2) + '\n```\n')
+          ANDROID_SUMMARY
