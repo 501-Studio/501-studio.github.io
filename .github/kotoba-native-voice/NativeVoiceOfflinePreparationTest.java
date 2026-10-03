@@ -340,9 +340,7 @@ public final class NativeVoiceOfflinePreparationTest {
     private Page readDetail(String selected, long limit) {
         Page page = new Page();
         page.selected = selected == null ? "" : selected;
-        AccessibilityNodeInfo root = activeRoot(limit);
-        page.rootPackage = root == null ? "" : safe(root.getPackageName());
-        collect(root, page.nodes, 0, new int[]{0}, limit);
+        observePage(page, limit);
         page.ready = GOOGLE.equals(page.rootPackage) && detailContext(page.nodes, selected, limit) && SystemClock.elapsedRealtime() < limit;
         return page;
     }
@@ -355,13 +353,14 @@ public final class NativeVoiceOfflinePreparationTest {
         boolean requireStableList = "LIST".equals(kind) && previous != null;
         String stableFingerprint = "";
         int stablePolls = 0;
+        JSONArray history = new JSONArray();
+        JSONObject lastNonempty = null;
         while (SystemClock.elapsedRealtime() < waitDeadline && polls < 40) {
             polls++; page = new Page();
             page.selected = selected == null ? "" : selected;
+            String pollingError = "";
             try {
-                AccessibilityNodeInfo root = activeRoot(waitDeadline);
-                page.rootPackage = root == null ? "" : safe(root.getPackageName());
-                collect(root, page.nodes, 0, new int[]{0}, waitDeadline);
+                observePage(page, waitDeadline);
                 boolean content = "SETTINGS".equals(kind) ? settingsTitle(page.nodes, expectedPackage) && exact(page.nodes, expectedPackage, engineLabel)
                         : "ENGINE".equals(kind) ? exact(page.nodes, GOOGLE, "Install voice data")
                         : "LIST".equals(kind) ? listContext(page.nodes, waitDeadline)
@@ -377,23 +376,112 @@ public final class NativeVoiceOfflinePreparationTest {
                     content = changed && stablePolls >= 3 && SystemClock.elapsedRealtime() - started >= 700;
                 }
                 page.ready = expectedPackage.equals(page.rootPackage) && !page.nodes.isEmpty() && content && SystemClock.elapsedRealtime() < waitDeadline;
-                if (page.ready) break;
+                page.readinessEvaluated = true;
+                page.readinessFinishedElapsedMillis = SystemClock.elapsedRealtime();
             } catch (RuntimeException unavailable) {
                 stableFingerprint = ""; stablePolls = 0;
                 error = bounded(unavailable.getClass().getSimpleName() + ": " + unavailable.getMessage());
+                pollingError = error;
             }
+            JSONObject observed = pollObservation(page, polls, started, waitDeadline, expectedPackage, kind, selected, pollingError);
+            // Freeze values only. Historical nodes never become the current Page or action targets.
+            if (!page.nodes.isEmpty()) try { lastNonempty = historicalSnapshot(stage, page, observed); }
+            catch (RuntimeException unavailable) { observed.put("historicalSnapshotError", bounded(unavailable.getClass().getSimpleName())); }
+            history.put(observed);
+            while (history.length() > 12 || history.toString().length() > 8000) history.remove(0);
+            if (page.ready) break;
             long remaining = waitDeadline - SystemClock.elapsedRealtime();
             if (remaining > 0) SystemClock.sleep(Math.min(200, remaining));
         }
         JSONObject readiness = new JSONObject().put("stage", stage).put("rootPackage", bounded(page.rootPackage)).put("screenContextReady", page.ready)
                 .put("polls", polls).put("waitMillis", SystemClock.elapsedRealtime() - started)
-                .put("deadlineExpired", SystemClock.elapsedRealtime() >= waitDeadline).put("lastPollingError", error);
+                .put("deadlineExpired", SystemClock.elapsedRealtime() >= waitDeadline).put("lastPollingError", error)
+                .put("lastPollingErrorMeaning", "Most recent polling exception, possibly from an earlier poll")
+                .put("pollHistory", history).put("pollHistoryLimit", 12).put("pollHistorySerializedLimit", 8000)
+                .put("pollHistoryTruncated", polls > history.length())
+                .put("historicalNonemptySnapshotEmitted", !page.ready && lastNonempty != null);
         if (requireStableList) readiness.put("stableFingerprintPolls", stablePolls).put("stablePollsRequired", 3).put("minimumSettleMillis", 700);
         snapshot(stage, page, readiness);
+        if (!page.ready && lastNonempty != null) { emit(SNAPSHOT, lastNonempty); increment("snapshotCount"); }
         if (!report.has("observations")) report.put("observations", new JSONArray());
         report.getJSONArray("observations").put(readiness);
         if (!timeLeft()) page.ready = false;
         return page;
+    }
+
+    private void observePage(Page page, long limit) {
+        long rootStarted = SystemClock.elapsedRealtime();
+        AccessibilityNodeInfo root;
+        page.rootReadAttempted = true;
+        try { root = activeRoot(limit); page.rootReadReturned = true; }
+        finally {
+            page.rootReadMillis = SystemClock.elapsedRealtime() - rootStarted;
+            page.rootReadFinishedElapsedMillis = SystemClock.elapsedRealtime();
+        }
+        page.rootExists = root != null;
+        page.rootPackage = root == null ? "" : safe(root.getPackageName());
+        long collectStarted = SystemClock.elapsedRealtime();
+        int[] visited = new int[]{0};
+        page.collectAttempted = true;
+        try { collect(root, page.nodes, 0, visited, limit); page.collectReturned = true; }
+        finally {
+            page.visitedNodes = visited[0];
+            page.collectMillis = SystemClock.elapsedRealtime() - collectStarted;
+            page.collectFinishedElapsedMillis = SystemClock.elapsedRealtime();
+        }
+        if (root != null) try {
+            // Cached root properties only: no refresh, cache clearing, or second root read.
+            page.rootClass = bounded(root.getClassName()); page.rootWindowId = root.getWindowId();
+            page.rootVisible = root.isVisibleToUser(); page.rootChildCount = root.getChildCount();
+            page.rootPropertiesObserved = true;
+        } catch (RuntimeException unavailable) {
+            page.rootPropertiesError = bounded(unavailable.getClass().getSimpleName());
+        }
+    }
+
+    private JSONObject pollObservation(Page page, int poll, long started, long limit, String expectedPackage,
+            String kind, String selected, String pollingError) throws Exception {
+        JSONObject observed = new JSONObject().put("poll", poll).put("elapsedMillis", SystemClock.elapsedRealtime() - started)
+                .put("rootReadAttempted", page.rootReadAttempted).put("rootReadReturned", page.rootReadReturned)
+                .put("rootReadMillis", page.rootReadMillis)
+                .put("rootReturnedAfterDeadline", page.rootReadReturned && page.rootReadFinishedElapsedMillis >= limit)
+                .put("rootExists", page.rootExists).put("rootPackage", bounded(page.rootPackage))
+                .put("rootClass", page.rootClass).put("rootWindowId", page.rootWindowId)
+                .put("rootVisible", page.rootVisible).put("rootChildCount", page.rootChildCount)
+                .put("rootPropertiesObserved", page.rootPropertiesObserved).put("rootPropertiesError", page.rootPropertiesError)
+                .put("collectAttempted", page.collectAttempted).put("collectReturned", page.collectReturned)
+                .put("collectMillis", page.collectMillis)
+                .put("collectReturnedAfterDeadline", page.collectReturned && page.collectFinishedElapsedMillis >= limit)
+                .put("visitedNodes", page.visitedNodes).put("visibleNodes", page.nodes.size())
+                .put("packageMatches", expectedPackage.equals(page.rootPackage))
+                .put("readinessEvaluated", page.readinessEvaluated)
+                .put("readinessFinishedMillis", page.readinessEvaluated ? page.readinessFinishedElapsedMillis - started : -1)
+                .put("readinessFinishedAfterDeadline", page.readinessEvaluated && page.readinessFinishedElapsedMillis >= limit)
+                .put("screenContextReady", page.ready).put("pollingError", pollingError);
+        try {
+            observed.put("exactStageTitleObserved", "SETTINGS".equals(kind) ? settingsTitle(page.nodes, expectedPackage)
+                        : "ENGINE".equals(kind) ? exact(page.nodes, GOOGLE, "Install voice data")
+                        : "LIST".equals(kind) ? exact(page.nodes, GOOGLE, "Google TTS voice data")
+                        : selectedVoiceTitle(page.nodes, selected))
+                .put("resolvedEngineLabelRequired", "SETTINGS".equals(kind))
+                .put("resolvedEngineLabelObserved", "SETTINGS".equals(kind) && exact(page.nodes, expectedPackage, engineLabel))
+                .put("blockedPromptObserved", blockedPrompt(page.nodes))
+                .put("predicatesObserved", true);
+        } catch (RuntimeException unavailable) {
+            observed.put("predicatesObserved", false).put("predicateObservationError", bounded(unavailable.getClass().getSimpleName()));
+        }
+        return observed;
+    }
+
+    private JSONObject historicalSnapshot(String stage, Page page, JSONObject observed) throws Exception {
+        JSONArray rows = nodeRows(page.nodes);
+        JSONObject historical = new JSONObject().put("schemaVersion", 1).put("stage", stage + "_last_nonempty")
+                .put("historical", true).put("actionable", false).put("screenContextReady", false)
+                .put("meaning", "Earlier nonempty poll values for diagnosis only; never readiness or action evidence")
+                .put("observation", new JSONObject(observed.toString())).put("nodes", rows)
+                .put("visitedNodesScanned", page.visitedNodes).put("visibleNodesScanned", page.nodes.size()).put("rowsTruncated", false);
+        while (rows.length() > 0 && historical.toString().length() > 18000) rows.remove(rows.length() - 1);
+        return historical.put("rowsTruncated", page.nodes.size() > rows.length());
     }
 
     private void snapshot(String stage, Page page, JSONObject readiness) throws Exception {
@@ -402,8 +490,19 @@ public final class NativeVoiceOfflinePreparationTest {
                 .put("localeRowIdsObserved", containsId(page.nodes, GOOGLE, ROW_ID))
                 .put("localeRowsObserved", hasLocaleRows(page.nodes, deadline))
                 .put("voiceChooserObserved", voiceChooser(page.nodes, deadline));
+        JSONArray rows = nodeRows(page.nodes);
+        JSONObject snapshot = new JSONObject().put("schemaVersion", 1).put("stage", stage).put("uiReadiness", readiness)
+                .put("nodes", rows).put("visibleNodesScanned", page.nodes.size()).put("visitedNodesScanned", page.visitedNodes)
+                .put("nodeCountMeaning", "visitedNodesScanned includes invisible nodes; visibleNodesScanned is retained visible nodes only")
+                .put("rowsTruncated", false);
+        while (rows.length() > 0 && snapshot.toString().length() > 18000) rows.remove(rows.length() - 1);
+        snapshot.put("rowsTruncated", page.nodes.size() > rows.length());
+        emit(SNAPSHOT, snapshot); increment("snapshotCount");
+    }
+
+    private JSONArray nodeRows(List<AccessibilityNodeInfo> nodes) throws Exception {
         JSONArray rows = new JSONArray();
-        for (AccessibilityNodeInfo node : page.nodes) {
+        for (AccessibilityNodeInfo node : nodes) {
             if (rows.length() >= 40) break;
             JSONArray actions = new JSONArray();
             List<AccessibilityNodeInfo.AccessibilityAction> available = node.getActionList();
@@ -413,11 +512,7 @@ public final class NativeVoiceOfflinePreparationTest {
                     .put("viewId", bounded(node.getViewIdResourceName())).put("clickable", node.isClickable()).put("enabled", node.isEnabled())
                     .put("checkable", node.isCheckable()).put("scrollable", node.isScrollable()).put("actions", actions));
         }
-        JSONObject snapshot = new JSONObject().put("schemaVersion", 1).put("stage", stage).put("uiReadiness", readiness)
-                .put("nodes", rows).put("visibleNodesScanned", page.nodes.size());
-        while (rows.length() > 0 && snapshot.toString().length() > 18000) rows.remove(rows.length() - 1);
-        snapshot.put("rowsTruncated", page.nodes.size() > rows.length());
-        emit(SNAPSHOT, snapshot); increment("snapshotCount");
+        return rows;
     }
 
     private AccessibilityNodeInfo activeRoot(long limit) {
@@ -617,7 +712,13 @@ public final class NativeVoiceOfflinePreparationTest {
         Bundle stream = new Bundle(); stream.putString("stream", "\n" + marker + value + "\n");
         InstrumentationRegistry.getInstrumentation().sendStatus(0, stream);
     }
-    private static final class Page { final List<AccessibilityNodeInfo> nodes = new ArrayList<>(); String rootPackage = "", selected = ""; boolean ready; }
+    private static final class Page {
+        final List<AccessibilityNodeInfo> nodes = new ArrayList<>();
+        String rootPackage = "", selected = "", rootClass = "", rootPropertiesError = "";
+        boolean ready, rootReadAttempted, rootReadReturned, rootExists, rootVisible, rootPropertiesObserved, collectAttempted, collectReturned, readinessEvaluated;
+        int rootWindowId = -1, rootChildCount = -1, visitedNodes;
+        long rootReadMillis, rootReadFinishedElapsedMillis, collectMillis, collectFinishedElapsedMillis, readinessFinishedElapsedMillis;
+    }
     private static final class Inventory {
         int total, scanned, japanese, korean; boolean complete;
         int count(String locale) { return "ja".equals(locale) ? japanese : "ko".equals(locale) ? korean : 0; }
