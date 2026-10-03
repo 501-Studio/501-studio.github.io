@@ -110,8 +110,9 @@ public final class NativeVoiceRuntimeTest {
         for (String key : flags) report.put(key, false);
         ActivityScenario<MainActivity> scenario = null;
         boolean initiallyInteractive = screen().optBoolean("interactive");
-        report.put("initialScreen", screen());
+        report.put("initialScreen", screen()).put("postNotificationsPermissionGrantedAtStart", notificationsGranted());
         try {
+            require(!report.optBoolean("postNotificationsPermissionGrantedAtStart"), "POST_NOTIFICATIONS must remain ungranted for this regression");
             automation = instrumentation.getUiAutomation();
             require(automation != null, "UiAutomation unavailable");
             require(screen().optBoolean("powerAvailable") && screen().optBoolean("keyguardAvailable"), "Screen/keyguard observations unavailable");
@@ -173,6 +174,9 @@ public final class NativeVoiceRuntimeTest {
             report.put("pausePendingIntentAttempted", true); pause.send();
             require(awaitPlaying(false, PlaybackState.STATE_PAUSED), "Pause PendingIntent did not produce paused service/media state");
             report.put("pausePendingIntentVerified", true);
+            report.put("postNotificationsPermissionGrantedAtPause", notificationsGranted());
+            require(!report.optBoolean("postNotificationsPermissionGrantedAtPause"), "POST_NOTIFICATIONS changed before paused observation");
+            require(observeMedia("paused", PlaybackState.STATE_PAUSED), "Actual paused foreground type/posted notification/media state incomplete");
             PendingIntent resume = actualAction("재생");
             require(resume != null, "Actual notification resume PendingIntent unavailable; rendered SystemUI behavior not established");
             report.put("resumePendingIntentAttempted", true); resume.send();
@@ -208,6 +212,8 @@ public final class NativeVoiceRuntimeTest {
                         || !report.optBoolean("initialInteractiveStateRestored"))
                     incomplete("Final cleanup or network isolation incomplete");
             } catch (Exception cleanup) { incomplete("Cleanup: " + cleanup.getClass().getSimpleName()); }
+            report.put("postNotificationsPermissionGrantedAtEnd", notificationsGranted());
+            if (report.optBoolean("postNotificationsPermissionGrantedAtEnd")) incomplete("POST_NOTIFICATIONS was granted during the regression");
             report.put("elapsedMs", SystemClock.elapsedRealtime() - started);
             if (SystemClock.elapsedRealtime() > deadline) incomplete("Global 180-second budget exceeded");
             while (report.toString().length() > 19000 && events.length() > 1) { events.remove(1); report.put("statusEventsTruncated", true); }
@@ -542,6 +548,9 @@ public final class NativeVoiceRuntimeTest {
         if (manager == null) return false;
         for (Network network : manager.getAllNetworks()) { NetworkCapabilities capabilities = manager.getNetworkCapabilities(network); if (capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) return false; }
         return true;
+    }
+    private boolean notificationsGranted() {
+        return context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) == android.content.pm.PackageManager.PERMISSION_GRANTED;
     }
     private long limit(long duration) { return Math.min(workDeadline, SystemClock.elapsedRealtime() + duration); }
     private boolean timeLeft() { return SystemClock.elapsedRealtime() < workDeadline; }

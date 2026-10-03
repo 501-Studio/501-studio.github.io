@@ -362,6 +362,7 @@ jobs:
               'engineSelectionActionPerformed', 'languageInstallActionPerformed',
           ]
           pcm = report.get('koreanPcm', {}) if report else {}
+          denied_permissions = ['postNotificationsPermissionGrantedAtStart', 'postNotificationsPermissionGrantedAtPause', 'postNotificationsPermissionGrantedAtEnd']
           positive = ['runtimeVoiceCount', 'offlineJapaneseVoiceCount', 'offlineKoreanVoiceCount',
                       'homeAutomaticTransitionCount', 'screenOffAutomaticTransitionCount']
           metrics_ok = bool(report and all(type(report.get(key)) is int and report[key] > 0 for key in positive)
@@ -386,6 +387,7 @@ jobs:
                        and type(report.get('koreanInitStatus')) is int and report['koreanInitStatus'] == 0
                        and type(report.get('koreanSynthesisRequestStatus')) is int and report['koreanSynthesisRequestStatus'] == 0
                        and report.get('koreanSynthesisCallback') == 'DONE'
+                       and all(report.get(key) is False for key in denied_permissions)
                        and all(report.get(key) is True for key in required)
                        and all(report.get(key) is False for key in forbidden))
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
