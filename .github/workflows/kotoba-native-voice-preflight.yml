@@ -83,6 +83,11 @@ jobs:
           INSPECTION_EXIT=${PIPESTATUS[0]}
           printf '%s\n' "$INSPECTION_EXIT" > /tmp/kotoba-native-voice/inspection-exit.txt
           # A separate one-test invocation and report preserves the existing native voice readiness gate.
+          # System settings can run their own checks. Reassert guest network controls before the independent probe.
+          set -e
+          adb shell svc wifi disable
+          adb shell svc data disable
+          set +e
           adb shell am instrument -w -e class com.studio501.kotoba.NativeVoicePreflightTest -e nativeVoicePreflight true -e ciIsolatedEmulator true com.studio501.kotoba.debug.test/androidx.test.runner.AndroidJUnitRunner | tr -d '\r' | tee /tmp/kotoba-native-voice/instrumentation.txt
           INSTRUMENT_EXIT=${PIPESTATUS[0]}
           set -e
