@@ -1,0 +1,45 @@
+{
+  "contentRevision": "036-editorial-1",
+  "total": 8451,
+  "changed": 5282,
+  "semanticReviewed": 2404,
+  "propagatedSameLexeme": 53,
+  "remainingSemanticReview": 6047,
+  "englishDisplay": 0,
+  "semanticReviewComplete": false,
+  "reviewer": "assistant; not external human review",
+  "levels": {
+    "N5": {
+      "words": 669,
+      "changed": 450,
+      "semanticReviewed": 669,
+      "propagatedSameLexeme": 0
+    },
+    "N4": {
+      "words": 655,
+      "changed": 475,
+      "semanticReviewed": 655,
+      "propagatedSameLexeme": 0
+    },
+    "N3": {
+      "words": 1798,
+      "changed": 1148,
+      "semanticReviewed": 270,
+      "propagatedSameLexeme": 44
+    },
+    "N2": {
+      "words": 1844,
+      "changed": 1005,
+      "semanticReviewed": 288,
+      "propagatedSameLexeme": 6
+    },
+    "N1": {
+      "words": 3485,
+      "changed": 2204,
+      "semanticReviewed": 522,
+      "propagatedSameLexeme": 3
+    }
+  },
+  "remainingAutomaticFlags": 2,
+  "note": "Comma formatting is applied to all entries. Formatting-only changes are NOT counted as semantic review."
+}

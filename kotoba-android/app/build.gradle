@@ -1,0 +1,53 @@
+plugins { id 'com.android.application' }
+def stringValue = { String value -> groovy.json.JsonOutput.toJson(value) }
+def envValue = { String name, String fallback -> System.getenv(name) ?: fallback }
+def prodRequested = gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') }
+def sampleApp = 'ca-app-pub-3940256099942544~3347511713'
+def appIdValue = envValue('ADMOB_APP_ID', sampleApp)
+def verifiedSales = envValue('KOTOBA_SELLING_ENABLED', 'false') == 'true'
+
+android {
+    namespace 'com.studio501.kotoba'
+    compileSdk 36
+    defaultConfig {
+        applicationId 'com.studio501.kotoba'
+        minSdk 24
+        targetSdk 36
+        versionCode 9
+        versionName '0.3.6'
+        manifestPlaceholders = [admobAppId: appIdValue]
+        buildConfigField 'boolean', 'ADS_ENABLED', envValue('KOTOBA_ADS_ENABLED','true')
+        buildConfigField 'boolean', 'SELLING_ENABLED', verifiedSales.toString()
+        buildConfigField 'String', 'BANNER_AD_UNIT', stringValue(envValue('ADMOB_BANNER_ID','ca-app-pub-3940256099942544/6300978111'))
+        buildConfigField 'String', 'INTERSTITIAL_AD_UNIT', stringValue(envValue('ADMOB_INTERSTITIAL_ID','ca-app-pub-3940256099942544/1033173712'))
+        buildConfigField 'String', 'VERIFICATION_URL', stringValue(envValue('KOTOBA_VERIFICATION_URL',''))
+        buildConfigField 'String', 'ENTITLEMENT_PUBLIC_KEY', stringValue(envValue('KOTOBA_ENTITLEMENT_PUBLIC_KEY',''))
+    }
+    buildFeatures { buildConfig true }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    buildTypes {
+        debug { applicationIdSuffix '.debug'; versionNameSuffix '-internal' }
+        release { minifyEnabled true; shrinkResources true; proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro' }
+    }
+    lint { abortOnError true }
+}
+dependencies {
+    implementation 'androidx.activity:activity:1.10.1'
+    implementation 'androidx.webkit:webkit:1.14.0'
+    implementation 'com.android.billingclient:billing:9.1.0'
+    implementation 'com.google.android.gms:play-services-ads:25.4.0'
+    implementation 'com.google.android.ump:user-messaging-platform:4.0.0'
+    testImplementation 'junit:junit:4.13.2'
+}
+tasks.configureEach { task ->
+    if (task.name == 'preReleaseBuild') task.doFirst {
+        if (appIdValue == sampleApp || !System.getenv('ADMOB_BANNER_ID') || !System.getenv('ADMOB_INTERSTITIAL_ID')) throw new GradleException('Production AdMob identifiers are not configured.')
+        if (!verifiedSales || !System.getenv('KOTOBA_VERIFICATION_URL')?.startsWith('https://') || !System.getenv('KOTOBA_ENTITLEMENT_PUBLIC_KEY')) throw new GradleException('Verified billing backend is not configured.')
+        def approvalFile = rootProject.file('../release-approval.json')
+        if(!approvalFile.exists()) throw new GradleException('Production QA approval has not been recorded.')
+        def approval = new groovy.json.JsonSlurper().parse(approvalFile)
+        ['physicalDeviceInk','physicalDeviceAudio','offlineRestore','accessibility','contentEditorialReview','privacyAndDataSafety','contentRating','storeListing','signedBundle','playAppSigning','closedTesting','legalDocsPublished','billingSandbox','consentAndAdFree','rtdnAndRefunds'].each { key ->
+            if(approval[key] != true) throw new GradleException('Release gate missing: '+key)
+        }
+    }
+}

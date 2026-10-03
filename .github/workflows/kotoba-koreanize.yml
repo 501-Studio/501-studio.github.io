@@ -1,0 +1,112 @@
+name: Kotoba Korean-only vocabulary localization
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/kotoba-curriculum-v03]
+    paths: ['jlpt-quest/scripts/koreanize-content.py', '.github/workflows/kotoba-koreanize.yml']
+permissions:
+  contents: write
+concurrency:
+  group: kotoba-koreanize-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  translate:
+    strategy:
+      fail-fast: false
+      matrix:
+        level: [N5, N4, N3, N2, N1]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pinned CPU translation stack
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch==2.4.1
+          python -m pip install transformers==4.44.2 sentencepiece==0.2.0 sacremoses==0.1.1
+      - name: Translate ${{ matrix.level }} meanings to Korean
+        working-directory: jlpt-quest
+        env:
+          HF_HUB_DISABLE_TELEMETRY: '1'
+          TOKENIZERS_PARALLELISM: 'false'
+        run: python scripts/koreanize-content.py --level ${{ matrix.level }} --batch-size 96
+      - uses: actions/upload-artifact@v4
+        with:
+          name: korean-${{ matrix.level }}
+          path: |
+            jlpt-quest/data/korean-glosses-${{ matrix.level }}.json
+            jlpt-quest/data/korean-coverage-${{ matrix.level }}.json
+          if-no-files-found: error
+          retention-days: 7
+
+  merge:
+    needs: translate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: korean-*
+          path: jlpt-quest/data/localized
+          merge-multiple: true
+      - name: Merge and verify every display meaning is Korean
+        working-directory: jlpt-quest
+        run: |
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+          root=Path('data'); loc=root/'localized'
+          levels=['N5','N4','N3','N2','N1']
+          glosses={}; total=0
+          reports={}
+          for level in levels:
+              part=json.loads((loc/f'korean-glosses-{level}.json').read_text())
+              report=json.loads((loc/f'korean-coverage-{level}.json').read_text())
+              assert part['complete'] and part['level']==level
+              assert report['complete'] and report['englishVisible']==0
+              overlap=set(glosses)&set(part['glosses'])
+              assert not overlap, f'duplicate ids: {len(overlap)}'
+              glosses.update(part['glosses']); total+=part['sourceWords']; reports[level]=report
+          assert total==8451 and len(glosses)==8451,(total,len(glosses))
+          bad=[(k,v) for k,v in glosses.items() if not v.strip() or re.search('[A-Za-z]',v)]
+          assert not bad,bad[:20]
+          payload={
+            'version':1,'complete':True,'sourceWords':total,'koreanWords':len(glosses),
+            'model':'facebook/m2m100_418M','modelRevision':'55c2e61bbf05dfb8d7abccdc3fae6fc8512fd636',
+            'modelLicense':'MIT',
+            'note':'Machine-translated Korean draft glosses plus human overrides; production education review still required.',
+            'glosses':glosses
+          }
+          (root/'korean-glosses.json').write_text(json.dumps(payload,ensure_ascii=False,separators=(',',':')))
+          coverage={'complete':True,'sourceWords':total,'koreanWords':len(glosses),'englishVisible':0,'levels':reports}
+          (root/'korean-coverage.json').write_text(json.dumps(coverage,ensure_ascii=False,indent=2))
+          # Explicit regression for the screenshot report.
+          expected={('あさって','あさって'):'모레',('あそこ','あそこ'):'저기 · 저곳',('あちら','あちら'):'저쪽 · 저곳',('あっち','あっち'):'저쪽'}
+          for word,reading in expected:
+              found=[]
+              for level in levels:
+                  pack=json.loads((root/f'{level}.json').read_text())
+                  found += [w for w in pack['words'] if w['word']==word and w.get('reading','')==reading]
+              assert found,(word,reading)
+              for w in found: assert glosses[w['id']]==expected[(word,reading)],(word,glosses[w['id']])
+          print(json.dumps(coverage,ensure_ascii=False,indent=2))
+          PY
+      - name: Save complete Korean-only meaning layer
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add jlpt-quest/data/korean-glosses.json jlpt-quest/data/korean-coverage.json
+          git diff --cached --quiet || git commit -m 'data(kotoba): Koreanize all 8451 display meanings'
+          git push origin HEAD:feature/kotoba-curriculum-v03
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kotoba-korean-glosses-complete
+          path: |
+            jlpt-quest/data/korean-glosses.json
+            jlpt-quest/data/korean-coverage.json
+          retention-days: 30
