@@ -1,0 +1,41 @@
+name: Kotoba free billing Worker
+on:
+  push:
+    branches: [feat/jlpt-kotoba-play-release]
+    paths: [billing-worker/**, .github/workflows/kotoba-billing-worker.yml]
+  pull_request:
+    paths: [billing-worker/**, .github/workflows/kotoba-billing-worker.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: kotoba-worker-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: billing-worker
+    env:
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: billing-worker/package-lock.json
+      - run: npm ci --no-fund --no-audit
+      - run: npm run check
+      - name: Actual Workers runtime and SQLite regression tests
+        run: npm test -- --reporter=default --reporter=json --outputFile=worker-test-results.json
+      - name: Build only without cloud credentials or deployment
+        run: npm run build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kotoba-billing-worker-verification
+          path: billing-worker/worker-test-results.json
+          retention-days: 30

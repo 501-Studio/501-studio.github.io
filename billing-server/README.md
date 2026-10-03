@@ -3,9 +3,10 @@
 **Hosting decision, 2026-10-03:** the owner requires no server/storage charges. The
 paid Render proposal was withdrawn and renamed `render.paid-reference.yaml` so it is
 not the default Blueprint. Do not deploy it. See [the free alternative](FREE_DEPLOYMENT_KO.md):
-Cloudflare Workers Free plus SQLite-backed Durable Objects. This requires a reviewed
-runtime/storage port; the Flask/SQLite application below is not deployable to Workers
-by changing its URL. No Cloudflare resource, production migration, or billing integration
+Cloudflare Workers Free plus SQLite-backed Durable Objects. The new [Workers source](../billing-worker/README.md)
+ports the runtime/storage contract and passes 64 local workerd tests; it is not a deployment
+or live integration. The Flask/SQLite application below is not deployable to Workers by
+changing its URL. No Cloudflare resource, production migration, or billing integration
 has been performed. Keep selling and operational release gates disabled.
 
 This backend binds a Google-verified Play purchase to an authenticated app account, stores that

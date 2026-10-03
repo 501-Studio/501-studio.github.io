@@ -12,7 +12,11 @@
     "paidAddOnsAllowed": false,
     "customDomainPurchaseAllowed": false,
     "onFreeQuotaExceeded": "reject-or-retry-no-paid-fallback",
-    "runtimePortRequired": true,
+    "runtimePortRequired": false,
+    "implementationPath": "billing-worker",
+    "implementationState": "64-local-workerd-tests-passed-not-deployed",
+    "actualFreeAccountVerified": false,
+    "liveQuotaAndLoadVerified": false,
     "resourcesCreated": false,
     "deployedUrl": null,
     "integrationVerified": false
