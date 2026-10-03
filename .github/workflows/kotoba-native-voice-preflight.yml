@@ -4,6 +4,7 @@ on:
     branches: [feat/jlpt-kotoba-play-release]
     paths:
       - .github/kotoba-native-voice/NativeVoicePreflightTest.java
+      - .github/kotoba-native-voice/NativeVoiceSetupInspectionTest.java
       - .github/workflows/kotoba-native-voice-preflight.yml
   workflow_dispatch:
 permissions:
@@ -51,6 +52,7 @@ jobs:
         run: |
           mkdir -p kotoba-android/app/src/androidTest/java/com/studio501/kotoba
           cp .github/kotoba-native-voice/NativeVoicePreflightTest.java kotoba-android/app/src/androidTest/java/com/studio501/kotoba/
+          cp .github/kotoba-native-voice/NativeVoiceSetupInspectionTest.java kotoba-android/app/src/androidTest/java/com/studio501/kotoba/
       - name: Build only debug app and instrumentation APKs
         working-directory: kotoba-android
         run: gradle --no-daemon assembleDebug assembleDebugAndroidTest
@@ -73,16 +75,22 @@ jobs:
           adb install -r app/build/outputs/apk/debug/app-debug.apk
           adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
           adb shell pm clear com.studio501.kotoba.debug | tr -d '\r' | grep -qx Success
-          # No account, engine download, app activity, real ad or purchase is initiated.
+          # Isolated offline system-settings inspection; never select engine/radio, language, Download, login or terms.
           adb shell svc wifi disable
           adb shell svc data disable
           set +e
+          adb shell am instrument -w -e class com.studio501.kotoba.NativeVoiceSetupInspectionTest -e nativeVoiceSetupInspection true -e ciIsolatedEmulator true com.studio501.kotoba.debug.test/androidx.test.runner.AndroidJUnitRunner | tr -d '\r' | tee /tmp/kotoba-native-voice/inspection.txt
+          INSPECTION_EXIT=${PIPESTATUS[0]}
+          printf '%s\n' "$INSPECTION_EXIT" > /tmp/kotoba-native-voice/inspection-exit.txt
+          # A separate one-test invocation and report preserves the existing native voice readiness gate.
           adb shell am instrument -w -e class com.studio501.kotoba.NativeVoicePreflightTest -e nativeVoicePreflight true -e ciIsolatedEmulator true com.studio501.kotoba.debug.test/androidx.test.runner.AndroidJUnitRunner | tr -d '\r' | tee /tmp/kotoba-native-voice/instrumentation.txt
           INSTRUMENT_EXIT=${PIPESTATUS[0]}
           set -e
           printf '%s\n' "$INSTRUMENT_EXIT" > /tmp/kotoba-native-voice/instrumentation-exit.txt
           test "$INSTRUMENT_EXIT" -eq 0
           grep -Eq '^OK \(1 test\)$' /tmp/kotoba-native-voice/instrumentation.txt
+          test "$INSPECTION_EXIT" -eq 0
+          grep -Eq '^OK \(1 test\)$' /tmp/kotoba-native-voice/inspection.txt
           PROBE
           chmod 0700 /tmp/kotoba-native-voice/probe.sh
       - name: Probe the real default TTS on a clean API 36 guest
@@ -95,6 +103,40 @@ jobs:
           working-directory: kotoba-android
           disable-animations: true
           script: /tmp/kotoba-native-voice/probe.sh
+      - name: Report the separate system-settings inspection
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re
+          root = pathlib.Path('/tmp/kotoba-native-voice')
+          log_file = root / 'inspection.txt'
+          log = log_file.read_text(encoding='utf-8', errors='replace') if log_file.exists() else ''
+          marker = 'KOTOBA_NATIVE_VOICE_SETUP_INSPECTION_JSON='
+          rows = [line.split(marker, 1)[1] for line in log.splitlines() if marker in line]
+          report = None
+          if len(rows) == 1 and len(rows[0]) <= 20000:
+              try:
+                  candidate = json.loads(rows[0])
+                  if isinstance(candidate, dict) and candidate.get('schemaVersion') == 1:
+                      report = candidate
+              except ValueError:
+                  pass
+          exit_file = root / 'inspection-exit.txt'
+          invocation_ok = exit_file.exists() and exit_file.read_text().strip() == '0' and re.search(r'^OK \(1 test\)$', log, re.M) is not None
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+              summary.write('### Separate TTS setup UI observation\n\n')
+              summary.write('Navigation only in an isolated offline guest. Opening settings can trigger automatic OS/engine checks and state writes. No language/install/login/terms/engine-selection action is performed; no playback/FGS/video evidence is created. Bounded accessibility snapshots are in this job log.\n\n')
+              summary.write('```json\n' + json.dumps(report, ensure_ascii=True, indent=2) + '\n```\n' if report else 'No valid inspection report received.\n')
+          forbidden = ['languageInstallActionPerformed', 'loginActionPerformed', 'termsAcceptanceActionPerformed', 'engineSelectionActionPerformed', 'speakerPlaybackPerformed', 'foregroundServiceVerified', 'demonstrationVideoCreated', 'productionReleaseApproved', 'accountRequirementVerified']
+          if not (report and invocation_ok and report.get('status') == 'OBSERVATION_COMPLETE'
+                  and report.get('inspectionComplete') is True and report.get('guestInternetUnavailableAfterInspection') is True
+                  and report.get('ttsSettingsGoogleContextObserved') is True and report.get('googleEngineSettingsObserved') is True
+                  and report.get('googleVoiceDataScreenObserved') is True and report.get('voiceDataNavigationClicked') is True
+                  and report.get('gearNavigationViewId') == 'com.android.settings:id/settings_button'
+                  and report.get('snapshotCount') == 3 and report.get('navigationClickCount') == 2
+                  and all(report.get(key) is False for key in forbidden)):
+              raise SystemExit('TTS setup inspection unavailable/error: review the separate actual UI log.')
+          PY
       - name: Report actual prerequisites and require readiness
         if: always()
         run: |
