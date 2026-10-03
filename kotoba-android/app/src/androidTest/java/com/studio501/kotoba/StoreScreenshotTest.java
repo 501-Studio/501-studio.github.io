@@ -221,15 +221,51 @@ public final class StoreScreenshotTest {
         assertTrue("WebView visual state did not reach the display", drawn.await(10, TimeUnit.SECONDS));
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
+    private static String searchResultFrame(String selector) {
+        return "(()=>{const button=document.querySelector(" + JSONObject.quote(selector) + ");"
+                + "const card=button?.closest('.wordbook-item');if(!card)return null;"
+                + "const v=visualViewport,viewport={left:v?.offsetLeft||0,top:v?.offsetTop||0,"
+                + "right:(v?.offsetLeft||0)+(v?.width||innerWidth),bottom:(v?.offsetTop||0)+(v?.height||innerHeight)};"
+                + "const rect=e=>{const r=e.getBoundingClientRect();return {left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height};};"
+                + "const nav=document.querySelector('.bottom-nav'),bar=document.querySelector('.appbar');"
+                + "const content={...viewport};if(nav&&nav.getBoundingClientRect().height>0)content.bottom=Math.min(content.bottom,rect(nav).top);"
+                + "if(bar&&['sticky','fixed'].includes(getComputedStyle(bar).position))content.top=Math.max(content.top,rect(bar).bottom);"
+                + "const describe=e=>{if(!e)return null;const bounds=rect(e),style=getComputedStyle(e);"
+                + "return {text:e.textContent.trim(),bounds,visible:bounds.width>0&&bounds.height>0&&style.visibility!=='hidden'"
+                + "&&Number(style.opacity)>0&&bounds.left>=content.left&&bounds.right<=content.right"
+                + "&&bounds.top>=content.top&&bounds.bottom<=content.bottom};};"
+                + "return {coordinateSpace:'CSS pixels in the WebView visual viewport',scroll:{x:scrollX,y:scrollY},"
+                + "viewport,contentViewport:content,bottomNavigation:nav?rect(nav):null,card:describe(card),"
+                + "headword:describe(button.querySelector('.japanese strong')),reading:describe(button.querySelector('.reading')),"
+                + "meaning:describe(button.querySelector('.word-detail p')),search:describe(document.querySelector('.word-search')),"
+                + "filters:describe(document.querySelector('.filter-chips')),resultCount:describe(document.querySelector('#word-results-status'))};})()";
+    }
+    private void frameSearchResult(ActivityScenario<MainActivity> scenario, String selector) throws Exception {
+        until(scenario, "document.fonts.status==='loaded' && !!document.querySelector(" + JSONObject.quote(selector) + ")");
+        assertEquals("Search result could not be framed by scrolling", "true", js(scenario,
+                "(()=>{const f=" + searchResultFrame(selector) + ";if(!f)return false;"
+                + "const top=Math.min(f.card.bounds.top,f.search.bounds.top,f.filters.bounds.top,f.resultCount.bounds.top),"
+                + "bottom=Math.max(f.card.bounds.bottom,f.search.bounds.bottom,f.filters.bounds.bottom,f.resultCount.bounds.bottom);"
+                + "const down=bottom-f.contentViewport.bottom+12,up=top-f.contentViewport.top-12;"
+                + "if(down>0)scrollBy({top:down,left:0,behavior:'instant'});else if(up<0)scrollBy({top:up,left:0,behavior:'instant'});return true;})()"));
+    }
     private void capture(ActivityScenario<MainActivity> scenario, String fileName, String label,
                          String predicate, String navigation) throws Exception {
+        capture(scenario, fileName, label, predicate, navigation, null);
+    }
+    private void capture(ActivityScenario<MainActivity> scenario, String fileName, String label,
+                         String predicate, String navigation, String searchResultSelector) throws Exception {
         long waitingAt = SystemClock.elapsedRealtime();
-        js(scenario, "document.activeElement?.blur();scrollTo(0,0);true");
+        js(scenario, "document.activeElement?.blur();true");
+        if (searchResultSelector == null) js(scenario, "scrollTo(0,0);true");
+        else frameSearchResult(scenario, searchResultSelector);
         stable(scenario, predicate); drawn(scenario); assertNoAdSdk(scenario);
         assertEquals("Capture semantic state changed", "true", js(scenario, "(" + CLEAN + ") && (" + predicate + ")"));
         String description = (String) new JSONTokener(js(scenario,
                 "JSON.stringify({route:location.hash||'#home',heading:document.querySelector('#main h1')?.textContent,"
-                + "viewport:{width:innerWidth,height:innerHeight},search:document.querySelector('#search')?.value||null,"
+                + "viewport:{width:innerWidth,height:innerHeight},scroll:{x:scrollX,y:scrollY},"
+                + "searchResultFrame:" + (searchResultSelector == null ? "null" : searchResultFrame(searchResultSelector)) + ","
+                + "search:document.querySelector('#search')?.value||null,"
                 + "lesson:document.querySelector('.session-label')?.textContent||null,"
                 + "writing:document.querySelector('#practice-canvas')?{status:document.querySelector('#practice-status')?.textContent,"
                 + "word:document.querySelector('#practice-word-progress')?.textContent,"
@@ -314,11 +350,17 @@ public final class StoreScreenshotTest {
 
             click(scenario, ".bottom-nav a[href=\"#words\"]"); until(scenario, "!!document.querySelector('#search')");
             js(scenario, "document.querySelector('#search').value='学校';document.querySelector('#search').dispatchEvent(new Event('input',{bubbles:true}));true");
+            String schoolResult = "#word-results .word-button[data-id=\"" + SCHOOL + "\"]";
+            String schoolVisible = "(()=>{const f=" + searchResultFrame(schoolResult) + ";return !!f && f.scroll.y>0"
+                    + " && f.headword?.text==='学校' && f.headword.visible && f.reading?.text==='がっこう' && f.reading.visible"
+                    + " && f.meaning?.text.includes('학교') && f.meaning.visible && f.card.visible"
+                    + " && f.search.visible && f.filters.visible && f.resultCount.visible;})()";
             capture(scenario, "02-vocabulary-search.jpg", "vocabulary-search",
                     "location.hash==='#words' && document.querySelector('#search').value==='学校'"
                     + " && !!document.querySelector('#word-results .word-button[data-id=\"" + SCHOOL + "\"]')"
-                    + " && document.querySelector('#word-results-status').textContent.includes('검색 결과')",
-                    "Use bottom vocabulary tab; enter 学校 in the real search input");
+                    + " && document.querySelector('#word-results-status').textContent.includes('검색 결과') && " + schoolVisible,
+                    "Use bottom vocabulary tab; enter 学校 in the real search input; scroll the live app so 学校, がっこう, 학교 and its full card are visible above bottom navigation, retaining search/filter/result-count context",
+                    schoolResult);
 
             click(scenario, ".bottom-nav a[href=\"#home\"]"); until(scenario, "!!document.querySelector('.home-dashboard')");
             click(scenario, "[data-action=\"start-course\"][data-id=\"N5-chapter-1\"]"); int unknown = 0;
