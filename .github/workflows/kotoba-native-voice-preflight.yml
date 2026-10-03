@@ -1,0 +1,136 @@
+name: Kotoba native voice prerequisites (no playback evidence)
+on:
+  push:
+    branches: [feat/jlpt-kotoba-play-release]
+    paths:
+      - .github/kotoba-native-voice/NativeVoicePreflightTest.java
+      - .github/workflows/kotoba-native-voice-preflight.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: kotoba-native-voice-preflight
+  cancel-in-progress: true
+jobs:
+  native-voice:
+    if: github.repository == '501-Studio/501-studio.github.io' && github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Require the public repository before any build
+        run: |
+          python3 - <<'PY'
+          import json, os
+          with open(os.environ['GITHUB_EVENT_PATH'], encoding='utf-8') as source:
+              repository = json.load(source).get('repository', {})
+          assert repository.get('full_name') == '501-Studio/501-studio.github.io'
+          assert repository.get('private') is False, 'Standard public-repository runner only'
+          PY
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Synchronize the existing bundled web assets
+        working-directory: jlpt-quest
+        run: npm run android:sync
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: false
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+          cache-disabled: true
+      - name: Add the opt-in test only to this temporary runner checkout
+        run: |
+          mkdir -p kotoba-android/app/src/androidTest/java/com/studio501/kotoba
+          cp .github/kotoba-native-voice/NativeVoicePreflightTest.java kotoba-android/app/src/androidTest/java/com/studio501/kotoba/
+      - name: Build only debug app and instrumentation APKs
+        working-directory: kotoba-android
+        run: gradle --no-daemon assembleDebug assembleDebugAndroidTest
+      - name: Enable acceleration on the standard Linux runner
+        run: |
+          test -c /dev/kvm
+          sudo chown "$(id -u):$(id -g)" /dev/kvm
+          sudo chmod 0600 /dev/kvm
+      - name: Prepare the isolated guest diagnostic
+        run: |
+          mkdir -p /tmp/kotoba-native-voice
+          cat > /tmp/kotoba-native-voice/probe.sh <<'PROBE'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          cleanup() {
+            adb shell am force-stop com.studio501.kotoba.debug || true
+            adb shell pm clear com.studio501.kotoba.debug || true
+          }
+          trap cleanup EXIT
+          adb install -r app/build/outputs/apk/debug/app-debug.apk
+          adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+          adb shell pm clear com.studio501.kotoba.debug | tr -d '\r' | grep -qx Success
+          # No account, engine download, app activity, real ad or purchase is initiated.
+          adb shell svc wifi disable
+          adb shell svc data disable
+          set +e
+          adb shell am instrument -w -e class com.studio501.kotoba.NativeVoicePreflightTest -e nativeVoicePreflight true -e ciIsolatedEmulator true com.studio501.kotoba.debug.test/androidx.test.runner.AndroidJUnitRunner | tr -d '\r' | tee /tmp/kotoba-native-voice/instrumentation.txt
+          INSTRUMENT_EXIT=${PIPESTATUS[0]}
+          set -e
+          printf '%s\n' "$INSTRUMENT_EXIT" > /tmp/kotoba-native-voice/instrumentation-exit.txt
+          test "$INSTRUMENT_EXIT" -eq 0
+          grep -Eq '^OK \(1 test\)$' /tmp/kotoba-native-voice/instrumentation.txt
+          PROBE
+          chmod 0700 /tmp/kotoba-native-voice/probe.sh
+      - name: Probe the real default TTS on a clean API 36 guest
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          working-directory: kotoba-android
+          disable-animations: true
+          script: /tmp/kotoba-native-voice/probe.sh
+      - name: Report actual prerequisites and require readiness
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re
+          root = pathlib.Path('/tmp/kotoba-native-voice')
+          log = (root / 'instrumentation.txt').read_text(encoding='utf-8', errors='replace') if (root / 'instrumentation.txt').exists() else ''
+          marker = 'KOTOBA_NATIVE_VOICE_PREFLIGHT_JSON='
+          rows = [line.split(marker, 1)[1] for line in log.splitlines() if marker in line]
+          report = None
+          if len(rows) == 1 and len(rows[0]) <= 20000:
+              try:
+                  candidate = json.loads(rows[0])
+                  if isinstance(candidate, dict) and candidate.get('schemaVersion') == 1:
+                      report = candidate
+              except ValueError:
+                  pass
+          exit_file = root / 'instrumentation-exit.txt'
+          invocation_ok = exit_file.exists() and exit_file.read_text().strip() == '0' and re.search(r'^OK \(1 test\)$', log, re.M) is not None
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+              summary.write('### Real native TTS prerequisites\n\n')
+              summary.write('This diagnostic does not prove speaker playback, physical audibility, foreground service operation, or a Play demonstration video. No release approval is granted.\n\n')
+              if report is None:
+                  summary.write('**PROBE_ERROR**: no valid bounded JSON diagnostic was received.\n')
+              else:
+                  fields = ['status', 'inventoryComplete', 'playbackReady', 'initCallbackReceived', 'initStatus', 'configuredDefaultEngine', 'engineCount', 'voiceCount', 'offlineJapaneseVoiceCount', 'offlineKoreanVoiceCount', 'guestInternetUnavailable', 'selectedJapaneseVoice', 'synthesisAttempted', 'synthesisCallback', 'japanesePcm', 'reason']
+                  summary.write('```json\n' + json.dumps({key: report[key] for key in fields if key in report}, ensure_ascii=True, indent=2) + '\n```\n')
+          forbidden_claims = ['speakerPlaybackPerformed', 'physicalAudibilityVerified', 'foregroundServiceVerified', 'demonstrationVideoCreated', 'productionReleaseApproved']
+          pcm = report.get('japanesePcm', {}) if report else {}
+          ready = bool(report and invocation_ok and report.get('status') == 'READY_FOR_FURTHER_RUNTIME_QA'
+                       and report.get('inventoryComplete') is True and report.get('playbackReady') is True
+                       and report.get('guestInternetUnavailable') is True and report.get('synthesisAttempted') is True
+                       and report.get('synthesisCallback') == 'DONE' and report.get('offlineJapaneseVoiceCount', 0) > 0
+                       and report.get('offlineKoreanVoiceCount', 0) > 0 and pcm.get('pcmDataNonempty') is True
+                       and pcm.get('signalNonSilent') is True and all(report.get(key) is False for key in forbidden_claims))
+          if not ready:
+              raise SystemExit('NOT_READY / PROBE_ERROR: see the actual inventory above; native playback QA remains pending.')
+          print('Offline voice prerequisites ready for further runtime QA. Speaker playback / FGS / video remain unverified.')
+          PY
