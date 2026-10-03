@@ -1,0 +1,138 @@
+name: Kotoba Google voice language setup inspection (no install action)
+on:
+  push:
+    branches: [feat/jlpt-kotoba-play-release]
+    paths:
+      - .github/kotoba-native-voice/NativeVoiceLanguageInspectionTest.java
+      - .github/workflows/kotoba-native-voice-language-inspection.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: kotoba-native-voice-language-inspection
+  cancel-in-progress: true
+jobs:
+  language-inspection:
+    if: github.repository == '501-Studio/501-studio.github.io' && github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Require the public repository before any build
+        run: |
+          python3 - <<'PY'
+          import json, os
+          with open(os.environ['GITHUB_EVENT_PATH'], encoding='utf-8') as source:
+              repository = json.load(source).get('repository', {})
+          assert repository.get('full_name') == '501-Studio/501-studio.github.io'
+          assert repository.get('private') is False, 'Standard public-repository runner only'
+          PY
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Synchronize the existing bundled web assets
+        working-directory: jlpt-quest
+        run: npm run android:sync
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: false
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+          cache-disabled: true
+      - name: Add the opt-in observer only to this temporary runner checkout
+        run: |
+          mkdir -p kotoba-android/app/src/androidTest/java/com/studio501/kotoba
+          cp .github/kotoba-native-voice/NativeVoiceLanguageInspectionTest.java kotoba-android/app/src/androidTest/java/com/studio501/kotoba/
+      - name: Build only debug app and instrumentation APKs
+        working-directory: kotoba-android
+        run: gradle --no-daemon assembleDebug assembleDebugAndroidTest
+      - name: Enable acceleration on the standard Linux runner
+        run: |
+          test -c /dev/kvm
+          sudo chown "$(id -u):$(id -g)" /dev/kvm
+          sudo chmod 0600 /dev/kvm
+      - name: Prepare the disposable guest observation
+        run: |
+          mkdir -p /tmp/kotoba-native-voice-language
+          cat > /tmp/kotoba-native-voice-language/probe.sh <<'PROBE'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          cleanup() {
+            adb shell am force-stop com.studio501.kotoba.debug || true
+            adb shell pm clear com.studio501.kotoba.debug || true
+          }
+          trap cleanup EXIT
+          adb install -r app/build/outputs/apk/debug/app-debug.apk
+          adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+          adb shell pm clear com.studio501.kotoba.debug | tr -d '\r' | grep -qx Success
+          # Online preparation is separate from the unchanged offline readiness workflow.
+          # Only Settings/Google menus, bounded language-list scrolling and language-detail navigation are allowed.
+          # No explicit Download/sample/login/terms/engine/radio/switch action or account is used.
+          # Opening online system screens can trigger automatic Google/OS checks and state writes.
+          adb shell svc wifi enable
+          adb shell svc data enable
+          set +e
+          adb shell am instrument -w -e class com.studio501.kotoba.NativeVoiceLanguageInspectionTest -e nativeVoiceLanguageInspection true -e ciIsolatedEmulator true com.studio501.kotoba.debug.test/androidx.test.runner.AndroidJUnitRunner | tr -d '\r' | tee /tmp/kotoba-native-voice-language/instrumentation.txt
+          INSTRUMENT_PIPE_STATUSES=("${PIPESTATUS[@]}")
+          set -e
+          printf '%s\n' "${INSTRUMENT_PIPE_STATUSES[0]}" > /tmp/kotoba-native-voice-language/instrumentation-exit.txt
+          printf '%s\n' "${INSTRUMENT_PIPE_STATUSES[@]}" > /tmp/kotoba-native-voice-language/instrumentation-pipeline-exit.txt
+          for PIPE_STATUS in "${INSTRUMENT_PIPE_STATUSES[@]}"; do test "$PIPE_STATUS" -eq 0; done
+          grep -Eq '^OK \(1 test\)$' /tmp/kotoba-native-voice-language/instrumentation.txt
+          PROBE
+          chmod 0700 /tmp/kotoba-native-voice-language/probe.sh
+      - name: Observe Japanese and Korean language setup on API 36
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          working-directory: kotoba-android
+          disable-animations: true
+          script: /tmp/kotoba-native-voice-language/probe.sh
+      - name: Report the actual language detail screens
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re
+          root = pathlib.Path('/tmp/kotoba-native-voice-language')
+          log_file = root / 'instrumentation.txt'
+          log = log_file.read_text(encoding='utf-8', errors='replace') if log_file.exists() else ''
+          marker = 'KOTOBA_NATIVE_VOICE_LANGUAGE_INSPECTION_JSON='
+          rows = [line.split(marker, 1)[1] for line in log.splitlines() if marker in line]
+          report = None
+          if len(rows) == 1 and len(rows[0]) <= 20000:
+              try:
+                  candidate = json.loads(rows[0])
+                  if isinstance(candidate, dict) and candidate.get('schemaVersion') == 1:
+                      report = candidate
+              except ValueError:
+                  pass
+          exit_file = root / 'instrumentation-exit.txt'
+          pipeline_file = root / 'instrumentation-pipeline-exit.txt'
+          pipeline_ok = pipeline_file.exists() and pipeline_file.read_text().splitlines() == ['0', '0', '0']
+          invocation_ok = pipeline_ok and exit_file.exists() and exit_file.read_text().strip() == '0' and re.search(r'^OK \(1 test\)$', log, re.M) is not None
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+              summary.write('### Google device voice language setup observation\n\n')
+              summary.write('Online preparation in a disposable debug guest. Language-detail navigation only; no explicit download, sample, login, terms or engine-selection action. Opening online system screens can trigger automatic Google/OS checks and state writes. The separate offline prerequisite gate remains unchanged. This is not installed-voice, playback, FGS, video, billing or release evidence. Bounded actual UI snapshots are in this job log; no cache or artifact upload.\n\n')
+              summary.write('```json\n' + json.dumps(report, ensure_ascii=True, indent=2) + '\n```\n' if report else 'No valid language inspection report received.\n')
+          forbidden = ['languageInstallActionPerformed', 'voiceSampleActionPerformed', 'loginActionPerformed', 'termsAcceptanceActionPerformed', 'engineSelectionActionPerformed', 'speakerPlaybackPerformed', 'foregroundServiceVerified', 'demonstrationVideoCreated', 'productionReleaseApproved', 'accountRequirementVerified']
+          observed = bool(report and invocation_ok and report.get('status') == 'LANGUAGE_SCREENS_OBSERVED'
+                          and report.get('inspectionComplete') is True and report.get('japaneseDetailObserved') is True
+                          and report.get('koreanDetailObserved') is True and report.get('languageSelectionClickCount') == 2
+                          and isinstance(report.get('japaneseSelectedLabel'), str) and report['japaneseSelectedLabel'].startswith('Japanese')
+                          and isinstance(report.get('koreanSelectedLabel'), str) and report['koreanSelectedLabel'].startswith('Korean')
+                          and all(report.get(key) is False for key in forbidden))
+          if not observed:
+              raise SystemExit('Language detail observation incomplete: inspect the bounded actual UI log before preparing voice data.')
+          print('Language detail screens observed. Voice installation and offline playback remain unverified.')
+          PY
