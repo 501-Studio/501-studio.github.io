@@ -20,7 +20,7 @@ npm run build
 database or cloud deployment. No cloud credentials are needed by these checks.
 
 The test runner executes inside workerd and uses actual SQLite Durable Object storage.
-The 64 tests cover Google RSA identity verification, scope-specific signed OAuth assertions,
+The 69 tests cover Google RSA identity verification, scope-specific signed OAuth assertions,
 Fernet compatibility with Python, canonical request/record hashes, strict raw integer fields,
 immutable purchase ownership, acknowledgement requery, linked-token conflicts, refunds,
 notification atomicity/deduplication, account deletion/redaction, pagination recovery,
@@ -66,18 +66,45 @@ Use server secret bindings for:
 - `ACCOUNT_HMAC_KEY`: persistent UTF-8 secret of at least 32 bytes.
 
 The remaining configuration uses the same OAuth audience, Play signing certificate digest,
-distinct Pub/Sub/operator audience and service-account email, full Pub/Sub subscription,
-package and exact deletion origin as the Python server. Do not put secrets in Git,
+operator audience and service-account email, package and exact deletion origin as the Python
+server. RTDN mode additionally requires its distinct Pub/Sub audience, email and full
+subscription. Do not put secrets in Git,
 Wrangler variables, browser storage or the APK.
 
-The defaults are `RECEIPT_VERIFICATION_ENABLED=false`, `ACCOUNT_DELETION_ENABLED=false`
-and `RECONCILIATION_ENABLED=false`. No cron trigger is installed. Add the free hourly
-reconciliation trigger only after live Google permissions and cost conditions are verified.
-The configured code requires the authenticated notification/operator configuration; it
-does not silently remove RTDN to bypass an unresolved Pub/Sub billing condition.
+The proposed free configuration explicitly selects `BILLING_EVENT_MODE=poll`; it does
+not use Pub/Sub or require its configuration. Google documents a billing account as a
+[Pub/Sub prerequisite](https://docs.cloud.google.com/pubsub/docs/publish-receive-messages-console),
+so that service must not be activated under the no-billing-link policy.
+
+The defaults are `RECEIPT_VERIFICATION_ENABLED=false`, `ACCOUNT_DELETION_ENABLED=false`,
+`RECONCILIATION_ENABLED=false` and `POLLING_OPERATIONS_VERIFIED=false`. No cron trigger
+is installed. Poll mode becomes configured only after both reconciliation and verified
+operations are enabled. Add the free hourly reconciliation trigger and verify actual
+Google calls, schedule execution and quota behavior before setting these flags. Purchase
+verification always queries Google and refuses new leases when the last successful voided
+scan is more than two hours old or in the future. Existing leases keep their original
+maximum one-hour TTL; this does not promise one-hour refund detection. Indexing and polling
+can add delay, and an outage must not extend a lease or permit indefinite access.
+
+Polling does not discover an unseen purchase token or an app-closed pending purchase that
+later completes. The Android app queries purchases when resumed. A completed purchase
+unacknowledged for three days can auto-refund; this is not unattended fulfillment equivalent
+to RTDN. See [Google integration guidance](https://developer.android.com/google/play/billing/integrate).
+
+The optional chargeback/refund-suggestion workflow needs an RTDN-provided pending token.
+Poll mode rejects `/rtdn` and refund-review endpoints, and operator status reports discovery
+as unavailable rather than zero pending reviews. Ordinary Play Console refunds are not a
+replacement for that optional API. See [Review Refund requirements](https://developers.google.com/android-publisher/api-ref/rest/v3/orders/reviewrefund)
+and [optional feature status](https://support.google.com/googleplay/android-developer/answer/17068375).
+
+Explicit `rtdn` mode preserves the previous authenticated notification contract and 24-hour
+voided-sync freshness limit, but is not the selected free deployment. The database pins its
+event mode as well as identity/encryption keys. Switching modes is refused; importing
+unclassified existing purchase/notification state into poll mode is also refused. A future
+reviewed migration must preserve unresolved financial tasks and deletion markers.
 
 Before production, verify live OAuth, Play Integrity, API permissions, purchase/restore/
-cancel/refund flows from a Play-installed app, RTDN delivery or a fully reviewed replacement,
+cancel/refund flows from a Play-installed app, hourly polling and its explicit limitations,
 Free account/quota and ingress limits, encrypted backup/restore with deletion markers,
 retention/privacy disclosures and actual Android UX. The source port and dry run do not
 complete these release gates. No existing production database has been imported or migrated.

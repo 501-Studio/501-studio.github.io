@@ -69,11 +69,12 @@ export class BillingService {
   constructor(readonly store: Store, readonly play: PlayApi, readonly clock: () => number = () => Date.now() / 1000) {}
   private now(): number { return Math.floor(this.clock()); }
 
-  async synchronized(): Promise<boolean> {
+  async synchronized(maxAgeSeconds = 86400): Promise<boolean> {
+    if (!Number.isFinite(maxAgeSeconds) || !Number.isSafeInteger(maxAgeSeconds) || maxAgeSeconds < 0) return false;
     return this.store.transaction(async db => {
       const value = this.store.metadata(db, 'voided_sync_at');
       const age = value ? this.now() - metadataInteger(value) : -1;
-      return Boolean(value) && age >= 0 && age <= 86400;
+      return Boolean(value) && age >= 0 && age <= maxAgeSeconds;
     });
   }
   refresh(product: string, token: string, owner: string | null): Promise<Decision> {

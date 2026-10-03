@@ -8,6 +8,8 @@
   "observability": { "enabled": false },
   "vars": {
     "PLAY_PACKAGE": "com.studio501.kotoba",
+    "BILLING_EVENT_MODE": "poll",
+    "POLLING_OPERATIONS_VERIFIED": "false",
     "RECEIPT_VERIFICATION_ENABLED": "false",
     "ACCOUNT_DELETION_ENABLED": "false",
     "RECONCILIATION_ENABLED": "false"

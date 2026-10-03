@@ -171,6 +171,44 @@ describe('BillingService on actual SQLite Durable Object storage', () => {
     expect(await service.synchronized()).toBe(false);
   }));
 
+  it('expires hourly-poll freshness at 7201 seconds while preserving the default 24-hour contract', async () => with_service(async (_service, store, play) => {
+    let now = NOW;
+    const timed = new BillingService(store, play, () => now);
+    await store.transaction(async db => store.set_metadata(db, 'voided_sync_at', NOW - 7200));
+    expect(await timed.synchronized(7200)).toBe(true);
+    now += 1;
+    expect(await timed.synchronized(7200)).toBe(false);
+    expect(await timed.synchronized()).toBe(true);
+    await store.transaction(async db => store.set_metadata(db, 'voided_sync_at', now - 86400));
+    expect(await timed.synchronized()).toBe(true);
+    now += 1;
+    expect(await timed.synchronized()).toBe(false);
+    await store.transaction(async db => store.set_metadata(db, 'voided_sync_at', now));
+    expect(await timed.synchronized(0)).toBe(true);
+    now += 1;
+    expect(await timed.synchronized(0)).toBe(false);
+    await store.transaction(async db => store.set_metadata(db, 'voided_sync_at', now + 1));
+    expect(await timed.synchronized(7200)).toBe(false);
+    expect(play.lookups).toEqual([]);
+  }));
+
+  it('fails closed before accessing storage for invalid freshness limits', async () => with_service(async (service, store, play) => {
+    await store.transaction(async db => store.set_metadata(db, 'voided_sync_at', NOW));
+    const original = store.transaction.bind(store);
+    store.transaction = async () => { throw new Error('invalid limit must not access storage'); };
+    try {
+      for (const limit of [NaN, Infinity, -Infinity, -1, 0.5, Number.MAX_SAFE_INTEGER + 1,
+        '7200', null, true, {}, []]) {
+        expect(await service.synchronized(limit as number)).toBe(false);
+      }
+    } finally {
+      store.transaction = original;
+    }
+    expect(await service.synchronized(7200)).toBe(true);
+    expect(play.lookups).toEqual([]);
+    expect(play.acknowledgements).toEqual([]);
+  }));
+
   it('erases only the authenticated owner, keeps tombstones durably, and never recreates after late RTDN', async () => with_service(async (service, store, play, state) => {
     const other = 'other-owners-purchase-token';
     play.receipts[other] = product(OWNER_B, 0, 'GPA.other-account');

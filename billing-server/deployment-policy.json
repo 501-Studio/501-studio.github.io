@@ -13,8 +13,12 @@
     "customDomainPurchaseAllowed": false,
     "onFreeQuotaExceeded": "reject-or-retry-no-paid-fallback",
     "runtimePortRequired": false,
+    "billingEventMode": "poll",
+    "hourlyReconciliationRequired": true,
+    "maximumRefundSyncAgeSeconds": 7200,
+    "optionalRefundReviewDiscovery": "unavailable-without-rtdn",
     "implementationPath": "billing-worker",
-    "implementationState": "64-local-workerd-tests-passed-not-deployed",
+    "implementationState": "69-local-workerd-tests-passed-not-deployed",
     "actualFreeAccountVerified": false,
     "liveQuotaAndLoadVerified": false,
     "resourcesCreated": false,
@@ -35,7 +39,10 @@
     "billingAccountLinkAllowed": false,
     "paidResourcesAllowed": false,
     "pubSubZeroChargeAvailabilityVerified": false,
-    "note": "Google Free Tier does not alone guarantee zero charges; verify RTDN transport and cost before configuring it. Budget alerts are not a spending cap."
+    "pubSubRequiresBillingAccount": true,
+    "pubSubActivationAllowed": false,
+    "publisherAndIntegrityWithoutBillingVerified": false,
+    "note": "Pub/Sub requires billing and must not be activated. Use explicit polling with verified operations instead; ordinary budget alerts are not a spending cap."
   },
   "note": "This is an operator decision record, not an implemented deployment or runtime billing guard. Verify the actual Cloudflare account is Free before resource creation."
 }

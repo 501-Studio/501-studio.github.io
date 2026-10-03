@@ -44,4 +44,6 @@ export interface Env {
   ACCOUNT_DELETION_ENABLED?: string;
   ACCOUNT_DELETION_WEB_ORIGIN?: string;
   RECONCILIATION_ENABLED?: string;
+  BILLING_EVENT_MODE?: string;
+  POLLING_OPERATIONS_VERIFIED?: string;
 }

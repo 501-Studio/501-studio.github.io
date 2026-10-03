@@ -7,20 +7,32 @@ import { BillingService, valid_token } from './service';
 import { base64url_encode } from './crypto';
 import { parse_json_integer_fields } from './google_json';
 
+export function event_mode(env: Env): 'poll' | 'rtdn' | null {
+  return env.BILLING_EVENT_MODE === 'poll' || env.BILLING_EVENT_MODE === 'rtdn' ? env.BILLING_EVENT_MODE : null;
+}
+
+function refund_sync_max_age(env: Env): number {
+  return event_mode(env) === 'poll' ? 7200 : 86400;
+}
+
 export function configured(env: Env): boolean {
   const keys: (keyof Env)[] = ['ENTITLEMENT_PRIVATE_KEY_PEM', 'GOOGLE_SERVICE_ACCOUNT_JSON',
     'TOKEN_ENCRYPTION_KEY', 'ACCOUNT_HMAC_KEY', 'GOOGLE_OAUTH_CLIENT_ID', 'PLAY_SIGNING_CERT_SHA256',
-    'PUBSUB_AUDIENCE', 'PUBSUB_SERVICE_ACCOUNT_EMAIL', 'PUBSUB_SUBSCRIPTION', 'OPS_AUDIENCE', 'OPS_SERVICE_ACCOUNT_EMAIL'];
-  return env.RECEIPT_VERIFICATION_ENABLED === 'true'
+    'OPS_AUDIENCE', 'OPS_SERVICE_ACCOUNT_EMAIL'];
+  const service_email = (value: string | undefined) => typeof value === 'string'
+    && /^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+\.iam\.gserviceaccount\.com(?![\s\S])/.test(value);
+  const mode = event_mode(env);
+  const base = env.RECEIPT_VERIFICATION_ENABLED === 'true'
     && keys.every(key => typeof env[key] === 'string' && (env[key] as string).length > 0)
     && new TextEncoder().encode(env.ACCOUNT_HMAC_KEY!).length >= 32
     && /^[A-Za-z0-9._-]+\.apps\.googleusercontent\.com(?![\s\S])/.test(env.GOOGLE_OAUTH_CLIENT_ID!)
-    && env.PUBSUB_AUDIENCE!.startsWith('https://') && env.OPS_AUDIENCE!.startsWith('https://')
-    && env.PUBSUB_AUDIENCE !== env.OPS_AUDIENCE
-    && env.PUBSUB_SERVICE_ACCOUNT_EMAIL !== env.OPS_SERVICE_ACCOUNT_EMAIL
-    && ['PUBSUB_SERVICE_ACCOUNT_EMAIL', 'OPS_SERVICE_ACCOUNT_EMAIL'].every(
-      key => /^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+\.iam\.gserviceaccount\.com(?![\s\S])/.test(env[key as keyof Env] as string))
+    && env.OPS_AUDIENCE!.startsWith('https://') && service_email(env.OPS_SERVICE_ACCOUNT_EMAIL)
     && env.PLAY_SIGNING_CERT_SHA256!.split(',').every(value => /^[A-Za-z0-9_-]{43}(?![\s\S])/.test(value));
+  if (!base || !mode) return false;
+  if (mode === 'poll') return env.RECONCILIATION_ENABLED === 'true' && env.POLLING_OPERATIONS_VERIFIED === 'true';
+  return Boolean(env.PUBSUB_AUDIENCE?.startsWith('https://') && service_email(env.PUBSUB_SERVICE_ACCOUNT_EMAIL)
+    && env.PUBSUB_SUBSCRIPTION && env.PUBSUB_AUDIENCE !== env.OPS_AUDIENCE
+    && env.PUBSUB_SERVICE_ACCOUNT_EMAIL !== env.OPS_SERVICE_ACCOUNT_EMAIL);
 }
 
 export function json(value: unknown, status = 200): Response {
@@ -113,9 +125,10 @@ export function create_router(env: Env, service: BillingService | undefined, rea
       if (advertised && (!/^\d+(?![\s\S])/.test(advertised) || Number(advertised) > 49152)) throw new BillingError('request_too_large', 413);
       if (path === '/health' && request.method === 'GET') {
         let synchronized = false;
-        try { synchronized = !!ready && !!service && await service.synchronized(); } catch { /* liveness survives an outage */ }
+        try { synchronized = !!ready && !!service && await service.synchronized(refund_sync_max_age(env)); } catch { /* liveness survives an outage */ }
         return json({ service: 'kotoba-verifier', configured: ready, ready: synchronized,
-          live_google_credentials_verified: false });
+          live_google_credentials_verified: false, billing_event_mode: event_mode(env),
+          optional_refund_review_discovery: event_mode(env) === 'rtdn' ? 'rtdn' : 'unavailable' });
       }
       if (path === '/account' && request.method === 'POST') {
         temporary = 'authentication_temporarily_unavailable';
@@ -169,12 +182,13 @@ export function create_router(env: Env, service: BillingService | undefined, rea
         if (typeof integrity !== 'string' || integrity.length < 16 || integrity.length > 32768) throw new BillingError('app_integrity_required', 403);
         const expected = await request_hash(packageName, product, token, installation, owner);
         check_integrity(await value.play.decode_integrity(integrity), packageName, expected, env.PLAY_SIGNING_CERT_SHA256!.split(','));
-        if (!await value.synchronized()) throw new BillingError('refund_reconciliation_required', 503);
+        if (!await value.synchronized(refund_sync_max_age(env))) throw new BillingError('refund_reconciliation_required', 503);
         const lease = await value.issue_lease(product, token, owner, result => sign(
           claims(packageName, installation, product, result, Math.floor(Date.now() / 1000), { account: owner }), env.ENTITLEMENT_PRIVATE_KEY_PEM!));
         return json({ lease });
       }
       if (path === '/rtdn' && request.method === 'POST') {
+        if (event_mode(env) !== 'rtdn') throw new BillingError('realtime_notifications_disabled', 503);
         temporary = 'notification_temporarily_unavailable';
         const value = require_configuration();
         await authenticate_service(request, 'PUBSUB');
@@ -191,13 +205,16 @@ export function create_router(env: Env, service: BillingService | undefined, rea
         const value = require_configuration();
         await authenticate_service(request, 'OPS');
         return json(await value.store.transaction(async db => ({
-          refundReviewsNeedingOperator: db.one<{ count: number }>(`SELECT COUNT(*) AS count FROM notifications n
+          billingEventMode: event_mode(env),
+          refundReviewDiscovery: event_mode(env) === 'rtdn' ? 'rtdn' : 'unavailable_without_rtdn',
+          refundReviewsNeedingOperator: event_mode(env) !== 'rtdn' ? null : db.one<{ count: number }>(`SELECT COUNT(*) AS count FROM notifications n
             LEFT JOIN refund_review_records r USING(subscription,message_id)
             WHERE n.subscription=? AND n.status='operator_refund_review_required' AND r.message_id IS NULL`, env.PUBSUB_SUBSCRIPTION!)?.count ?? 0,
           voidedSyncAt: db.metadata(db, 'voided_sync_at'),
         })));
       }
       if (path === '/tasks/refund-reviews' && request.method === 'GET') {
+        if (event_mode(env) !== 'rtdn') throw new BillingError('optional_refund_review_unavailable', 503);
         temporary = 'review_temporarily_unavailable';
         const value = require_configuration();
         await authenticate_service(request, 'OPS');
@@ -208,6 +225,7 @@ export function create_router(env: Env, service: BillingService | undefined, rea
       }
       const match = /^\/tasks\/refund-reviews\/([A-Za-z0-9_-]{1,128})(\/record)?(?![\s\S])/.exec(path);
       if (match && ((request.method === 'GET' && !match[2]) || (request.method === 'POST' && match[2]))) {
+        if (event_mode(env) !== 'rtdn') throw new BillingError('optional_refund_review_unavailable', 503);
         temporary = 'review_temporarily_unavailable';
         const value = require_configuration(), identity = await authenticate_service(request, 'OPS');
         return json(match[2] ? await value.record_refund_review(env.PUBSUB_SUBSCRIPTION!, match[1]!, await body_json(request), identity.email as string)

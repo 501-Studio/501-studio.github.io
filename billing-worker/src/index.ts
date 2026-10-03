@@ -28,8 +28,15 @@ export class BillingCoordinator extends DurableObject<Env> {
         await sign({ purpose: 'configuration-key-check' }, env.ENTITLEMENT_PRIVATE_KEY_PEM!);
         const store = new Store(ctx.storage, env.TOKEN_ENCRYPTION_KEY!);
         await store.transaction(async db => {
+          const previousMode = db.metadata(db, 'billing_event_mode');
+          if (!previousMode && env.BILLING_EVENT_MODE === 'poll'
+              && (Number(db.one('SELECT COUNT(*) AS count FROM purchases')?.count ?? 0) > 0
+                || Number(db.one('SELECT COUNT(*) AS count FROM notifications')?.count ?? 0) > 0)) {
+            throw new Error('existing_billing_state_requires_mode_migration');
+          }
           for (const [key, value] of [
             ['play_package', env.PLAY_PACKAGE],
+            ['billing_event_mode', env.BILLING_EVENT_MODE],
             ['account_key_fingerprint', await sha256_hex(env.ACCOUNT_HMAC_KEY!)],
             ['encryption_key_fingerprint', await sha256_hex(env.TOKEN_ENCRYPTION_KEY!)],
           ]) {

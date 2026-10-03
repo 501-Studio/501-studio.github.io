@@ -2,12 +2,13 @@ import { env, exports } from 'cloudflare:workers';
 import { evictDurableObject, runInDurableObject } from 'cloudflare:test';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { BillingCoordinator } from '../src/index';
-import { create_router } from '../src/app';
+import { configured, create_router } from '../src/app';
 import { Store } from '../src/persistence';
 import { BillingService } from '../src/service';
 import { account_id, request_hash } from '../src/security';
 import { challenge, COOKIE } from '../src/deletion';
 import { LIFE } from '../src/entitlements';
+import { base64url_decode } from '../src/crypto';
 import type { Env, JsonObject } from '../src/types';
 import { FakePlay, KEY, PACKAGE, SUBSCRIPTION, TOKEN, product } from './fixtures';
 
@@ -24,6 +25,7 @@ const config = (): Env => ({ ...(env as unknown as Env), PLAY_PACKAGE: PACKAGE,
   GOOGLE_OAUTH_CLIENT_ID: 'test.apps.googleusercontent.com', ACCOUNT_HMAC_KEY: secret,
   ENTITLEMENT_PRIVATE_KEY_PEM: privatePem, PLAY_SIGNING_CERT_SHA256: 'A'.repeat(43),
   RECEIPT_VERIFICATION_ENABLED: 'false', ACCOUNT_DELETION_ENABLED: 'true',
+  BILLING_EVENT_MODE: 'rtdn',
   ACCOUNT_DELETION_WEB_ORIGIN: origin, PUBSUB_SUBSCRIPTION: SUBSCRIPTION,
   OPS_AUDIENCE: origin + '/ops', OPS_SERVICE_ACCOUNT_EMAIL: 'operator@kotoba.iam.gserviceaccount.com' });
 
@@ -49,6 +51,78 @@ async function setup(state: DurableObjectState, nonce = '') {
 }
 
 describe('HTTP contract and actual Durable Object request serialization', () => {
+  it('requires an explicit operationally verified polling mode without Pub/Sub credentials', () => {
+    const value: Env = { ...config(), RECEIPT_VERIFICATION_ENABLED: 'true',
+      BILLING_EVENT_MODE: 'poll', RECONCILIATION_ENABLED: 'true', POLLING_OPERATIONS_VERIFIED: 'true',
+      TOKEN_ENCRYPTION_KEY: KEY, GOOGLE_SERVICE_ACCOUNT_JSON: '{"test":"not-live"}' };
+    delete value.PUBSUB_SUBSCRIPTION;
+    expect(configured(value)).toBe(true);
+    for (const override of [{ BILLING_EVENT_MODE: 'unknown' }, { BILLING_EVENT_MODE: undefined },
+      { RECONCILIATION_ENABLED: 'false' }, { POLLING_OPERATIONS_VERIFIED: 'false' },
+      { RECEIPT_VERIFICATION_ENABLED: 'false' }, { OPS_SERVICE_ACCOUNT_EMAIL: 'wrong@example.com' }]) {
+      expect(configured({ ...value, ...override })).toBe(false);
+    }
+    expect(configured({ ...value, BILLING_EVENT_MODE: 'rtdn' })).toBe(false);
+    expect(configured({ ...value, BILLING_EVENT_MODE: 'rtdn', PUBSUB_SUBSCRIPTION: SUBSCRIPTION,
+      PUBSUB_AUDIENCE: origin + '/rtdn', PUBSUB_SERVICE_ACCOUNT_EMAIL: 'push@kotoba.iam.gserviceaccount.com' })).toBe(true);
+  });
+
+  it('disables RTDN and optional refund-review discovery in poll mode before authentication or writes', async () => {
+    const namespace = (env as unknown as Env).BILLING_STATE;
+    const stub = namespace.get(namespace.idFromName(crypto.randomUUID()));
+    await runInDurableObject<BillingCoordinator, void>(stub, async (_instance, state) => {
+      const { store, service } = await setup(state);
+      const value = { ...config(), BILLING_EVENT_MODE: 'poll' };
+      delete value.PUBSUB_SUBSCRIPTION;
+      let authentications = 0;
+      const router = create_router(value, service, true, async () => {
+        authentications++;
+        return { sub: '123456789', email: value.OPS_SERVICE_ACCOUNT_EMAIL! };
+      });
+      for (const req of [post('/rtdn', {}), new Request(origin + '/tasks/refund-reviews'),
+        new Request(origin + '/tasks/refund-reviews/notice-1'), post('/tasks/refund-reviews/notice-1/record', {})]) {
+        expect((await router(req)).status).toBe(503);
+      }
+      expect(authentications).toBe(0);
+      expect(store.one('SELECT COUNT(*) AS count FROM notifications')?.count).toBe(0);
+      const status = await router(new Request(origin + '/tasks/status', { headers: { Authorization: 'Bearer operator-test-token' } }));
+      expect(await status.json()).toMatchObject({ billingEventMode: 'poll',
+        refundReviewDiscovery: 'unavailable_without_rtdn', refundReviewsNeedingOperator: null });
+      expect(authentications).toBe(1);
+    });
+  });
+
+  it('rejects stale polling, checks every receipt afresh and denies a recorded refund', async () => {
+    const namespace = (env as unknown as Env).BILLING_STATE;
+    const stub = namespace.get(namespace.idFromName(crypto.randomUUID()));
+    await runInDurableObject<BillingCoordinator, void>(stub, async (_instance, state) => {
+      const { store, play, service, owner } = await setup(state);
+      const now = Math.floor(Date.now() / 1000);
+      const router = create_router({ ...config(), BILLING_EVENT_MODE: 'poll' }, service, true, async () => ({ sub: '123456789' }));
+      await store.transaction(async db => { store.set_metadata(db, 'voided_sync_at', now - 7201); });
+      const stale = await router(request());
+      expect(stale.status).toBe(503);
+      expect(await stale.json()).toEqual({ error: 'refund_reconciliation_required' });
+      expect(play.lookups).toHaveLength(0);
+      await service.reconcile_voids();
+      expect((await router(request())).status).toBe(200);
+      expect(play.lookups).toHaveLength(1);
+      play.fail_lookup = true;
+      const outage = await router(request());
+      expect(outage.status).toBe(503);
+      expect(await outage.json()).toEqual({ error: 'verification_temporarily_unavailable' });
+      play.fail_lookup = false;
+      await service.record_void(TOKEN, 'GPA.current-order');
+      const denied = await router(request());
+      expect(denied.status).toBe(200);
+      const lease = (await denied.json() as { lease: string }).lease;
+      const payload = JSON.parse(new TextDecoder().decode(base64url_decode(lease.split('.')[1]!)));
+      expect(payload.active).toBe(false);
+      expect((await store.transaction(db => store.purchase(db, TOKEN)))?.owner).toBe(owner);
+      expect(play.lookups).toHaveLength(3);
+    });
+  });
+
   it('default production Worker is live but all paid/deletion operations remain disabled', async () => {
     const health = await exports.default.fetch(origin + '/health');
     expect(health.status).toBe(200);
