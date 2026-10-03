@@ -1,0 +1,213 @@
+name: Kotoba prepared Google offline voice prerequisites (no speaker evidence)
+on:
+  push:
+    branches: [feat/jlpt-kotoba-play-release]
+    paths:
+      - .github/kotoba-native-voice/NativeVoiceOfflinePreparationTest.java
+      - .github/kotoba-native-voice/NativeVoicePreflightTest.java
+      - .github/workflows/kotoba-native-voice-offline-preparation.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: kotoba-native-voice-offline-preparation
+  cancel-in-progress: true
+jobs:
+  voice-preparation:
+    if: github.repository == '501-Studio/501-studio.github.io' && github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Require the public repository before any build
+        run: |
+          python3 - <<'PY'
+          import json, os
+          with open(os.environ['GITHUB_EVENT_PATH'], encoding='utf-8') as source:
+              repository = json.load(source).get('repository', {})
+          assert repository.get('full_name') == '501-Studio/501-studio.github.io'
+          assert repository.get('private') is False, 'Standard public-repository runner only'
+          PY
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Synchronize the existing bundled web assets
+        working-directory: jlpt-quest
+        run: npm run android:sync
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: false
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+          cache-disabled: true
+      - name: Add the opt-in observer only to this temporary runner checkout
+        run: |
+          mkdir -p kotoba-android/app/src/androidTest/java/com/studio501/kotoba
+          cp .github/kotoba-native-voice/NativeVoiceOfflinePreparationTest.java kotoba-android/app/src/androidTest/java/com/studio501/kotoba/
+          cp .github/kotoba-native-voice/NativeVoicePreflightTest.java kotoba-android/app/src/androidTest/java/com/studio501/kotoba/
+      - name: Build only debug app and instrumentation APKs
+        working-directory: kotoba-android
+        run: gradle --no-daemon assembleDebug assembleDebugAndroidTest
+      - name: Enable acceleration on the standard Linux runner
+        run: |
+          test -c /dev/kvm
+          sudo chown "$(id -u):$(id -g)" /dev/kvm
+          sudo chmod 0600 /dev/kvm
+      - name: Prepare the disposable guest data and offline diagnostic
+        run: |
+          mkdir -p /tmp/kotoba-native-voice
+          cat > /tmp/kotoba-native-voice/prepare-and-probe.sh <<'PROBE'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          cleanup() {
+            adb shell am force-stop com.studio501.kotoba.debug || true
+            adb shell pm clear com.studio501.kotoba.debug || true
+          }
+          trap cleanup EXIT
+          adb install -r app/build/outputs/apk/debug/app-debug.apk
+          adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+          adb shell pm clear com.studio501.kotoba.debug | tr -d '\r' | grep -qx Success
+          # Official Google voice-data preparation only in this disposable guest.
+          # Each verified Japanese/Korean download button can be attempted at most once.
+          # No account, terms, engine selection or sample action; no deployment or paid speech API.
+          set +e
+          adb shell svc wifi enable
+          ONLINE_WIFI_EXIT=$?
+          adb shell svc data enable
+          ONLINE_DATA_EXIT=$?
+          printf '%s\n' "$ONLINE_WIFI_EXIT" "$ONLINE_DATA_EXIT" > /tmp/kotoba-native-voice/network-online-exit.txt
+          adb shell am instrument -w -e class com.studio501.kotoba.NativeVoiceOfflinePreparationTest -e nativeVoiceOfflinePreparation true -e ciIsolatedEmulator true com.studio501.kotoba.debug.test/androidx.test.runner.AndroidJUnitRunner | tr -d '\r' | tee /tmp/kotoba-native-voice/preparation.txt
+          PREPARE_PIPE_STATUSES=("${PIPESTATUS[@]}")
+          set -e
+          printf '%s\n' "${PREPARE_PIPE_STATUSES[0]}" > /tmp/kotoba-native-voice/preparation-exit.txt
+          printf '%s\n' "${PREPARE_PIPE_STATUSES[@]}" > /tmp/kotoba-native-voice/preparation-pipeline-exit.txt
+          # Preserve preparation evidence even on failure, then independently diagnose the offline guest.
+          set +e
+          adb shell svc wifi disable
+          OFFLINE_WIFI_EXIT=$?
+          adb shell svc data disable
+          OFFLINE_DATA_EXIT=$?
+          printf '%s\n' "$OFFLINE_WIFI_EXIT" "$OFFLINE_DATA_EXIT" > /tmp/kotoba-native-voice/network-offline-exit.txt
+          adb shell am instrument -w -e class com.studio501.kotoba.NativeVoicePreflightTest -e nativeVoicePreflight true -e ciIsolatedEmulator true com.studio501.kotoba.debug.test/androidx.test.runner.AndroidJUnitRunner | tr -d '\r' | tee /tmp/kotoba-native-voice/instrumentation.txt
+          INSTRUMENT_PIPE_STATUSES=("${PIPESTATUS[@]}")
+          set -e
+          printf '%s\n' "${INSTRUMENT_PIPE_STATUSES[0]}" > /tmp/kotoba-native-voice/instrumentation-exit.txt
+          printf '%s\n' "${INSTRUMENT_PIPE_STATUSES[@]}" > /tmp/kotoba-native-voice/instrumentation-pipeline-exit.txt
+          for PIPE_STATUS in "$ONLINE_WIFI_EXIT" "$ONLINE_DATA_EXIT" "$OFFLINE_WIFI_EXIT" "$OFFLINE_DATA_EXIT" "${PREPARE_PIPE_STATUSES[@]}" "${INSTRUMENT_PIPE_STATUSES[@]}"; do test "$PIPE_STATUS" -eq 0; done
+          grep -Eq '^OK \(1 test\)$' /tmp/kotoba-native-voice/preparation.txt
+          grep -Eq '^OK \(1 test\)$' /tmp/kotoba-native-voice/instrumentation.txt
+          PROBE
+          chmod 0700 /tmp/kotoba-native-voice/prepare-and-probe.sh
+      - name: Prepare Google data then probe offline TTS on API 36
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          working-directory: kotoba-android
+          disable-animations: true
+          script: /tmp/kotoba-native-voice/prepare-and-probe.sh
+      - name: Report actual Google voice-data preparation
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re
+          root = pathlib.Path('/tmp/kotoba-native-voice')
+          log_file = root / 'preparation.txt'
+          log = log_file.read_text(encoding='utf-8', errors='replace') if log_file.exists() else ''
+          marker = 'KOTOBA_NATIVE_VOICE_PREPARATION_JSON='
+          rows = [line.split(marker, 1)[1] for line in log.splitlines() if marker in line]
+          report = None
+          if len(rows) == 1 and len(rows[0]) <= 20000:
+              try:
+                  candidate = json.loads(rows[0])
+                  if isinstance(candidate, dict) and candidate.get('schemaVersion') == 1:
+                      report = candidate
+              except ValueError:
+                  pass
+          exit_file = root / 'preparation-exit.txt'
+          pipeline_file = root / 'preparation-pipeline-exit.txt'
+          pipeline_ok = pipeline_file.exists() and pipeline_file.read_text().splitlines() == ['0', '0', '0']
+          network_file = root / 'network-online-exit.txt'
+          network_ok = network_file.exists() and network_file.read_text().splitlines() == ['0', '0']
+          invocation_ok = network_ok and pipeline_ok and exit_file.exists() and exit_file.read_text().strip() == '0' and re.search(r'^OK \(1 test\)$', log, re.M) is not None
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+              summary.write('### Actual Google voice-data preparation\n\n')
+              summary.write('Online preparation in a disposable debug guest. At most one verified download attempt per Japanese/Korean pack. Automatic Google/OS checks and state writes are possible. UI status and complete installed-voice metadata are separate evidence. No account, terms, engine selection or sample action. This is not speaker, physical audibility, FGS, video, billing or release evidence. No cache or artifact upload.\n\n')
+              summary.write('```json\n' + json.dumps(report, ensure_ascii=True, indent=2) + '\n```\n' if report else 'No valid preparation report received.\n')
+          forbidden = ['voiceSampleActionPerformed', 'loginActionPerformed', 'termsAcceptanceActionPerformed', 'engineSelectionActionPerformed', 'speakerPlaybackPerformed', 'physicalAudibilityVerified', 'foregroundServiceVerified', 'demonstrationVideoCreated', 'productionReleaseApproved', 'actualActiveEnginePackageVerified', 'accountRequirementVerified']
+          count_keys = ['downloadAttemptCount', 'downloadAcceptedCount', 'japaneseDownloadAttemptCount', 'japaneseDownloadAcceptedCount', 'koreanDownloadAttemptCount', 'koreanDownloadAcceptedCount']
+          counts = {key: report.get(key) for key in count_keys} if report else {}
+          counts_ok = all(type(counts.get(key)) is int for key in count_keys)
+          if counts_ok:
+              counts_ok = (0 <= counts['downloadAcceptedCount'] <= counts['downloadAttemptCount'] <= 2
+                           and 0 <= counts['japaneseDownloadAcceptedCount'] <= counts['japaneseDownloadAttemptCount'] <= 1
+                           and 0 <= counts['koreanDownloadAcceptedCount'] <= counts['koreanDownloadAttemptCount'] <= 1
+                           and counts['downloadAttemptCount'] == counts['japaneseDownloadAttemptCount'] + counts['koreanDownloadAttemptCount']
+                           and counts['downloadAcceptedCount'] == counts['japaneseDownloadAcceptedCount'] + counts['koreanDownloadAcceptedCount']
+                           and report.get('languageInstallActionPerformed') is (counts['downloadAttemptCount'] > 0))
+          ready = bool(report and invocation_ok and counts_ok and report.get('status') == 'VOICE_DATA_PREPARED_FOR_OFFLINE_PREFLIGHT'
+                       and report.get('preparationComplete') is True and report.get('japanesePrepared') is True
+                       and report.get('koreanPrepared') is True and report.get('freshInventoryComplete') is True
+                       and type(report.get('freshOfflineJapaneseVoiceCount')) is int and report['freshOfflineJapaneseVoiceCount'] > 0
+                       and type(report.get('freshOfflineKoreanVoiceCount')) is int and report['freshOfflineKoreanVoiceCount'] > 0
+                       and type(report.get('freshInventoryConsecutivePolls')) is int and report['freshInventoryConsecutivePolls'] >= 3
+                       and type(report.get('japaneseMetadataConsecutivePolls')) is int and report['japaneseMetadataConsecutivePolls'] >= 3
+                       and type(report.get('koreanMetadataConsecutivePolls')) is int and report['koreanMetadataConsecutivePolls'] >= 3
+                       and all(report.get(key) is False for key in forbidden))
+          if not ready:
+              raise SystemExit('Voice-data preparation incomplete: preserve the actual preparation report and independent offline diagnosis.')
+          print('Installed voice metadata prepared; the separate unchanged offline prerequisite gate must also pass.')
+          PY
+      - name: Report actual prerequisites and require readiness
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re
+          root = pathlib.Path('/tmp/kotoba-native-voice')
+          log = (root / 'instrumentation.txt').read_text(encoding='utf-8', errors='replace') if (root / 'instrumentation.txt').exists() else ''
+          marker = 'KOTOBA_NATIVE_VOICE_PREFLIGHT_JSON='
+          rows = [line.split(marker, 1)[1] for line in log.splitlines() if marker in line]
+          report = None
+          if len(rows) == 1 and len(rows[0]) <= 20000:
+              try:
+                  candidate = json.loads(rows[0])
+                  if isinstance(candidate, dict) and candidate.get('schemaVersion') == 1:
+                      report = candidate
+              except ValueError:
+                  pass
+          exit_file = root / 'instrumentation-exit.txt'
+          pipeline_file = root / 'instrumentation-pipeline-exit.txt'
+          pipeline_ok = pipeline_file.exists() and pipeline_file.read_text().splitlines() == ['0', '0', '0']
+          network_file = root / 'network-offline-exit.txt'
+          network_ok = network_file.exists() and network_file.read_text().splitlines() == ['0', '0']
+          invocation_ok = network_ok and pipeline_ok and exit_file.exists() and exit_file.read_text().strip() == '0' and re.search(r'^OK \(1 test\)$', log, re.M) is not None
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+              summary.write('### Real native TTS prerequisites\n\n')
+              summary.write('This diagnostic does not prove speaker playback, physical audibility, foreground service operation, or a Play demonstration video. No release approval is granted.\n\n')
+              if report is None:
+                  summary.write('**PROBE_ERROR**: no valid bounded JSON diagnostic was received.\n')
+              else:
+                  fields = ['status', 'inventoryComplete', 'playbackReady', 'initCallbackReceived', 'initStatus', 'configuredDefaultEngine', 'engineCount', 'voiceCount', 'offlineJapaneseVoiceCount', 'offlineKoreanVoiceCount', 'guestInternetUnavailable', 'selectedJapaneseVoice', 'synthesisAttempted', 'synthesisCallback', 'japanesePcm', 'reason']
+                  summary.write('```json\n' + json.dumps({key: report[key] for key in fields if key in report}, ensure_ascii=True, indent=2) + '\n```\n')
+          forbidden_claims = ['speakerPlaybackPerformed', 'physicalAudibilityVerified', 'foregroundServiceVerified', 'demonstrationVideoCreated', 'productionReleaseApproved']
+          pcm = report.get('japanesePcm', {}) if report else {}
+          ready = bool(report and invocation_ok and report.get('status') == 'READY_FOR_FURTHER_RUNTIME_QA'
+                       and report.get('inventoryComplete') is True and report.get('playbackReady') is True
+                       and report.get('guestInternetUnavailable') is True and report.get('synthesisAttempted') is True
+                       and report.get('synthesisCallback') == 'DONE' and report.get('offlineJapaneseVoiceCount', 0) > 0
+                       and report.get('offlineKoreanVoiceCount', 0) > 0 and pcm.get('pcmDataNonempty') is True
+                       and pcm.get('signalNonSilent') is True and all(report.get(key) is False for key in forbidden_claims))
+          if not ready:
+              raise SystemExit('NOT_READY / PROBE_ERROR: see the actual inventory above; native playback QA remains pending.')
+          print('Offline voice prerequisites ready for further runtime QA. Speaker playback / FGS / video remain unverified.')
+          PY
