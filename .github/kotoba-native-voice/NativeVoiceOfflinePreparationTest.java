@@ -44,6 +44,9 @@ public final class NativeVoiceOfflinePreparationTest {
     private static final String CONTAINER_ID = GOOGLE + ":id/voice_list_container";
     private static final String DOWNLOAD_ID = GOOGLE + ":id/voice_entry_download_button";
     private static final String STATUS_ID = GOOGLE + ":id/voice_entry_status";
+    private static final String DELETE_ID = GOOGLE + ":id/voice_entry_delete_button";
+    private static final String VOICE_ENTITY_ID = GOOGLE + ":id/morphed_voice_entity";
+    private static final String VOICE_NAME_ID = GOOGLE + ":id/morphed_voice_entity_name";
     private static final String SNAPSHOT = "KOTOBA_NATIVE_VOICE_PREPARATION_SNAPSHOT_JSON=";
     private static final String REPORT = "KOTOBA_NATIVE_VOICE_PREPARATION_JSON=";
     private UiAutomation automation;
@@ -336,10 +339,11 @@ public final class NativeVoiceOfflinePreparationTest {
     private void shutdownTts() { TextToSpeech current = tts; tts = null; if (current != null) current.shutdown(); }
     private Page readDetail(String selected, long limit) {
         Page page = new Page();
+        page.selected = selected == null ? "" : selected;
         AccessibilityNodeInfo root = activeRoot(limit);
         page.rootPackage = root == null ? "" : safe(root.getPackageName());
         collect(root, page.nodes, 0, new int[]{0}, limit);
-        page.ready = GOOGLE.equals(page.rootPackage) && detailContext(page.nodes, selected) && SystemClock.elapsedRealtime() < limit;
+        page.ready = GOOGLE.equals(page.rootPackage) && detailContext(page.nodes, selected, limit) && SystemClock.elapsedRealtime() < limit;
         return page;
     }
 
@@ -353,6 +357,7 @@ public final class NativeVoiceOfflinePreparationTest {
         int stablePolls = 0;
         while (SystemClock.elapsedRealtime() < waitDeadline && polls < 40) {
             polls++; page = new Page();
+            page.selected = selected == null ? "" : selected;
             try {
                 AccessibilityNodeInfo root = activeRoot(waitDeadline);
                 page.rootPackage = root == null ? "" : safe(root.getPackageName());
@@ -360,7 +365,7 @@ public final class NativeVoiceOfflinePreparationTest {
                 boolean content = "SETTINGS".equals(kind) ? settingsTitle(page.nodes, expectedPackage) && exact(page.nodes, expectedPackage, engineLabel)
                         : "ENGINE".equals(kind) ? exact(page.nodes, GOOGLE, "Install voice data")
                         : "LIST".equals(kind) ? listContext(page.nodes, waitDeadline)
-                        : detailContext(page.nodes, selected);
+                        : detailContext(page.nodes, selected, waitDeadline);
                 content = content && !blockedPrompt(page.nodes);
                 if (requireStableList) {
                     String current = expectedPackage.equals(page.rootPackage) && content ? fingerprint(page.nodes, waitDeadline) : "";
@@ -393,9 +398,13 @@ public final class NativeVoiceOfflinePreparationTest {
 
     private void snapshot(String stage, Page page, JSONObject readiness) throws Exception {
         readiness.put("rootPackage", bounded(page.rootPackage));
+        if (!page.selected.isEmpty()) readiness.put("exactSelectedTitleObserved", selectedVoiceTitle(page.nodes, page.selected))
+                .put("localeRowIdsObserved", containsId(page.nodes, GOOGLE, ROW_ID))
+                .put("localeRowsObserved", hasLocaleRows(page.nodes, deadline))
+                .put("voiceChooserObserved", voiceChooser(page.nodes, deadline));
         JSONArray rows = new JSONArray();
         for (AccessibilityNodeInfo node : page.nodes) {
-            if (rows.length() >= 32) break;
+            if (rows.length() >= 40) break;
             JSONArray actions = new JSONArray();
             List<AccessibilityNodeInfo.AccessibilityAction> available = node.getActionList();
             for (int i = 0; available != null && i < Math.min(available.size(), 12); i++) actions.put(available.get(i).getId());
@@ -471,9 +480,36 @@ public final class NativeVoiceOfflinePreparationTest {
         return false;
     }
 
-    private static boolean detailContext(List<AccessibilityNodeInfo> nodes, String selected) {
-        return !nodes.isEmpty() && !containsId(nodes, GOOGLE, LIST_ID) && selectedVoiceTitle(nodes, selected)
-                && uniqueId(nodes, GOOGLE, CONTAINER_ID) != null && !blockedPrompt(nodes);
+    private static boolean detailContext(List<AccessibilityNodeInfo> nodes, String selected, long limit) {
+        if (nodes.isEmpty() || !selectedVoiceTitle(nodes, selected) || uniqueId(nodes, GOOGLE, CONTAINER_ID) == null
+                || blockedPrompt(nodes) || containsId(nodes, GOOGLE, ROW_ID) || hasLocaleRows(nodes, limit)) return false;
+        // Google reuses locales_list for installed voice choices. An ID alone does not identify a language list.
+        return (!containsId(nodes, GOOGLE, LIST_ID) || voiceChooser(nodes, limit)) && SystemClock.elapsedRealtime() < limit;
+    }
+    private static boolean hasLocaleRows(List<AccessibilityNodeInfo> nodes, long limit) {
+        for (AccessibilityNodeInfo node : nodes) {
+            if (SystemClock.elapsedRealtime() >= limit) return false;
+            if (localeRow(node, limit)) return true;
+        }
+        return false;
+    }
+    private static boolean voiceChooser(List<AccessibilityNodeInfo> nodes, long limit) {
+        AccessibilityNodeInfo list = uniqueId(nodes, GOOGLE, LIST_ID);
+        AccessibilityNodeInfo delete = uniqueId(nodes, GOOGLE, DELETE_ID);
+        if (list == null || list.isClickable() || !"android.support.v7.widget.RecyclerView".contentEquals(safe(list.getClassName()))
+                || !inContainer(list, CONTAINER_ID, limit) || !clickable(delete, GOOGLE)
+                || !"android.widget.ImageView".contentEquals(safe(delete.getClassName()))
+                || !"Delete voice pack".equals(safe(delete.getContentDescription()).trim())
+                || !inContainer(delete, CONTAINER_ID, limit)) return false;
+        for (AccessibilityNodeInfo node : nodes) {
+            if (SystemClock.elapsedRealtime() >= limit) return false;
+            if (usable(node, GOOGLE) && !node.isClickable() && VOICE_NAME_ID.equals(node.getViewIdResourceName())
+                    && "android.widget.TextView".contentEquals(safe(node.getClassName()))
+                    && safe(node.getText()).trim().matches("Voice (I|II|III|IV)")
+                    && inContainer(node, VOICE_ENTITY_ID, limit) && inContainer(node, LIST_ID, limit))
+                return SystemClock.elapsedRealtime() < limit;
+        }
+        return false;
     }
     private static boolean downloadButton(AccessibilityNodeInfo node, long limit) {
         return clickable(node, GOOGLE) && DOWNLOAD_ID.equals(node.getViewIdResourceName())
@@ -581,7 +617,7 @@ public final class NativeVoiceOfflinePreparationTest {
         Bundle stream = new Bundle(); stream.putString("stream", "\n" + marker + value + "\n");
         InstrumentationRegistry.getInstrumentation().sendStatus(0, stream);
     }
-    private static final class Page { final List<AccessibilityNodeInfo> nodes = new ArrayList<>(); String rootPackage = ""; boolean ready; }
+    private static final class Page { final List<AccessibilityNodeInfo> nodes = new ArrayList<>(); String rootPackage = "", selected = ""; boolean ready; }
     private static final class Inventory {
         int total, scanned, japanese, korean; boolean complete;
         int count(String locale) { return "ja".equals(locale) ? japanese : "ko".equals(locale) ? korean : 0; }
