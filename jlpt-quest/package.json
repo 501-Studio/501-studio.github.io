@@ -1,6 +1,20 @@
 {
-  "name": "kotoba-quest", "version": "0.1.0", "private": true, "type": "module",
-  "description": "Mobile-first JLPT repetition game prototype",
-  "scripts": {"test": "node --test tests/*.test.mjs", "start": "python3 -m http.server 4173 --bind 0.0.0.0"},
-  "engines": {"node": ">=22"}
+  "name": "kotoba-course",
+  "version": "0.3.5",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "python3 -m http.server 4173 --bind 0.0.0.0",
+    "test": "node --test tests/course.test.mjs tests/curriculum.test.mjs tests/recognition.test.mjs tests/stroke-snap.test.mjs tests/audio.test.mjs",
+    "content:fetch": "node scripts/vendor-content.mjs",
+    "release:check": "node scripts/release-check.mjs",
+    "android:sync": "node scripts/sync-android.mjs",
+    "icons:build": "node scripts/generate-icons.mjs",
+    "build": "npm run icons:build && npm run content:fetch && npm run strokes:build && npm run audio:build",
+    "strokes:build": "python3 scripts/bundle-strokes.py",
+    "audio:build": "python3 scripts/build-offline-audio.py"
+  }
 }

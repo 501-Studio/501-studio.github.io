@@ -1,0 +1,47 @@
+/* A compact, fixed-square stroke lesson. APK contains the same guide geometry used for judging. */
+[data-snap="true"] .focus-shell{padding-top:16px;padding-bottom:150px}
+[data-snap="true"] .focus-top{margin-bottom:14px!important}
+[data-snap="true"] .session-label{margin-bottom:18px}
+[data-snap="true"] .heading{margin-bottom:18px}
+[data-snap="true"] .question .heading h1{font-size:24px}
+[data-snap="true"] .question .heading p{font-size:12px}
+[data-snap="true"] .ink-prompt{margin:0}
+[data-snap="true"] .ink-prompt strong{font-size:23px}
+[data-snap="true"] .ink-prompt p{font-size:19px;margin-top:2px}
+[data-snap="true"] .character-tabs{margin-top:15px;align-items:center}
+.character-tabs .stroke-count{margin-left:auto;font-size:13px;color:#7d719b;font-weight:650}
+.ink-pad.snap-pad{width:min(100%,330px);margin-top:12px;border-radius:22px;background:#fff;touch-action:none;overscroll-behavior:contain}
+.ink-pad.snap-pad canvas{display:block;position:absolute;inset:0;touch-action:none}
+.pad-local{position:absolute;bottom:10px;left:13px;display:flex;align-items:center;gap:4px;font-size:10px;color:#8c83a1;pointer-events:none;z-index:4}
+.pad-local .icon{width:12px;height:12px}
+[data-snap="true"] .grader-status{margin:10px 0 0;min-height:25px;font-size:13px;color:#746693;word-break:keep-all}
+[data-snap="true"] .grader-status[data-verdict="correct"]{color:#3a8c74}
+[data-snap="true"] .grader-status[data-verdict="retry"]{color:#bd5862}
+[data-snap="true"] .ink-toolbar{margin:0;padding:0}
+[data-snap="true"] .ink-fine{margin-top:5px}
+[data-snap="true"] .lesson-footer{padding:15px 24px max(18px,env(safe-area-inset-bottom));background:#fff}
+[data-snap="true"] .lesson-footer-inner{gap:10px}
+[data-snap="true"] .lesson-footer .btn:disabled{opacity:1;background:#ebe7f6;color:#a094bc;box-shadow:none}
+@media(max-width:700px){
+ [data-snap="true"] .question .heading h1{font-size:23px;letter-spacing:-.7px}
+ [data-snap="true"] .focus-shell{padding-left:22px;padding-right:22px}
+ [data-snap="true"] .session-label{margin-bottom:18px}
+ [data-snap="true"] .ink-prompt .reading{font-size:12px}
+ [data-snap="true"] .character-tabs{margin-top:12px}
+ [data-snap="true"] .character-tabs button{min-width:38px;min-height:38px}
+ [data-snap="true"] .ink-toolbar .btn{font-size:11px}
+ .ink-pad.snap-pad{width:min(100%,330px,max(200px,calc(100dvh - 435px)))}
+}
+@media(max-height:700px) and (max-width:700px){
+ [data-snap="true"] .focus-shell{padding-top:8px}
+ [data-snap="true"] .heading p{line-height:1.6}
+ [data-snap="true"] .ink-fine{display:none}
+ [data-snap="true"] .session-label{margin-bottom:12px}
+ [data-snap="true"] .ink-pad.snap-pad{width:min(100%,270px)}
+}
+/* Keep undo/reset above the fixed action bar on a phone, not underneath it. */
+[data-snap="true"] .heading{margin-bottom:12px}
+[data-snap="true"] .ink-prompt>div{display:grid;grid-template-columns:auto auto;column-gap:14px;align-items:center}
+[data-snap="true"] .ink-prompt>div>.reading{grid-column:2}
+[data-snap="true"] .ink-prompt p{margin:0}
+@media(max-width:700px){.ink-pad.snap-pad{width:min(100%,310px,max(200px,calc(100dvh - 520px)))}}

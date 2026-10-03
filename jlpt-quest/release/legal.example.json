@@ -1,0 +1,10 @@
+{
+  "developerLegalName": "[REQUIRED]",
+  "supportEmail": "[REQUIRED]",
+  "privacyContactEmail": "[REQUIRED]",
+  "publicPrivacyUrl": "[REQUIRED HTTPS URL]",
+  "publicTermsUrl": "[OPTIONAL BUT RECOMMENDED HTTPS URL]",
+  "targetAudience": "[REQUIRED IN PLAY CONSOLE]",
+  "applicationId": "com.studio501.kotoba",
+  "storeDeveloperNameMustMatchPrivacyPolicy": true
+}
