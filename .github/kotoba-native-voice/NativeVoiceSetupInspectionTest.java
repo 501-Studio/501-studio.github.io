@@ -94,7 +94,7 @@ public final class NativeVoiceSetupInspectionTest {
             report.put("startActivityCallReturned", true); // Does not prove BAL acceptance or foreground launch.
             List<AccessibilityNodeInfo> page = snapshot(context, automation, "tts_settings", settingsPackage, engineLabel, report, observationDeadline);
             boolean contextVerified = report.optBoolean("lastScreenContextReady") && report.optBoolean("lastExpectedRootPackageObserved")
-                    && hasText(page, settingsPackage, "Text-to-speech output")
+                    && hasTtsToolbarTitle(page, settingsPackage)
                     && hasText(page, settingsPackage, engineLabel);
             report.put("ttsSettingsGoogleContextObserved", contextVerified);
             if (!contextVerified) { report.put("stopReason", "Current UI did not establish TTS settings and the Google engine context"); return; }
@@ -157,7 +157,7 @@ public final class NativeVoiceSetupInspectionTest {
                 collect(root, nodes, 0, new int[]{0}, waitDeadline);
                 packageObserved = root != null && expectedPackage.contentEquals(safe(root.getPackageName())) && !nodes.isEmpty();
                 contextReady = packageObserved && ("tts_settings".equals(stage)
-                        ? hasText(nodes, expectedPackage, "Text-to-speech output") && hasText(nodes, expectedPackage, engineLabel)
+                        ? hasTtsToolbarTitle(nodes, expectedPackage) && hasText(nodes, expectedPackage, engineLabel)
                         : "google_engine_settings".equals(stage) ? hasText(nodes, expectedPackage, "Install voice data")
                         : hasText(nodes, expectedPackage, "Install voice data") && hasLanguageMenuRow(nodes, expectedPackage)
                           && uniqueNavigation(nodes, expectedPackage, "Install voice data", true) == null);
@@ -257,6 +257,16 @@ public final class NativeVoiceSetupInspectionTest {
         if (node.isVisibleToUser()) result.add(node);
         for (int i = 0; i < node.getChildCount() && visited[0] < MAX_VISITED && SystemClock.elapsedRealtime() < deadline; i++)
             collect(node.getChild(i), result, depth + 1, visited, deadline);
+    }
+
+    private static boolean hasTtsToolbarTitle(List<AccessibilityNodeInfo> nodes, String packageName) {
+        for (AccessibilityNodeInfo node : nodes) {
+            if (!node.isVisibleToUser() || !packageName.contentEquals(safe(node.getPackageName()))
+                    || !"com.android.settings:id/collapsing_toolbar".equals(node.getViewIdResourceName())) continue;
+            if ("Text-to-speech output".equals(safe(node.getText()).trim())
+                    || "Text-to-speech output".equals(safe(node.getContentDescription()).trim())) return true;
+        }
+        return false;
     }
 
     private static boolean hasText(List<AccessibilityNodeInfo> nodes, String packageName, String text) {
