@@ -21,6 +21,7 @@ import android.view.accessibility.AccessibilityWindowInfo;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -165,6 +166,9 @@ public final class NativeVoiceLanguageInspectionTest {
         Page page = new Page();
         int polls = 0;
         String error = "";
+        boolean requireStableList = "LIST".equals(kind) && previous != null;
+        String stableFingerprint = "";
+        int stablePolls = 0;
         while (SystemClock.elapsedRealtime() < waitDeadline && polls < 40) {
             polls++; page = new Page();
             try {
@@ -173,17 +177,30 @@ public final class NativeVoiceLanguageInspectionTest {
                 collect(root, page.nodes, 0, new int[]{0}, waitDeadline);
                 boolean content = "SETTINGS".equals(kind) ? settingsTitle(page.nodes, expectedPackage) && exact(page.nodes, expectedPackage, engineLabel)
                         : "ENGINE".equals(kind) ? exact(page.nodes, GOOGLE, "Install voice data")
-                        : "LIST".equals(kind) ? listContext(page.nodes, waitDeadline) && (previous == null || !previous.equals(fingerprint(page.nodes, waitDeadline)))
+                        : "LIST".equals(kind) ? listContext(page.nodes, waitDeadline)
                         : !containsId(page.nodes, GOOGLE, LIST_ID) && selectedVoiceTitle(page.nodes, selected);
+                if (requireStableList) {
+                    String current = expectedPackage.equals(page.rootPackage) && content ? fingerprint(page.nodes, waitDeadline) : "";
+                    boolean changed = !current.isEmpty() && !previous.equals(current);
+                    if (changed) {
+                        stablePolls = current.equals(stableFingerprint) ? stablePolls + 1 : 1;
+                        stableFingerprint = current;
+                    } else { stableFingerprint = ""; stablePolls = 0; }
+                    content = changed && stablePolls >= 3 && SystemClock.elapsedRealtime() - started >= 700;
+                }
                 page.ready = expectedPackage.equals(page.rootPackage) && !page.nodes.isEmpty() && content && SystemClock.elapsedRealtime() < waitDeadline;
                 if (page.ready) break;
-            } catch (RuntimeException unavailable) { error = bounded(unavailable.getClass().getSimpleName() + ": " + unavailable.getMessage()); }
+            } catch (RuntimeException unavailable) {
+                stableFingerprint = ""; stablePolls = 0;
+                error = bounded(unavailable.getClass().getSimpleName() + ": " + unavailable.getMessage());
+            }
             long remaining = waitDeadline - SystemClock.elapsedRealtime();
             if (remaining > 0) SystemClock.sleep(Math.min(200, remaining));
         }
         JSONObject readiness = new JSONObject().put("stage", stage).put("rootPackage", bounded(page.rootPackage)).put("screenContextReady", page.ready)
                 .put("polls", polls).put("waitMillis", SystemClock.elapsedRealtime() - started)
                 .put("deadlineExpired", SystemClock.elapsedRealtime() >= waitDeadline).put("lastPollingError", error);
+        if (requireStableList) readiness.put("stableFingerprintPolls", stablePolls).put("stablePollsRequired", 3).put("minimumSettleMillis", 700);
         JSONArray rows = new JSONArray();
         for (AccessibilityNodeInfo node : page.nodes) {
             if (rows.length() >= 32) break;
@@ -285,12 +302,14 @@ public final class NativeVoiceLanguageInspectionTest {
         return match;
     }
     private static String fingerprint(List<AccessibilityNodeInfo> nodes, long limit) {
-        StringBuilder labels = new StringBuilder();
+        List<String> labels = new ArrayList<>();
         for (AccessibilityNodeInfo node : nodes) {
-            if (SystemClock.elapsedRealtime() >= limit) break;
-            if (localeRow(node, limit)) labels.append(safe(node.getText()).trim()).append('\n');
+            if (SystemClock.elapsedRealtime() >= limit) return "";
+            if (localeRow(node, limit)) labels.add(safe(node.getText()).trim());
         }
-        return labels.toString();
+        Collections.sort(labels);
+        if (SystemClock.elapsedRealtime() >= limit) return "";
+        return String.join("\n", labels);
     }
     private static boolean supports(AccessibilityNodeInfo node, int action) {
         List<AccessibilityNodeInfo.AccessibilityAction> actions = node.getActionList();
