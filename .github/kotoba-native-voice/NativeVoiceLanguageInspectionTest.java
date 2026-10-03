@@ -174,7 +174,7 @@ public final class NativeVoiceLanguageInspectionTest {
                 boolean content = "SETTINGS".equals(kind) ? settingsTitle(page.nodes, expectedPackage) && exact(page.nodes, expectedPackage, engineLabel)
                         : "ENGINE".equals(kind) ? exact(page.nodes, GOOGLE, "Install voice data")
                         : "LIST".equals(kind) ? listContext(page.nodes, waitDeadline) && (previous == null || !previous.equals(fingerprint(page.nodes, waitDeadline)))
-                        : !containsId(page.nodes, GOOGLE, LIST_ID) && (exact(page.nodes, GOOGLE, selected) || exact(page.nodes, GOOGLE, language));
+                        : !containsId(page.nodes, GOOGLE, LIST_ID) && selectedVoiceTitle(page.nodes, selected);
                 page.ready = expectedPackage.equals(page.rootPackage) && !page.nodes.isEmpty() && content && SystemClock.elapsedRealtime() < waitDeadline;
                 if (page.ready) break;
             } catch (RuntimeException unavailable) { error = bounded(unavailable.getClass().getSimpleName() + ": " + unavailable.getMessage()); }
@@ -257,6 +257,15 @@ public final class NativeVoiceLanguageInspectionTest {
         AccessibilityNodeInfo toolbar = uniqueId(nodes, pkg, "com.android.settings:id/collapsing_toolbar");
         return toolbar != null && ("Text-to-speech output".equals(safe(toolbar.getText()).trim()) || "Text-to-speech output".equals(safe(toolbar.getContentDescription()).trim()));
     }
+    private static boolean selectedVoiceTitle(List<AccessibilityNodeInfo> nodes, String selected) {
+        if (selected == null || selected.isEmpty()) return false;
+        String title = selected + " voices";
+        for (AccessibilityNodeInfo node : nodes) if (node.isVisibleToUser() && GOOGLE.contentEquals(safe(node.getPackageName()))
+                && "android.widget.TextView".contentEquals(safe(node.getClassName())) && !node.isClickable() && !node.isCheckable()
+                && title.equals(safe(node.getText()).trim())) return true;
+        return false;
+    }
+
     private static boolean exact(List<AccessibilityNodeInfo> nodes, String pkg, String label) {
         if (label == null) return false;
         for (AccessibilityNodeInfo node : nodes) if (node.isVisibleToUser() && pkg.contentEquals(safe(node.getPackageName()))
