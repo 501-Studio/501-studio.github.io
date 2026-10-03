@@ -1,5 +1,6 @@
-# Deployment proposal. Do not apply before the owner approves recurring cost and
-# Google permissions/secrets are provisioned. No existing service is modified.
+# RETIRED paid reference: the owner requested zero server/storage charges on 2026-10-03.
+# Do not deploy this file. Starter + disk incurs recurring charges and is not authorized.
+# No service was created. See FREE_DEPLOYMENT_KO.md for the replacement proposal.
 services:
   - type: web
     name: kotoba-billing-verifier

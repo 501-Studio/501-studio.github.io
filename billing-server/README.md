@@ -1,5 +1,13 @@
 # Kotoba receipt verifier — implementation, not a deployed service
 
+**Hosting decision, 2026-10-03:** the owner requires no server/storage charges. The
+paid Render proposal was withdrawn and renamed `render.paid-reference.yaml` so it is
+not the default Blueprint. Do not deploy it. See [the free alternative](FREE_DEPLOYMENT_KO.md):
+Cloudflare Workers Free plus SQLite-backed Durable Objects. This requires a reviewed
+runtime/storage port; the Flask/SQLite application below is not deployable to Workers
+by changing its URL. No Cloudflare resource, production migration, or billing integration
+has been performed. Keep selling and operational release gates disabled.
+
 This backend binds a Google-verified Play purchase to an authenticated app account, stores that
 ownership durably, acknowledges only after ownership checks, and signs installation-bound RS256
 leases. It processes authenticated Pub/Sub notifications and reconciles voided orders. No live
@@ -66,13 +74,15 @@ deployments. This implementation is for one service instance with one local dura
 not suitable for independent replicas or a network filesystem. Use a reviewed PostgreSQL adapter
 before horizontal scaling.
 
-The Render Docker proposal mounts `/var/data` and uses exactly
+The retired paid Render reference mounts `/var/data` and uses exactly
 `SQLITE_PATH=/var/data/kotoba/receipts.sqlite3`. The container entrypoint briefly runs as root,
 initializes only the fixed `kotoba` directory (0700) and existing database/WAL/SHM files (0600),
 rejects symlinks and hard-linked database files, then drops supplementary groups and UID/GID
 before executing Gunicorn as `app`. It never recursively changes the disk or touches secret
 mounts. All new files inherit umask 077. Do not override the entrypoint or add a root server command.
-Outside this Docker deployment, provision the absolute database directory before running Python.
+Do not deploy that reference under the zero-cost policy. These remain local/Docker implementation
+details, not the Workers deployment method. Outside Docker, provision the absolute database
+directory before running Python.
 
 Purchase tokens are indexed by SHA256 and encrypted with Fernet at rest; notification payloads
 are also encrypted. Database encryption does not protect a compromised running server. Back up
