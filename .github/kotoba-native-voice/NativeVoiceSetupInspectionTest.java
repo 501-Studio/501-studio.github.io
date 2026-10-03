@@ -114,11 +114,9 @@ public final class NativeVoiceSetupInspectionTest {
             if (!installPage.performAction(AccessibilityNodeInfo.ACTION_CLICK)) { report.put("stopReason", "Voice data navigation click rejected"); return; }
             report.put("navigationClickCount", 2).put("voiceDataNavigationClicked", true);
             page = snapshot(context, automation, "voice_data_after_navigation", GOOGLE_ENGINE, engineLabel, report, observationDeadline);
-            // A title plus actual language-menu content, and no remaining clickable settings row,
-            // distinguishes the destination from an unchanged engine-settings screen.
+            // Confirm the observed Google voice-data title/list/item IDs, without selecting a language.
             boolean voiceDataObserved = report.optBoolean("lastScreenContextReady") && report.optBoolean("lastExpectedRootPackageObserved")
-                    && hasText(page, GOOGLE_ENGINE, "Install voice data")
-                    && hasLanguageMenuRow(page, GOOGLE_ENGINE)
+                    && hasGoogleVoiceDataScreen(page, observationDeadline)
                     && uniqueNavigation(page, GOOGLE_ENGINE, "Install voice data", true) == null;
             report.put("googleVoiceDataScreenObserved", voiceDataObserved);
             if (!voiceDataObserved) { report.put("stopReason", "Current UI did not establish the Google voice-data destination screen"); return; }
@@ -159,7 +157,7 @@ public final class NativeVoiceSetupInspectionTest {
                 contextReady = packageObserved && ("tts_settings".equals(stage)
                         ? hasTtsToolbarTitle(nodes, expectedPackage) && hasText(nodes, expectedPackage, engineLabel)
                         : "google_engine_settings".equals(stage) ? hasText(nodes, expectedPackage, "Install voice data")
-                        : hasText(nodes, expectedPackage, "Install voice data") && hasLanguageMenuRow(nodes, expectedPackage)
+                        : hasGoogleVoiceDataScreen(nodes, waitDeadline)
                           && uniqueNavigation(nodes, expectedPackage, "Install voice data", true) == null);
                 if (SystemClock.elapsedRealtime() >= waitDeadline) contextReady = false;
                 if (contextReady) break;
@@ -275,12 +273,28 @@ public final class NativeVoiceSetupInspectionTest {
         return false;
     }
 
-    private static boolean hasLanguageMenuRow(List<AccessibilityNodeInfo> nodes, String packageName) {
+    private static boolean hasGoogleVoiceDataScreen(List<AccessibilityNodeInfo> nodes, long deadline) {
+        boolean title = false, list = false, localeItem = false;
         for (AccessibilityNodeInfo node : nodes) {
-            if (!packageName.contentEquals(safe(node.getPackageName()))) continue;
+            if (SystemClock.elapsedRealtime() >= deadline) return false;
+            if (!node.isVisibleToUser() || !GOOGLE_ENGINE.contentEquals(safe(node.getPackageName()))) continue;
             String text = safe(node.getText()).trim();
-            for (String language : new String[]{"English", "Japanese", "Korean", "German", "Spanish", "French"})
-                if (text.equals(language) || text.startsWith(language + " (")) return true;
+            if ("Google TTS voice data".equals(text)) title = true;
+            if ("com.google.android.tts:id/locales_list".equals(node.getViewIdResourceName()) && node.isEnabled()) list = true;
+            if ("com.google.android.tts:id/voice_locale_name".equals(node.getViewIdResourceName())
+                    && "android.widget.TextView".contentEquals(safe(node.getClassName()))
+                    && node.isEnabled() && node.isClickable() && !text.isEmpty() && insideLocalesList(node, deadline)) localeItem = true;
+        }
+        return title && list && localeItem && SystemClock.elapsedRealtime() < deadline;
+    }
+
+    private static boolean insideLocalesList(AccessibilityNodeInfo node, long deadline) {
+        AccessibilityNodeInfo parent = node;
+        for (int depth = 0; depth < 16 && SystemClock.elapsedRealtime() < deadline; depth++) {
+            parent = parent.getParent();
+            if (parent == null || !GOOGLE_ENGINE.contentEquals(safe(parent.getPackageName()))) return false;
+            if ("com.google.android.tts:id/locales_list".equals(parent.getViewIdResourceName()))
+                return parent.isVisibleToUser() && parent.isEnabled() && SystemClock.elapsedRealtime() < deadline;
         }
         return false;
     }
