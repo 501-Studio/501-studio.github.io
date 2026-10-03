@@ -173,7 +173,7 @@ jobs:
           #!/usr/bin/env bash
           set -euo pipefail
           CAPTURE_DIR=/tmp/kotoba042-qa/store-screenshots
-          mkdir -p "$CAPTURE_DIR"
+          mkdir -p "$CAPTURE_DIR/failure-diagnostics"
           adb shell wm size | tr -d '\r' > "$CAPTURE_DIR/display-before.txt"
           adb shell wm density | tr -d '\r' > "$CAPTURE_DIR/density-before.txt"
           ORIGINAL_SIZE_OVERRIDE=$(sed -n 's/^Override size: //p' "$CAPTURE_DIR/display-before.txt")
@@ -190,7 +190,7 @@ jobs:
             return "$FAILED"
           }
           # Attempt every cleanup action even if restoration fails; never publish success after failed cleanup.
-          trap 'CAPTURE_STATUS=$?; if ! cleanup_capture; then CAPTURE_STATUS=1; fi; if [ "$CAPTURE_STATUS" -ne 0 ]; then rm -f "$CAPTURE_DIR/capture-manifest.json"; fi; exit "$CAPTURE_STATUS"' EXIT
+          trap 'CAPTURE_STATUS=$?; if ! cleanup_capture; then CAPTURE_STATUS=1; fi; if [ "$CAPTURE_STATUS" -ne 0 ]; then rm -f "$CAPTURE_DIR/capture-manifest.json"; for FILE in 01-home.jpg 02-vocabulary-search.jpg 03-study-example.jpg 04-handwriting.jpg; do if [ -f "$CAPTURE_DIR/$FILE" ]; then mv "$CAPTURE_DIR/$FILE" "$CAPTURE_DIR/failure-diagnostics/$FILE"; fi; done; fi; exit "$CAPTURE_STATUS"' EXIT
           # This is the render surface itself. Images are never resized or edited.
           adb shell wm size 1080x1920
           adb shell wm size | tr -d '\r' > "$CAPTURE_DIR/display-capture.txt"
@@ -201,14 +201,42 @@ jobs:
           adb shell am instrument -w -e class com.studio501.kotoba.StoreScreenshotTest -e captureStoreScreenshots true com.studio501.kotoba.debug.test/androidx.test.runner.AndroidJUnitRunner | tr -d '\r' | tee "$CAPTURE_DIR/instrumentation.txt"
           INSTRUMENT_EXIT=${PIPESTATUS[0]}
           set -e
-          # Only the five known capture files are exported; no app database or preferences leave the emulator.
-          for FILE in 01-home.jpg 02-vocabulary-search.jpg 03-study-example.jpg 04-handwriting.jpg capture-manifest.json; do
+          # Export only fixed diagnostics first; no app database or preferences leave the emulator.
+          for FILE in capture-manifest.json failure-diagnostics/failure-state.json failure-diagnostics/failure-ui.jpg; do
             DESTINATION="$CAPTURE_DIR/$FILE"
             if [ "$FILE" = capture-manifest.json ]; then DESTINATION="$CAPTURE_DIR/device-capture-manifest.json"; fi
-            if ! adb exec-out run-as com.studio501.kotoba.debug cat "files/store-screenshots/$FILE" > "$DESTINATION"; then rm -f "$DESTINATION"; fi
+            adb exec-out run-as com.studio501.kotoba.debug cat "files/store-screenshots/$FILE" > "$DESTINATION.export-raw" || true
           done
+          python - "$CAPTURE_DIR" <<'CAPTURE_DIAGNOSTICS'
+          import json, pathlib, sys
+          root = pathlib.Path(sys.argv[1])
+          for name in ['device-capture-manifest.json', 'failure-diagnostics/failure-state.json', 'failure-diagnostics/failure-ui.jpg']:
+              destination = root / name
+              raw = destination.with_name(destination.name + '.export-raw')
+              data = raw.read_bytes()
+              try:
+                  if destination.suffix == '.json':
+                      assert isinstance(json.loads(data), dict)
+                  else:
+                      assert len(data) > 10000 and data[:2] == b'\xff\xd8' and data[-2:] == b'\xff\xd9'
+              except (AssertionError, ValueError, UnicodeError):
+                  # adb may return exit zero with cat error text. Preserve it as text, never as a claimed image.
+                  raw.rename(root / 'failure-diagnostics' / (destination.name + '-export.txt'))
+              else:
+                  raw.rename(destination)
+          CAPTURE_DIAGNOSTICS
           test "$INSTRUMENT_EXIT" -eq 0
           grep -Fqx 'OK (1 test)' "$CAPTURE_DIR/instrumentation.txt"
+          python - "$CAPTURE_DIR" <<'CAPTURE_READY'
+          import json, pathlib, sys
+          manifest = json.loads((pathlib.Path(sys.argv[1]) / 'device-capture-manifest.json').read_text())
+          assert manifest['status'] == 'complete' and manifest['ageSelectionCompleted'] is True
+          assert manifest['tutorialUnknownAgeNoSdkVerified'] is True and len(manifest['screens']) == 4
+          CAPTURE_READY
+          # Successful image exports remain diagnostic raw bytes until all four pass header/dimension/hash validation.
+          for FILE in 01-home.jpg 02-vocabulary-search.jpg 03-study-example.jpg 04-handwriting.jpg; do
+            adb exec-out run-as com.studio501.kotoba.debug cat "files/store-screenshots/$FILE" > "$CAPTURE_DIR/failure-diagnostics/$FILE.export-raw" || true
+          done
           python - "$CAPTURE_DIR" <<'CAPTURE_VALIDATION'
           import hashlib, json, pathlib, struct, sys, time
           root = pathlib.Path(sys.argv[1])
@@ -216,6 +244,7 @@ jobs:
           expected = ['01-home.jpg', '02-vocabulary-search.jpg', '03-study-example.jpg', '04-handwriting.jpg']
           assert manifest['status'] == 'complete' and manifest['variant'] == 'internal_debug'
           assert manifest['packageName'] == 'com.studio501.kotoba.debug' and manifest['salesEnabled'] is False
+          assert manifest['ageSelectionCompleted'] is True and manifest['tutorialUnknownAgeNoSdkVerified'] is True
           assert manifest['imageEditing'] is False and len(manifest['screens']) == 4
           assert [screen['file'] for screen in manifest['screens']] == expected
           def jpeg_size(data):
@@ -235,11 +264,13 @@ jobs:
                   offset += length
               raise AssertionError('JPEG dimensions missing')
           for screen in manifest['screens']:
-              data = (root / screen['file']).read_bytes()
+              data = (root / 'failure-diagnostics' / (screen['file'] + '.export-raw')).read_bytes()
               assert jpeg_size(data) == (1080, 1920) == (screen['width'], screen['height'])
               assert len(data) == screen['bytes'] and hashlib.sha256(data).hexdigest() == screen['sha256']
               assert screen['format'] == 'JPEG' and screen['capturedAtUnixMillis'] >= manifest['startedAtUnixMillis']
               assert screen['semanticPredicate'] and screen['navigation'] and screen['renderedState']
+          for screen in manifest['screens']:
+              (root / 'failure-diagnostics' / (screen['file'] + '.export-raw')).rename(root / screen['file'])
           manifest['artifactValidation'] = {'status': 'passed', 'images': 4, 'dimensions': '1080x1920',
                                             'sha256AndJpegHeaderChecked': True, 'validatedAtUnixMillis': int(time.time() * 1000)}
           manifest['status'] = 'validated-cleanup-pending'
@@ -247,7 +278,6 @@ jobs:
           print('Four actual Android captures validated: JPEG 1080x1920; hashes match runtime manifest; internal debug variant.')
           CAPTURE_VALIDATION
           if ! cleanup_capture; then exit 1; fi
-          trap - EXIT
           python - "$CAPTURE_DIR" <<'CAPTURE_COMPLETE'
           import json, pathlib, sys
           root = pathlib.Path(sys.argv[1])
@@ -257,6 +287,7 @@ jobs:
           (root / 'capture-manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
           (root / 'pending-capture-manifest.json').unlink()
           CAPTURE_COMPLETE
+          trap - EXIT
           CAPTURE_SCRIPT
       - name: Actual Android lifecycle instrumentation
         uses: reactivecircus/android-emulator-runner@v2

@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.webkit.WebView;
 import android.widget.RadioButton;
 import androidx.test.core.app.ActivityScenario;
@@ -105,17 +106,92 @@ public final class StoreScreenshotTest {
         assertTrue("Fresh-launch native age picker was not shown", selected.get());
         assertNoAdSdk(scenario);
     }
+    private void verifyTutorialUnknownAge(ActivityScenario<MainActivity> scenario) {
+        long deadline = SystemClock.elapsedRealtime() + 10000; AtomicBoolean tutorialReported = new AtomicBoolean();
+        while (!tutorialReported.get() && SystemClock.elapsedRealtime() < deadline) {
+            scenario.onActivity(activity -> tutorialReported.set("tutorial".equals(field(field(activity, "ads"), "screen"))));
+            if (!tutorialReported.get()) SystemClock.sleep(100);
+        }
+        assertTrue("Tutorial screen was not reported to the native controller", tutorialReported.get());
+        scenario.onActivity(activity -> {
+            assertFalse(activity.getSharedPreferences(PlayAds.AGE_PREFS, Context.MODE_PRIVATE).contains(PlayAds.AGE_KEY));
+            PlayAds ads = (PlayAds) field(activity, "ads");
+            assertEquals(AdAgePolicy.UNKNOWN, ((AdAgePolicy) field(ads, "age")).band());
+            assertNull("Age picker must wait for home after tutorial", field(ads, "dialog"));
+            assertSdkIdle(ads, "Unknown-age tutorial");
+        });
+    }
+    private static void assertSdkIdle(PlayAds ads, String label) {
+        assertNull(label + " must not obtain UMP", field(ads, "consent"));
+        for (String flag : new String[]{"initialized", "initializing", "consentBusy", "loadingFull", "showing"})
+            assertEquals(label + " ad work: " + flag, false, field(ads, flag));
+        assertNull(field(ads, "banner")); assertNull(field(ads, "full"));
+    }
     private void assertNoAdSdk(ActivityScenario<MainActivity> scenario) {
         scenario.onActivity(activity -> {
             assertEquals(AdAgePolicy.UNDER_FOURTEEN, activity.getSharedPreferences(PlayAds.AGE_PREFS, Context.MODE_PRIVATE)
                     .getInt(PlayAds.AGE_KEY, AdAgePolicy.UNKNOWN));
             PlayAds ads = (PlayAds) field(activity, "ads");
             assertNull("Age dialog still covers app", field(ads, "dialog"));
-            assertNull("Under-14 must not obtain UMP", field(ads, "consent"));
-            for (String flag : new String[]{"initialized", "initializing", "consentBusy", "loadingFull", "showing"})
-                assertEquals("Under-14 ad work: " + flag, false, field(ads, flag));
-            assertNull(field(ads, "banner")); assertNull(field(ads, "full"));
+            assertSdkIdle(ads, "Under-14");
         });
+    }
+    private void appendAppAccessibility(AccessibilityNodeInfo node, String packageName, JSONArray nodes, int depth) throws Exception {
+        if (node == null || depth > 25 || nodes.length() >= 300) return;
+        // Text from other apps or system account surfaces is not exported.
+        if (packageName.contentEquals(node.getPackageName() == null ? "" : node.getPackageName())) {
+            String text = String.valueOf(node.getText() == null ? "" : node.getText());
+            String description = String.valueOf(node.getContentDescription() == null ? "" : node.getContentDescription());
+            nodes.put(new JSONObject().put("class", String.valueOf(node.getClassName()))
+                    .put("text", text.substring(0, Math.min(text.length(), 200)))
+                    .put("description", description.substring(0, Math.min(description.length(), 200)))
+                    .put("clickable", node.isClickable()).put("enabled", node.isEnabled()));
+        }
+        for (int i = 0; i < node.getChildCount() && nodes.length() < 300; i++)
+            appendAppAccessibility(node.getChild(i), packageName, nodes, depth + 1);
+    }
+    private void failureDiagnostics(ActivityScenario<MainActivity> scenario, Throwable failure) throws Exception {
+        File diagnostics = new File(directory, "failure-diagnostics"); assertTrue(diagnostics.mkdirs() || diagnostics.isDirectory());
+        JSONObject report = new JSONObject().put("status", "failed-diagnostic-only").put("failure", failure.toString())
+                .put("capturedAtUnixMillis", System.currentTimeMillis());
+        AtomicReference<JSONObject> nativeState = new AtomicReference<>();
+        scenario.onActivity(activity -> {
+            try {
+                PlayAds ads = (PlayAds) field(activity, "ads");
+                AlertDialog dialog = (AlertDialog) field(ads, "dialog");
+                JSONObject state = new JSONObject().put("screen", field(ads, "screen"))
+                        .put("savedAgeBand", activity.getSharedPreferences(PlayAds.AGE_PREFS, Context.MODE_PRIVATE)
+                                .getInt(PlayAds.AGE_KEY, AdAgePolicy.UNKNOWN))
+                        .put("controllerAgeBand", ((AdAgePolicy) field(ads, "age")).band())
+                        .put("dialogShowing", dialog != null && dialog.isShowing())
+                        .put("umpObtained", field(ads, "consent") != null).put("windowFocused", activity.hasWindowFocus());
+                for (String flag : new String[]{"initialized", "initializing", "consentBusy", "loadingFull", "showing"})
+                    state.put(flag, field(ads, flag));
+                nativeState.set(state);
+            } catch (Exception error) { throw new AssertionError(error); }
+        });
+        report.put("nativeAds", nativeState.get());
+        String dom = (String) new JSONTokener(js(scenario,
+                "JSON.stringify({route:location.hash||'#home',tutorialStep:document.querySelector('.tutorial')?.dataset.step||null,"
+                + "appInert:document.querySelector('#app')?.inert,heading:document.querySelector('#main h1')?.textContent||null,"
+                + "body:document.body.innerText.slice(0,1800)})")).nextValue();
+        report.put("appDom", new JSONObject(dom));
+        AccessibilityNodeInfo root = InstrumentationRegistry.getInstrumentation().getUiAutomation().getRootInActiveWindow();
+        String packageName = InstrumentationRegistry.getInstrumentation().getTargetContext().getPackageName();
+        JSONArray accessibility = new JSONArray(); appendAppAccessibility(root, packageName, accessibility, 0);
+        report.put("appAccessibility", accessibility);
+        if (root != null && packageName.contentEquals(root.getPackageName() == null ? "" : root.getPackageName())) {
+            Bitmap screen = InstrumentationRegistry.getInstrumentation().getUiAutomation().takeScreenshot();
+            if (screen != null) try {
+                try (FileOutputStream output = new FileOutputStream(new File(diagnostics, "failure-ui.jpg"))) {
+                    assertTrue(screen.compress(Bitmap.CompressFormat.JPEG, 95, output));
+                }
+                report.put("diagnosticScreenshot", "failure-ui.jpg").put("width", screen.getWidth()).put("height", screen.getHeight());
+            } finally { screen.recycle(); }
+        } else report.put("diagnosticScreenshotSkipped", "Foreground accessibility window is outside the isolated target app");
+        try (FileOutputStream output = new FileOutputStream(new File(diagnostics, "failure-state.json"))) {
+            output.write(report.toString(2).getBytes(StandardCharsets.UTF_8));
+        }
     }
     private void stable(ActivityScenario<MainActivity> scenario, String predicate) throws Exception {
         long deadline = SystemClock.elapsedRealtime() + 25000, unchangedSince = 0; String previous = "";
@@ -211,23 +287,30 @@ public final class StoreScreenshotTest {
                 .put("apiLevel", Build.VERSION.SDK_INT).put("model", Build.MODEL).put("supportedAbis", new JSONArray(Build.SUPPORTED_ABIS))
                 .put("hardware", Build.HARDWARE).put("densityDpi", context.getResources().getDisplayMetrics().densityDpi)
                 .put("startedAtUnixMillis", System.currentTimeMillis())
-                .put("agePath", "Native under-14 selection, representing a 13-year-old demo; neither ad SDK starts")
+                .put("plannedAgePath", "Finish tutorial while age is unknown; then select native under-14 band for a 13-year-old demo")
+                .put("ageSelectionCompleted", false).put("tutorialUnknownAgeNoSdkVerified", false).put("observedAgePath", "not-yet-observed")
                 .put("salesEnabled", false).put("releaseStatus", "Internal test build; production release and approval not asserted")
                 .put("speechValidation", "Japanese voice installation and physical audio audibility are not established by screenshots")
                 .put("screens", screens);
         writeManifest(manifest);
         try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class)) {
+            try {
             scenario.onActivity(activity -> activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT));
             until(scenario, "!!document.querySelector('.level-progress-grid') && !!document.querySelector('.tutorial')");
-            selectUnderFourteen(scenario);
+            verifyTutorialUnknownAge(scenario);
+            manifest.put("tutorialUnknownAgeNoSdkVerified", true).put("observedAgePath", "UNKNOWN during tutorial; no ad SDK obtained or initialized");
             for (int step = 0; step < 4; step++) {
                 until(scenario, "document.querySelector('.tutorial')?.dataset.step==='" + step + "'");
                 click(scenario, "[data-action=\"tutorial-next\"]");
             }
             until(scenario, "document.querySelector('.tutorial')?.dataset.step==='4'");
             click(scenario, "[data-action=\"tutorial-finish\"]");
+            until(scenario, "!document.querySelector('.tutorial') && !document.querySelector('#app').inert");
+            // The shipped app reports tutorial while onboarding is open. Only completion reports home and offers age selection.
+            selectUnderFourteen(scenario);
+            manifest.put("ageSelectionCompleted", true).put("observedAgePath", "UNDER_FOURTEEN selected through native picker on home; no ad SDK obtained or initialized");
             capture(scenario, "01-home.jpg", "home", "!!document.querySelector('.home-dashboard .level-progress-grid')",
-                    "Fresh install; select native under-14 band; complete all five tutorial steps");
+                    "Fresh install; verify unknown age/no ad SDK during tutorial; complete all five steps; select native under-14 band on home");
 
             click(scenario, ".bottom-nav a[href=\"#words\"]"); until(scenario, "!!document.querySelector('#search')");
             js(scenario, "document.querySelector('#search').value='学校';document.querySelector('#search').dispatchEvent(new Event('input',{bubbles:true}));true");
@@ -276,6 +359,10 @@ public final class StoreScreenshotTest {
                     + " && document.querySelector('#practice-canvas').getBoundingClientRect().width>0",
                     "Save and exit lesson via pause menu; open school word's independent writing options; start default three-repeat guided practice (no strokes or exam success fabricated)");
             assertEquals(4, screens.length()); manifest.put("status", "complete");
+            } catch (Throwable failure) {
+                try { failureDiagnostics(scenario, failure); } catch (Throwable diagnosticsFailure) { failure.addSuppressed(diagnosticsFailure); }
+                throw failure;
+            }
         } catch (Throwable failure) {
             manifest.put("status", "failed").put("failure", failure.toString()); throw failure;
         } finally {
