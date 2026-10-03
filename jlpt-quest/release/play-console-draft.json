@@ -133,7 +133,11 @@
       "content-review",
       "ad-consent-and-youth-configuration",
       "billing-sandbox",
-      "authenticated-RTDN-and-refunds"
+      "verified-free-account-and-google-apis-without-billing-link",
+      "live-hourly-polling-and-complete-voided-purchase-pagination",
+      "two-hour-or-future-sync-denial-and-outage-without-lease-extension",
+      "one-hour-lease-limit-and-real-refund-restore-deletion-tests",
+      "pending-purchase-reopen-and-optional-review-limitations"
     ],
     "unverifiedApprovalsMayNotBeSetTrue": true
   },
@@ -144,9 +148,21 @@
     "accountCreation": true,
     "deleteAccountWebUrl": "REQUIRED: publish data-deletion.html; Google SSO purchase identity is treated as an app account",
     "billingBackendDeployed": false,
-    "rtdnAndDurableTokenOwnershipImplemented": true,
+    "billingBackendImplementation": "billing-worker",
+    "billingEventMode": "poll",
+    "durableTokenOwnershipImplemented": true,
+    "periodicRefundReconciliationImplemented": true,
+    "pubSubActivationAllowed": false,
+    "actualCloudflareFreeAccountVerified": false,
+    "googleApiCallsWithoutBillingLinkVerified": false,
+    "hourlyPollingScheduleVerified": false,
+    "refundReconciliationMaxAgeSeconds": 7200,
+    "entitlementLeaseMaxSeconds": 3600,
+    "unseenPurchaseDiscoveryAvailable": false,
+    "optionalRefundReviewDiscovery": "unavailable-without-rtdn",
     "dataSafetyConsoleState": "unverified",
-    "rtdnAndRefundsOperationallyVerified": false,
+    "billingEventsAndRefundsOperationallyVerified": false,
+    "legacyRtdnDeliveryOperationallyVerified": false,
     "authenticatedAccountDeletionImplemented": true,
     "accountDeletionOperationallyVerified": false
   }

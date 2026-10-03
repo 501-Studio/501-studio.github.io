@@ -18,7 +18,7 @@
 - **INTERNET / ACCESS_NETWORK_STATE 권한이 있다.** 광고·Google Play 상품/구매 조회·향후 구매 검증에 네트워크를 사용한다.
 - Google Mobile Ads **25.4.0**, UMP **4.0.0**, Billing Library **9.1.0**, AndroidX WebKit **1.14.0**을 사용한다. 자체 분석 SDK는 없지만 광고 SDK 진단·상호작용 수집은 별도 신고 대상이다.
 - 기본 구성은 Google 테스트 광고 ID이며 판매는 `KOTOBA_SELLING_ENABLED=false`다. 상품은 준비 중이고 구매 버튼은 비활성화된다. Billing 상품/기존 구매 조회는 실행될 수 있으므로 판매 비활성화를 모든 네트워크 통신의 부재로 해석하지 않는다.
-- `billing-server/`에는 Google 계정 귀속, Play Integrity, 영구 SQLite 소유권, 인증된 RTDN과 환불 대사 코드 및 테스트를 구현했다. 실제 운영 배포·Google 자격증명·결제 및 환불 전달 검증은 완료되지 않았다. Android 판매 기본값은 계속 비활성화다.
+- 선택한 무료 서버는 `billing-worker/`의 Cloudflare Workers Free·SQLite Durable Objects이며, `BILLING_EVENT_MODE=poll`로 구매마다 Google에서 상태를 확인하고 정기적으로 Voided Purchases API를 대조한다. Google 계정 귀속, Play Integrity, 암호화한 영구 구매 소유권, 환불·삭제 차단을 구현하고 로컬·CI에서 검사했다. 실제 Free 계정 확인·운영 배포·Google 자격증명·예약 작업·Play 결제 검증은 완료되지 않았다. Android 판매와 서버 운영 승인 기본값은 계속 비활성화다. `billing-server/`의 Python RTDN 구현은 별도 참고 소스이며 선택한 무료 배포 방식이 아니다.
 - 501.dingerlab 계정에서 승인받은 AdMob 활성화를 완료하고 앱·배너·전면 광고 ID를 등록했다. 공개 ID는 `admob-production.json`에 기록하며 계정·앱 심사는 대기 중이다. 내부 테스트는 공식 테스트 광고 ID만 사용한다.
 
 ## Google Play 요건
@@ -60,7 +60,17 @@ Play Console과 앱 내부에 접근 가능한 개인정보처리방침이 필�
 
 ### 계정별 테스트와 16 KB 호환성
 
-구매 확인용 Google SSO는 기기 간 동일 이용권 소유자를 인증하므로 계정 생성·삭제 신고를 적용한다. 설정의 계정 연결·데이터 삭제 요청과 공개 웹 요청 페이지를 준비했다. 공개 URL, 본인 확인, 실제 서버 삭제·필요한 법정 보관·백업 복구 시 삭제 재적용을 검증해야 하며 Google nonce·짧은 인증 수명·Origin·명시적 확인이 있는 재설치 불필요 웹 삭제 코드와 삭제 계정의 RTDN 재연결 차단을 추가했다. 실제 OAuth 웹 흐름, 보관기간·백업 복구 운영까지는 완료되지 않아 `accountDeletion` gate는 아직 미완료다. [Google Play 계정 삭제 요구사항](https://support.google.com/googleplay/android-developer/answer/13327111).
+구매 확인용 Google SSO는 기기 간 동일 이용권 소유자를 인증하므로 계정 생성·삭제 신고를 적용한다. 설정의 계정 연결·데이터 삭제 요청과 공개 웹 요청 페이지를 준비했다. 공개 URL, 본인 확인, 실제 서버 삭제·필요한 법정 보관·백업 복구 시 삭제 재적용을 검증해야 하며 Google nonce·짧은 인증 수명·Origin·명시적 확인이 있는 재설치 불필요 웹 삭제 코드와 삭제 계정의 구매 조회·복원·재연결 차단을 추가했다. 선택한 polling 서버에서도 삭제 확정 뒤 이용권이 새로 발급되거나 계정 정보가 재생성되지 않는지 실제 운영 환경에서 검사한다. 실제 OAuth 웹 흐름, 보관기간·백업 복구 운영까지는 완료되지 않아 `accountDeletion` gate는 아직 미완료다. [Google Play 계정 삭제 요구사항](https://support.google.com/googleplay/android-developer/answer/13327111).
+
+### 비용 없는 구매·환불 확인 방식의 운영 검증
+
+서버·저장소에 비용을 발생시키지 않는다는 사용자 요청을 적용한다. 실제 Cloudflare 계정이 Workers Free인지 확인하고 유료 부가 기능·자동 유료 전환을 사용하지 않는다. Pub/Sub는 공식 시작 조건에 청구 계정이 필요하므로 활성화하지 않는다. Android Publisher와 Play Integrity도 실제 계정에서 청구 연결 없이 필요한 권한과 호출이 동작하는지 확인해야 한다. 소스의 무료 구성만으로 운영 비용이나 Google 연결 검증을 완료했다고 인증하지 않는다. [Pub/Sub 시작 조건](https://docs.cloud.google.com/pubsub/docs/publish-receive-messages-console).
+
+출시 전 실제 시간별 예약 실행과 Google 환불 조회의 성공 기록을 확인한다. 모든 페이지를 완료해야 성공 시각이 갱신되어야 하며 실패·반복 페이지·30일 초과 대사 공백은 복구 검증 없이 완료로 기록하지 않는다. 마지막 성공 시각이 2시간보다 오래됐거나 미래이면 새 이용권 발급이 차단되는지, 장애 때 기존 이용권을 연장하지 않는지 실제 배포에서 검사한다. 이용권은 최대 1시간이고 구독 만료가 더 빠르면 그 시각에 종료한다. 이 수명은 전체 환불 발견이 1시간 안에 끝난다는 보장이 아니며 Google 기록 반영과 polling 간격에 따른 지연이 있다.
+
+Polling은 서버에 등록되지 않은 새 구매 토큰이나 앱을 닫아 둔 동안 완료된 대기 구매를 자동으로 발견하지 못한다. 앱 재개 시 구매 조회와 필요한 Google 계정 재연결·구매 복원을 실제 Play 설치 앱으로 검사한다. 완료 후 3일 안에 확인하지 못한 구매는 자동 환불될 수 있으며 `PENDING` 상태에 혜택을 먼저 주면 안 된다. [구매 확인 지침](https://developer.android.com/google/play/billing/integrate).
+
+RTDN의 별도 토큰이 필요한 선택적 환불·차지백 의견 제출은 이 무료 모드에서 사용할 수 없다. 상태를 검토 대기 0건 또는 기능 검증 완료로 신고하지 않는다. 일반 Play Console 주문 조회·환불은 그 의견 제출 기능의 대체가 아니다. 기존 RTDN 데이터가 있는 환경의 모드 전환은 미해결 금융 작업과 삭제 기록을 보존하는 별도 이관 검토가 필요하다. [Review Refund 선택 기능](https://support.google.com/googleplay/android-developer/answer/17068375), [토큰을 요구하는 API](https://developers.google.com/android-publisher/api-ref/rest/v3/orders/reviewrefund).
 
 2023-11-13 이후 개인 개발자 계정은 프로덕션 접근 신청 전 **12명 이상이 14일 연속 opt-in한 비공개 테스트**가 필요하다. 계정 종류·생성일·현재 생산 트랙 권한을 콘솔에서 확인한다.
 
@@ -83,7 +93,7 @@ API 35+ 앱의 64-bit 기기 16 KB page size 호환성을 점검한다. 자체 N
 2. 13세 이상 청소년 콘텐츠 적합성, UMP 미성년자 동의·광고 데이터 처리와 최종 SDK 설정 확인.
 3. 공개 개인정보처리방침/약관의 시행일·URL·운영 세부 정보와 실제 SDK/서버 Data safety 신고.
 4. 계정 인증, 한국 배포 설정, 대상 연령, IARC, 앱 액세스, 스토어 이미지와 설명 등록.
-5. 운영 AdMob ID·동의 메시지와 상품 설정, 구매 검증 서버·키·RTDN·환불/복원·결제 테스트.
+5. 운영 AdMob ID·동의 메시지와 상품 설정, 무료 계정·구매 검증 서버·키·시간별 polling·대사 실패 차단·환불/복원/삭제·대기 결제와 앱 재개 테스트. Pub/Sub 없는 운영의 한계를 확인하고 실제 Google 연결·예약 실행 증거를 남긴다.
 6. 업로드 키·release AAB 서명·Play App Signing·해당 계정의 비공개 테스트 및 사전 출시 보고서.
 
 사용자는 이름 변경·개선·검사와 광고·결제 완성 후 한국 출시를 요청했다. 이전의 일괄 제출 금지 지시를 반복하지 않는다. 그러나 요청 자체가 위 검증·신고의 완료 증거는 아니다. 실제 증거 없이 `release-approval.json`을 true로 바꾸지 않으며 확인되지 않은 계정 정보나 정책 준수 상태를 대신 인증하지 않는다.
