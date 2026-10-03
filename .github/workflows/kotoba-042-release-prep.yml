@@ -167,6 +167,97 @@ jobs:
           test -c /dev/kvm
           sudo chown "$(id -u):$(id -g)" /dev/kvm
           sudo chmod 0600 /dev/kvm
+      - name: Prepare actual Android store screenshot capture
+        run: |
+          cat > /tmp/kotoba-capture-store-screenshots.sh <<'CAPTURE_SCRIPT'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          CAPTURE_DIR=/tmp/kotoba042-qa/store-screenshots
+          mkdir -p "$CAPTURE_DIR"
+          adb shell wm size | tr -d '\r' > "$CAPTURE_DIR/display-before.txt"
+          adb shell wm density | tr -d '\r' > "$CAPTURE_DIR/density-before.txt"
+          ORIGINAL_SIZE_OVERRIDE=$(sed -n 's/^Override size: //p' "$CAPTURE_DIR/display-before.txt")
+          cleanup_capture() {
+            local FAILED=0
+            if [ -n "$ORIGINAL_SIZE_OVERRIDE" ]; then adb shell wm size "$ORIGINAL_SIZE_OVERRIDE" || FAILED=1; else adb shell wm size reset || FAILED=1; fi
+            adb shell wm size | tr -d '\r' > "$CAPTURE_DIR/display-restored.txt" || FAILED=1
+            adb shell wm density | tr -d '\r' > "$CAPTURE_DIR/density-restored.txt" || FAILED=1
+            cmp "$CAPTURE_DIR/display-before.txt" "$CAPTURE_DIR/display-restored.txt" || FAILED=1
+            cmp "$CAPTURE_DIR/density-before.txt" "$CAPTURE_DIR/density-restored.txt" || FAILED=1
+            adb shell am force-stop com.studio501.kotoba.debug || FAILED=1
+            adb shell pm clear com.studio501.kotoba.debug | tr -d '\r' > "$CAPTURE_DIR/debug-data-cleanup.txt" || FAILED=1
+            grep -qx Success "$CAPTURE_DIR/debug-data-cleanup.txt" || FAILED=1
+            return "$FAILED"
+          }
+          # Attempt every cleanup action even if restoration fails; never publish success after failed cleanup.
+          trap 'CAPTURE_STATUS=$?; if ! cleanup_capture; then CAPTURE_STATUS=1; fi; if [ "$CAPTURE_STATUS" -ne 0 ]; then rm -f "$CAPTURE_DIR/capture-manifest.json"; fi; exit "$CAPTURE_STATUS"' EXIT
+          # This is the render surface itself. Images are never resized or edited.
+          adb shell wm size 1080x1920
+          adb shell wm size | tr -d '\r' > "$CAPTURE_DIR/display-capture.txt"
+          adb install -r app/build/outputs/apk/debug/app-debug.apk
+          adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+          adb shell pm clear com.studio501.kotoba.debug | tr -d '\r' | tee "$CAPTURE_DIR/debug-data-reset.txt" | grep -qx Success
+          set +e
+          adb shell am instrument -w -e class com.studio501.kotoba.StoreScreenshotTest -e captureStoreScreenshots true com.studio501.kotoba.debug.test/androidx.test.runner.AndroidJUnitRunner | tr -d '\r' | tee "$CAPTURE_DIR/instrumentation.txt"
+          INSTRUMENT_EXIT=${PIPESTATUS[0]}
+          set -e
+          # Only the five known capture files are exported; no app database or preferences leave the emulator.
+          for FILE in 01-home.jpg 02-vocabulary-search.jpg 03-study-example.jpg 04-handwriting.jpg capture-manifest.json; do
+            DESTINATION="$CAPTURE_DIR/$FILE"
+            if [ "$FILE" = capture-manifest.json ]; then DESTINATION="$CAPTURE_DIR/device-capture-manifest.json"; fi
+            if ! adb exec-out run-as com.studio501.kotoba.debug cat "files/store-screenshots/$FILE" > "$DESTINATION"; then rm -f "$DESTINATION"; fi
+          done
+          test "$INSTRUMENT_EXIT" -eq 0
+          grep -Fqx 'OK (1 test)' "$CAPTURE_DIR/instrumentation.txt"
+          python - "$CAPTURE_DIR" <<'CAPTURE_VALIDATION'
+          import hashlib, json, pathlib, struct, sys, time
+          root = pathlib.Path(sys.argv[1])
+          manifest = json.loads((root / 'device-capture-manifest.json').read_text())
+          expected = ['01-home.jpg', '02-vocabulary-search.jpg', '03-study-example.jpg', '04-handwriting.jpg']
+          assert manifest['status'] == 'complete' and manifest['variant'] == 'internal_debug'
+          assert manifest['packageName'] == 'com.studio501.kotoba.debug' and manifest['salesEnabled'] is False
+          assert manifest['imageEditing'] is False and len(manifest['screens']) == 4
+          assert [screen['file'] for screen in manifest['screens']] == expected
+          def jpeg_size(data):
+              assert data[:2] == b'\xff\xd8' and data[-2:] == b'\xff\xd9', 'Invalid JPEG envelope'
+              offset = 2
+              while offset < len(data):
+                  assert data[offset] == 255, 'Invalid JPEG marker'
+                  while data[offset] == 255: offset += 1
+                  marker = data[offset]; offset += 1
+                  if marker in [0xd8, 0xd9] or 0xd0 <= marker <= 0xd7: continue
+                  length = struct.unpack_from('>H', data, offset)[0]
+                  assert length >= 2 and offset + length <= len(data), 'Invalid JPEG segment'
+                  if marker in [0xc0, 0xc1, 0xc2]:
+                      bits, height, width, components = struct.unpack_from('>BHHB', data, offset + 2)
+                      assert bits == 8 and components == 3, 'Expected three-channel JPEG without alpha'
+                      return width, height
+                  offset += length
+              raise AssertionError('JPEG dimensions missing')
+          for screen in manifest['screens']:
+              data = (root / screen['file']).read_bytes()
+              assert jpeg_size(data) == (1080, 1920) == (screen['width'], screen['height'])
+              assert len(data) == screen['bytes'] and hashlib.sha256(data).hexdigest() == screen['sha256']
+              assert screen['format'] == 'JPEG' and screen['capturedAtUnixMillis'] >= manifest['startedAtUnixMillis']
+              assert screen['semanticPredicate'] and screen['navigation'] and screen['renderedState']
+          manifest['artifactValidation'] = {'status': 'passed', 'images': 4, 'dimensions': '1080x1920',
+                                            'sha256AndJpegHeaderChecked': True, 'validatedAtUnixMillis': int(time.time() * 1000)}
+          manifest['status'] = 'validated-cleanup-pending'
+          (root / 'pending-capture-manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
+          print('Four actual Android captures validated: JPEG 1080x1920; hashes match runtime manifest; internal debug variant.')
+          CAPTURE_VALIDATION
+          if ! cleanup_capture; then exit 1; fi
+          trap - EXIT
+          python - "$CAPTURE_DIR" <<'CAPTURE_COMPLETE'
+          import json, pathlib, sys
+          root = pathlib.Path(sys.argv[1])
+          manifest = json.loads((root / 'pending-capture-manifest.json').read_text())
+          manifest['status'] = 'complete'
+          manifest['artifactValidation']['displayRestorationAndDebugDataCleanup'] = 'passed'
+          (root / 'capture-manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
+          (root / 'pending-capture-manifest.json').unlink()
+          CAPTURE_COMPLETE
+          CAPTURE_SCRIPT
       - name: Actual Android lifecycle instrumentation
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -190,6 +281,14 @@ jobs:
             adb uninstall com.studio501.kotoba
             rm -f /tmp/kotoba-play-test-smoke.apk
             gradle --no-daemon connectedDebugAndroidTest
+            bash /tmp/kotoba-capture-store-screenshots.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jlpt-kotoba-042-android-store-screenshots
+          path: /tmp/kotoba042-qa/store-screenshots/
+          if-no-files-found: error
+          retention-days: 30
       - uses: actions/upload-artifact@v4
         with:
           name: jlpt-kotoba-042-internal
