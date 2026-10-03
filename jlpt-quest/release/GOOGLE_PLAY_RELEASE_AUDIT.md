@@ -19,7 +19,8 @@
 - Google Mobile Ads **25.4.0**, UMP **4.0.0**, Billing Library **9.1.0**, AndroidX WebKit **1.14.0**을 사용한다. 자체 분석 SDK는 없지만 광고 SDK 진단·상호작용 수집은 별도 신고 대상이다.
 - 기본 구성은 Google 테스트 광고 ID이며 판매는 `KOTOBA_SELLING_ENABLED=false`다. 상품은 준비 중이고 구매 버튼은 비활성화된다. Billing 상품/기존 구매 조회는 실행될 수 있으므로 판매 비활성화를 모든 네트워크 통신의 부재로 해석하지 않는다.
 - 선택한 무료 서버는 `billing-worker/`의 Cloudflare Workers Free·SQLite Durable Objects이며, `BILLING_EVENT_MODE=poll`로 구매마다 Google에서 상태를 확인하고 정기적으로 Voided Purchases API를 대조한다. Google 계정 귀속, Play Integrity, 암호화한 영구 구매 소유권, 환불·삭제 차단을 구현하고 로컬·CI에서 검사했다. 실제 Free 계정 확인·운영 배포·Google 자격증명·예약 작업·Play 결제 검증은 완료되지 않았다. Android 판매와 서버 운영 승인 기본값은 계속 비활성화다. `billing-server/`의 Python RTDN 구현은 별도 참고 소스이며 선택한 무료 배포 방식이 아니다.
-- 501.dingerlab 계정에서 승인받은 AdMob 활성화를 완료하고 앱·배너·전면 광고 ID를 등록했다. 공개 ID는 `admob-production.json`에 기록하며 계정·앱 심사는 대기 중이다. 내부 테스트는 공식 테스트 광고 ID만 사용한다.
+- 사용자가 승인한 계정 전환에 따라 기존 AdMob 게시자 `pub-1681642990054558`에서 2026-10-03 앱·배너·전면 광고를 생성했다. 공개 ID는 `admob-production.json`에 기록한다. AdMob 활성화는 완료했지만 AdMob 계정 승인은 대기 중이고, 앱은 Play 스토어 미등록·검토 필요 상태이며 심사 준비 완료를 검증하지 않았다. 개인정보 메시지·app-ads.txt 공개·실제 동의 및 광고 게재도 미검증이다. 내부 테스트는 공식 테스트 광고 ID만 사용한다. Play Console 계정과 지원 이메일 `501.dingerlab@gmail.com`은 기존 설정을 유지한다.
+- 소스 `2dabefb`의 CI에서 웹 단위 테스트 210개·Python 서버 테스트 73개·Android 계측 테스트 11개·브라우저 9개 스위트·Worker 테스트 69개가 통과했다. 이 소스 검사 결과는 새 AdMob 계정의 승인·실제 게재, 운영 서버·Google 연결, 실기기 결제 또는 출시 승인 증거가 아니다. 운영 승인 값은 계속 false다.
 
 ## Google Play 요건
 
