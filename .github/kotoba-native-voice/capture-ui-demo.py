@@ -61,6 +61,126 @@ def console_ok(result):
     )
 
 
+def pcm_stats(data):
+    """Measure decoded PCM only; timestamps are inspected separately."""
+    samples = array.array("h")
+    samples.frombytes(data[:len(data) // 2 * 2])
+    if sys.byteorder != "little":
+        samples.byteswap()
+    count = len(samples)
+    peak = max((abs(value) for value in samples), default=0)
+    rms = math.sqrt(sum(value * value for value in samples) / count) if count else 0
+    signal_count = sum(abs(value) >= 64 for value in samples)
+    return {"present": True, "decodeSucceeded": True, "sampleCount": count,
+            "sampleRateHz": 16000, "decodedSeconds": round(count / 16000, 6),
+            "peakPcm16": peak, "rmsPcm16": round(rms, 3), "signalSampleCount": signal_count,
+            "nonSilent": count > 0 and rms >= 20 and peak >= 128 and signal_count >= 1600}
+
+
+def summarize_audio_timeline(value, sample_rate):
+    """Compare actual packet clocks with decoder frame sample counts.
+
+    A container packet duration can include a timestamp gap. It must not be
+    treated as that many decoded audio samples or as verified silence.
+    """
+    combined = value.get("packets_and_frames")
+    if isinstance(combined, list):
+        packets = [item for item in combined if isinstance(item, dict) and item.get("type") == "packet"]
+        frames = [item for item in combined if isinstance(item, dict) and item.get("type") == "frame"]
+    else:
+        packets, frames = value.get("packets", []), value.get("frames", [])
+    if not isinstance(packets, list) or not isinstance(frames, list) or len(packets) + len(frames) > 30000:
+        raise CaptureError("Audio packet/frame list exceeded the evidence bound or had an invalid shape.")
+
+    def finite_number(item, keys):
+        for key in keys:
+            try:
+                number = float(item[key])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if math.isfinite(number):
+                return number
+        return None
+
+    packet_starts, packet_ends = [], []
+    packet_bytes, packet_duration_sum = 0, 0.0
+    for packet in packets:
+        if not isinstance(packet, dict):
+            continue
+        try:
+            packet_bytes += max(0, int(packet.get("size", 0)))
+        except (TypeError, ValueError):
+            pass
+        start = finite_number(packet, ("pts_time", "dts_time"))
+        duration = finite_number(packet, ("duration_time",))
+        if duration is not None and duration >= 0:
+            packet_duration_sum += duration
+        if start is not None:
+            packet_starts.append(start)
+            packet_ends.append(start + max(0, duration or 0))
+
+    frame_starts, frame_ends = [], []
+    decoded_samples, decoded_duration, usable_sample_frames = 0, 0.0, 0
+    gaps, first_gaps, overlaps = [], [], 0
+    previous_end = None
+    # Vorbis/WebM millisecond timestamps can differ by under one millisecond
+    # from their decoded sample clock. Report gaps above 2 ms separately.
+    gap_threshold = 0.002
+    for index, frame in enumerate(frames):
+        if not isinstance(frame, dict):
+            continue
+        try:
+            count = int(frame.get("nb_samples", 0))
+            rate = int(frame.get("sample_rate", sample_rate))
+        except (TypeError, ValueError):
+            continue
+        if count <= 0 or rate <= 0:
+            continue
+        usable_sample_frames += 1
+        decoded_samples += count
+        duration = count / rate
+        decoded_duration += duration
+        start = finite_number(frame, ("pts_time", "best_effort_timestamp_time", "pkt_dts_time"))
+        if start is None:
+            continue
+        end = start + duration
+        frame_starts.append(start)
+        frame_ends.append(end)
+        if previous_end is not None:
+            gap = start - previous_end
+            if gap > gap_threshold:
+                gaps.append(gap)
+                if len(first_gaps) < 4:
+                    first_gaps.append({"beforeFrameIndex": index, "startSeconds": round(start, 6),
+                                       "gapSeconds": round(gap, 6)})
+            elif gap < -gap_threshold:
+                overlaps += 1
+        previous_end = end
+    if not packet_starts or not frame_starts or not usable_sample_frames:
+        raise CaptureError("Audio inspection found no usable packet clock and decoded-frame sample evidence.")
+    frame_span = max(frame_ends) - min(frame_starts)
+    return {"present": True, "inspectionSucceeded": True, "streamSampleRateHz": sample_rate,
+            "packetCount": len(packets), "timedPacketCount": len(packet_starts),
+            "encodedPacketBytes": packet_bytes,
+            "firstPacketTimestampSeconds": round(min(packet_starts), 6),
+            "lastPacketEndSeconds": round(max(packet_ends), 6),
+            "packetClockSpanSeconds": round(max(packet_ends) - min(packet_starts), 6),
+            "packetDurationSumSeconds": round(packet_duration_sum, 6),
+            "frameCount": len(frames), "sampleBearingFrameCount": usable_sample_frames,
+            "timedSampleBearingFrameCount": len(frame_starts), "decodedFrameSampleCount": decoded_samples,
+            "decodedFrameDurationSeconds": round(decoded_duration, 6),
+            "firstFrameTimestampSeconds": round(min(frame_starts), 6),
+            "lastFrameEndSeconds": round(max(frame_ends), 6),
+            "frameClockSpanSeconds": round(frame_span, 6),
+            "clockSpanMinusDecodedDurationSeconds": round(frame_span - decoded_duration, 6),
+            "frameGapThresholdSeconds": gap_threshold, "frameGapCount": len(gaps),
+            "frameGapAtLeast100msCount": sum(gap >= 0.1 for gap in gaps),
+            "frameGapTotalSeconds": round(sum(gaps), 6),
+            "frameGapMaxSeconds": round(max(gaps, default=0), 6),
+            "frameOverlapCount": overlaps, "firstFrameGaps": first_gaps,
+            "timestampGapsEstablishSilence": False}
+
+
 class Capture:
     def __init__(self, args):
         self.args = args
@@ -139,14 +259,27 @@ class Capture:
             return None
 
     def discover(self):
-        help_result = self.adb_run(["emu", "screenrecord", "help"], record=True)
-        start_help = self.adb_run(["emu", "screenrecord", "start", "--help"], record=True)
+        # The console's own failed-start response specifies this help grammar.
+        # Neither "screenrecord help" nor "screenrecord start --help" is valid.
+        help_result = self.adb_run(["emu", "help", "screenrecord"], record=True)
+        start_help = self.adb_run(["emu", "help", "screenrecord", "start"], record=True)
         self.host_help = (help_result.stdout + help_result.stderr + start_help.stdout + start_help.stderr).decode(
             "utf-8", errors="replace"
         )
+        help_file = self.output / "emulator-screenrecord-help.txt"
+        help_file.write_text(self.host_help[:32768], encoding="utf-8")
+        accepted_start_help = start_help.stdout.decode("utf-8", errors="replace") if console_ok(start_help) else ""
+        accepted_help = help_result.stdout.decode("utf-8", errors="replace") if console_ok(help_result) else ""
         self.report["emulatorScreenrecordHelpInspected"] = True
-        self.report["hostRecorderTimeLimitAdvertised"] = "--time-limit" in self.host_help
-        self.report["hostRecorderStatusAdvertised"] = bool(re.search(r"(?m)^\s*status\b", self.host_help))
+        self.report["emulatorScreenrecordHelpAccepted"] = console_ok(help_result)
+        self.report["emulatorScreenrecordStartHelpAccepted"] = console_ok(start_help)
+        self.report["emulatorScreenrecordHelpFile"] = str(help_file)
+        self.report["hostRecorderTimeLimitAdvertised"] = bool(re.search(r"(?<![\w-])--time-limit(?![\w-])", accepted_start_help))
+        self.report["hostRecorderSizeAdvertised"] = bool(re.search(r"(?<![\w-])--size(?![\w-])", accepted_start_help))
+        self.report["hostRecorderStatusAdvertised"] = bool(re.search(r"(?m)^\s*status\b", accepted_help))
+        # Keep the current recorder resolution until the installed emulator's
+        # accepted size syntax and resulting source dimensions are established.
+        self.report["hostCaptureSizeOverrideApplied"] = False
         avd = self.adb_run(["emu", "avd", "name"], record=True)
         avd_lines = avd.stdout.decode("utf-8", errors="replace").replace("\r", "").splitlines()
         avd_name = next((line.strip() for line in avd_lines if re.fullmatch(r"[A-Za-z0-9_.-]{1,128}", line.strip()) and line.strip() != "OK"), None)
@@ -433,7 +566,8 @@ class Capture:
         if not math.isfinite(duration) or duration <= 0:
             raise CaptureError("The actual recording has no positive finite duration.")
         return {"durationSeconds": duration, "streams": [
-            {key: stream[key] for key in ("index", "codec_type", "codec_name", "width", "height", "sample_rate", "channels") if key in stream}
+            {key: stream[key] for key in ("index", "codec_type", "codec_name", "width", "height", "sample_rate", "channels",
+                                         "channel_layout", "time_base", "start_time", "duration", "nb_frames", "bit_rate") if key in stream}
             for stream in streams
         ]}
 
@@ -461,24 +595,66 @@ class Capture:
         return {"packetCount": len(starts), "firstTimestampSeconds": round(min(starts), 3),
                 "lastPacketEndSeconds": round(max(ends), 3), "coverageSeconds": round(max(ends) - min(starts), 3)}
 
-    def audio_stats(self, path, has_audio):
+    def audio_timeline(self, path, audio_stream, label):
+        if not audio_stream:
+            return {"present": False, "inspectionSucceeded": False}
+        try:
+            result = self.run([self.args.ffprobe, "-v", "error", "-select_streams", "a:0",
+                               "-show_packets", "-show_frames", "-show_entries",
+                               "packet=type,pts_time,dts_time,duration_time,size:frame=type,pts_time,best_effort_timestamp_time,pkt_dts_time,nb_samples,sample_rate",
+                               "-of", "json", str(path)], timeout=45)
+            if result.returncode != 0 or len(result.stdout) > 5 * 1024 * 1024:
+                detail = result.stderr.decode("utf-8", errors="replace")[-300:]
+                raise CaptureError("Audio packet/frame inspection failed or exceeded the evidence bound: " + detail)
+            value = json.loads(result.stdout)
+            if not isinstance(value, dict):
+                raise CaptureError("Audio packet/frame inspection returned an invalid JSON object.")
+            sample_rate = int(audio_stream.get("sample_rate", 0))
+            if not 1 <= sample_rate <= 384000:
+                raise CaptureError("Audio stream sample rate was unavailable or outside the diagnostic bound.")
+            summary = summarize_audio_timeline(value, sample_rate)
+            detail_file = self.output / (label + "-audio-packets-and-frames-" + self.nonce + ".json")
+            detail_file.write_bytes(result.stdout)
+            summary["packetFrameDetailFile"] = str(detail_file)
+            return summary
+        except (CaptureError, OSError, ValueError, TypeError) as error:
+            # These diagnostics must not discard a genuine video or alter its
+            # independent source-and-MP4 amplitude gate.
+            message = str(error)[:400]
+            self.report["diagnostics"].append(label + " audio timeline diagnostic: " + message)
+            return {"present": True, "inspectionSucceeded": False, "error": message}
+
+    def audio_stats(self, path, has_audio, channel_index=None):
         if not has_audio:
             return {"present": False, "nonSilent": False, "sampleCount": 0}
-        result = self.run([self.args.ffmpeg, "-v", "error", "-i", str(path), "-map", "0:a:0", "-t", str(self.args.max_duration),
-                           "-ac", "1", "-ar", "16000", "-f", "s16le", "pipe:1"], timeout=45)
+        command = [self.args.ffmpeg, "-v", "error", "-i", str(path), "-map", "0:a:0", "-t", str(self.args.max_duration)]
+        if channel_index is not None:
+            # Select an actual channel for diagnostics only. Do not amplify,
+            # fill timestamp gaps, or use this result to replace the mono gate.
+            command.extend(["-af", "pan=mono|c0=c" + str(channel_index)])
+        command.extend(["-ac", "1", "-ar", "16000", "-f", "s16le", "pipe:1"])
+        result = self.run(command, timeout=45)
         if result.returncode != 0 or len(result.stdout) > (self.args.max_duration * 16000 + 16000) * 2:
             return {"present": True, "nonSilent": False, "decodeSucceeded": False, "sampleCount": 0}
-        samples = array.array("h")
-        samples.frombytes(result.stdout[:len(result.stdout) // 2 * 2])
-        if sys.byteorder != "little":
-            samples.byteswap()
-        count = len(samples)
-        peak = max((abs(value) for value in samples), default=0)
-        rms = math.sqrt(sum(value * value for value in samples) / count) if count else 0
-        signal_count = sum(abs(value) >= 64 for value in samples)
-        return {"present": True, "decodeSucceeded": True, "sampleCount": count,
-                "peakPcm16": peak, "rmsPcm16": round(rms, 3), "signalSampleCount": signal_count,
-                "nonSilent": count > 0 and rms >= 20 and peak >= 128 and signal_count >= 1600}
+        return pcm_stats(result.stdout)
+
+    def source_channel_stats(self, path, audio_stream):
+        if not audio_stream:
+            return []
+        try:
+            count = int(audio_stream.get("channels", 0))
+        except (TypeError, ValueError):
+            count = 0
+        diagnostics = []
+        # Mono already has an independent decoded measurement. Inspect at most
+        # two real channels when the original capture has multiple channels.
+        for channel in range(min(count, 2)) if count > 1 else ():
+            try:
+                stats = self.audio_stats(path, True, channel)
+            except CaptureError as error:
+                stats = {"present": True, "nonSilent": False, "decodeSucceeded": False, "error": str(error)[:400]}
+            diagnostics.append({"channelIndex": channel, **stats})
+        return diagnostics
 
     def convert_and_export(self):
         if not self.report["ffmpegAvailable"] or not self.report["ffprobeAvailable"]:
@@ -487,8 +663,11 @@ class Capture:
         self.report["sourceProbe"] = source
         source_timeline = self.video_timeline(self.raw_path)
         self.report["sourceVideoTimeline"] = source_timeline
-        has_audio = any(stream.get("codec_type") == "audio" for stream in source["streams"])
+        source_audio_stream = next((stream for stream in source["streams"] if stream.get("codec_type") == "audio"), None)
+        has_audio = source_audio_stream is not None
         self.report["sourceAudio"] = self.audio_stats(self.raw_path, has_audio)
+        self.report["sourceAudioTimeline"] = self.audio_timeline(self.raw_path, source_audio_stream, "source")
+        self.report["sourceAudioChannels"] = self.source_channel_stats(self.raw_path, source_audio_stream)
         duration = min(source["durationSeconds"], self.args.max_duration)
         target = self.output / ("voice-ui-demo-" + self.nonce + ".mp4")
         audio_rate = 32000 if has_audio else 0
@@ -513,7 +692,9 @@ class Capture:
         probe = self.probe(target)
         target_timeline = self.video_timeline(target)
         self.report["mp4VideoTimeline"] = target_timeline
-        audio = self.audio_stats(target, any(stream.get("codec_type") == "audio" for stream in probe["streams"]))
+        mp4_audio_stream = next((stream for stream in probe["streams"] if stream.get("codec_type") == "audio"), None)
+        audio = self.audio_stats(target, mp4_audio_stream is not None)
+        self.report["mp4AudioTimeline"] = self.audio_timeline(target, mp4_audio_stream, "mp4")
         expected_coverage = self.report.get("recordingElapsedAtEndSeconds")
         self.report["captureTimelineToleranceSeconds"] = 2
         self.report["captureTimelineVerified"] = bool(

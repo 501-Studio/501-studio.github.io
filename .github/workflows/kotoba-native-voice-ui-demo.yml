@@ -6,6 +6,8 @@ on:
       - .github/kotoba-native-voice/NativeVoiceUiDemoTest.java
       - .github/kotoba-native-voice/capture-ui-demo.py
       - .github/workflows/kotoba-native-voice-ui-demo.yml
+      - kotoba-android/app/src/main/java/com/studio501/kotoba/PlaylistService.java
+      - kotoba-android/app/src/main/res/drawable/ic_playlist_stop.xml
   workflow_dispatch:
 permissions:
   contents: read
@@ -385,7 +387,8 @@ jobs:
                       'freshDataVerified', 'tutorialUnknownAgeNoSdkVerified', 'tutorialCompletedByTouch',
                       'nativeUnderFourteenChoiceVerified', 'recordingStartAcknowledged', 'wordSelectionByTouchVerified',
                       'screenOffObserved', 'screenOffProgressObserved', 'guestInternetUnavailableAtStart',
-                      'guestInternetUnavailableAtEnd', 'includeMeaning', 'includeExample', 'repeat']
+                      'guestInternetUnavailableAtEnd', 'includeMeaning', 'includeExample', 'repeat',
+                      'recordingMediaVolumeVerified']
           unverified = ['physicalAudibilityVerified', 'secureLockVerified', 'playGeneratedApkRuntimeVerified',
                         'productionAdsVerified', 'productionBillingVerified', 'productionReleaseApproved',
                         'demonstrationVideoCreated', 'loginActionPerformed', 'termsAcceptanceActionPerformed',

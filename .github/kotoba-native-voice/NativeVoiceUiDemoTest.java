@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.media.AudioManager;
 import android.media.MediaMetadata;
 import android.media.session.MediaController;
 import android.media.session.MediaSession;
@@ -111,7 +112,7 @@ public final class NativeVoiceUiDemoTest {
                 "guestInternetUnavailableAtStart", "guestInternetUnavailableAtEnd", "physicalAudibilityVerified", "secureLockVerified",
                 "demonstrationVideoCreated", "playGeneratedApkRuntimeVerified", "productionAdsVerified", "productionBillingVerified",
                 "productionReleaseApproved", "loginActionPerformed", "termsAcceptanceActionPerformed", "engineSelectionActionPerformed",
-                "languageInstallActionPerformed"}) report.put(flag, false);
+                "languageInstallActionPerformed", "recordingMediaVolumeVerified", "guestMusicVolumeAlteredByTest"}) report.put(flag, false);
         Throwable failure = null;
         try {
             require(!context.getSharedPreferences(PlayAds.AGE_PREFS, Context.MODE_PRIVATE).contains(PlayAds.AGE_KEY), "Fresh debug app data required: saved age exists");
@@ -176,10 +177,13 @@ public final class NativeVoiceUiDemoTest {
             report.put("includeMeaning", true).put("includeExample", true).put("repeat", true);
             stage = "actual_start_button";
             require(!servicePresent() && notice() == null, "Service unexpectedly exists before actual start tap");
+            report.put("mediaVolumeBeforeStart", mediaVolume());
             tapDom("[data-action=playlist-selected]", true);
             untilDom("location.hash==='#commute' && !!document.querySelector('#playlist-word')", 6000);
             awaitPlaying(15000);
             report.put("actualStartButtonTapVerified", true).put("mediaPlaybackForegroundServiceObserved", true);
+            stage = "recording_media_volume";
+            prepareRecordingMediaVolume();
             stage = "foreground_progress";
             observeProgress("automatic", 10000, false, false);
             report.put("automaticProgressObserved", true);
@@ -519,6 +523,15 @@ public final class NativeVoiceUiDemoTest {
         }
         return found;
     }
+    private boolean ownMediaCardPresent(Tree tree) {
+        if (!SYSTEM_UI.equals(tree.rootPackage) || tree.truncated) return false;
+        for (int i = 0; i < tree.rows.size(); i++) {
+            Row row = tree.rows.get(i);
+            if (row.visible && ("코토바 연속 듣기".equals(row.text.trim()) || "코토바 연속 듣기".equals(row.description.trim()))
+                    && ownCard(tree, i) >= 0) return true;
+        }
+        return false;
+    }
     private void openShade() throws Exception {
         require(screen().optBoolean("interactive") && !screen().optBoolean("keyguardLocked"), "Notification shade requires unlocked current display");
         require(swipe(displayWidth * .5f, 2, displayWidth * .5f, displayHeight * .72f, "open_notification_shade"), "Shade swipe rejected");
@@ -526,7 +539,7 @@ public final class NativeVoiceUiDemoTest {
     }
     private void tapMedia(String action, String[] labels, int expected) throws Exception {
         require(mediaMatches(expected), "Own media state wrong before " + action + " touch");
-        Tree last = null; long until = limit(6000); boolean expanded = false;
+        Tree last = null; long until = limit(8000); boolean expanded = false, reopened = false;
         while (SystemClock.elapsedRealtime() < until) {
             last = tree(); int index = mediaTarget(last, labels);
             if (index >= 0) {
@@ -538,15 +551,27 @@ public final class NativeVoiceUiDemoTest {
                 require(proof.optLong("snapshotAgeMs") <= 1800, "SystemUI target snapshot too old");
                 require(touch(target.bounds.exactCenterX(), target.bounds.exactCenterY(), proof), "SystemUI " + action + " touch rejected"); return;
             }
-            if (!expanded && SYSTEM_UI.equals(last.rootPackage)) {
+            if (!expanded && ownMediaCardPresent(last)) {
+                saveTree("system_ui_" + action + "_before_expansion", last);
                 require(swipe(displayWidth * .5f, 3, displayWidth * .5f, displayHeight * .78f, "expand_system_ui_controls"), "SystemUI expansion swipe rejected"); expanded = true;
+                SystemClock.sleep(700);
+            } else if (expanded && !reopened && SYSTEM_UI.equals(last.rootPackage) && !last.truncated && !ownMediaCardPresent(last)) {
+                // Expanding QS can replace the observed media-card context. Preserve that loss;
+                // return by a real Back key and reopen the shade once, without invoking playback.
+                saveTree("system_ui_" + action + "_own_card_context_lost", last);
+                require(key(KeyEvent.KEYCODE_BACK, "return_from_expanded_quick_settings"), "QS Back key rejected");
+                until(() -> homePackage.equals(activePackage()), 2500, "Back did not return to observed Home");
+                openShade(); reopened = true;
             }
             SystemClock.sleep(250);
         }
         if (last != null) saveTree("system_ui_" + action + "_absent_or_ambiguous", last);
-        boolean complete = last != null && !last.truncated && SYSTEM_UI.equals(last.rootPackage) && !last.rows.isEmpty();
+        boolean treeComplete = last != null && !last.truncated && SYSTEM_UI.equals(last.rootPackage) && !last.rows.isEmpty();
+        boolean ownCardObserved = treeComplete && ownMediaCardPresent(last);
+        boolean complete = treeComplete && ownCardObserved;
         report.put("unverifiedSystemUiControl", action).put("systemUiControlScanComplete", complete)
-                .put("systemUiControlObservation", complete ? "ABSENT_OR_AMBIGUOUS" : "SCAN_OR_SCREEN_CONTEXT_INCOMPLETE");
+                .put("systemUiOwnMediaCardObserved", ownCardObserved)
+                .put("systemUiControlObservation", complete ? "ABSENT_OR_AMBIGUOUS" : treeComplete ? "OWN_MEDIA_CARD_UNAVAILABLE" : "SCAN_OR_SCREEN_CONTEXT_INCOMPLETE");
         throw new AssertionError("Own SystemUI " + action + (complete ? " control absent/ambiguous" : " control unverified due incomplete scan/context") + "; no substitute action was executed");
     }
 
@@ -575,7 +600,36 @@ public final class NativeVoiceUiDemoTest {
         boolean up = automation.injectInputEvent(new KeyEvent(now, SystemClock.uptimeMillis(), KeyEvent.ACTION_UP, code, 0), true);
         recordGesture(new JSONObject().put("stage", stage).put("kind", "key").put("keyCode", code).put("purpose", purpose).put("downAccepted", down).put("upAccepted", up)); return down && up;
     }
-    private void recordGesture(JSONObject evidence) throws Exception { if (gestures.length() < 48) gestures.put(evidence.put("elapsedMs", elapsed())); else report.put("gesturesTruncated", true); }
+    private void recordGesture(JSONObject evidence) throws Exception { if (gestures.length() < 80) gestures.put(evidence.put("elapsedMs", elapsed())); else report.put("gesturesTruncated", true); }
+    private JSONObject mediaVolume() throws Exception {
+        AudioManager manager = context.getSystemService(AudioManager.class);
+        JSONObject result = new JSONObject().put("managerPresent", manager != null).put("stream", AudioManager.STREAM_MUSIC).put("elapsedMs", elapsed());
+        if (manager != null) result.put("volume", manager.getStreamVolume(AudioManager.STREAM_MUSIC))
+                .put("minimum", manager.getStreamMinVolume(AudioManager.STREAM_MUSIC)).put("maximum", manager.getStreamMaxVolume(AudioManager.STREAM_MUSIC))
+                .put("muted", manager.isStreamMute(AudioManager.STREAM_MUSIC)).put("fixedVolume", manager.isVolumeFixed()).put("musicActive", manager.isMusicActive());
+        return result;
+    }
+    private void prepareRecordingMediaVolume() throws Exception {
+        // The method runs only after the explicit debug/isolated-guest guards and real Start tap.
+        // Hardware keys set a reproducible recording condition; production never changes volume.
+        JSONObject before = mediaVolume(), current = before;
+        int maximum = before.optInt("maximum", -1), keyCount = 0;
+        JSONObject evidence = new JSONObject().put("before", before).put("after", current).put("hardwareKeyCount", keyCount)
+                .put("scope", "disposable_debug_emulator_only").put("directVolumeSetterUsed", false);
+        report.put("recordingMediaVolume", evidence);
+        require(before.optBoolean("managerPresent") && maximum > 0 && maximum <= 30, "Guest media volume range unavailable");
+        if (!before.optBoolean("fixedVolume")) {
+            while ((current.optInt("volume", -1) < maximum || current.optBoolean("muted")) && keyCount < maximum + 1) {
+                require(mediaMatches(PlaybackState.STATE_PLAYING), "Own playback changed during recording-volume keys");
+                require(key(KeyEvent.KEYCODE_VOLUME_UP, "isolated_guest_recording_media_volume_up"), "Recording-volume key rejected");
+                keyCount++; evidence.put("hardwareKeyCount", keyCount); SystemClock.sleep(150); current = mediaVolume(); evidence.put("after", current);
+                report.put("guestMusicVolumeAlteredByTest", before.optInt("volume", -1) != current.optInt("volume", -1)
+                        || before.optBoolean("muted") != current.optBoolean("muted"));
+            }
+            require(current.optInt("volume", -1) == maximum && !current.optBoolean("muted"), "Hardware keys did not establish unmuted maximum media volume");
+        } else require(current.optInt("volume", -1) > 0 && !current.optBoolean("muted"), "Fixed-volume guest has no unmuted media output");
+        report.put("recordingMediaVolumeVerified", true);
+    }
     private String activePackage() { AccessibilityNodeInfo root = automation.getRootInActiveWindow(); if (root == null) return ""; try { return String.valueOf(root.getPackageName()); } finally { root.recycle(); } }
     private JSONObject screen() throws Exception {
         PowerManager power = context.getSystemService(PowerManager.class); KeyguardManager keyguard = context.getSystemService(KeyguardManager.class);
