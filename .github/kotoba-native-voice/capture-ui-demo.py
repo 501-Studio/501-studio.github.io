@@ -276,9 +276,11 @@ class Capture:
         self.report["emulatorScreenrecordHelpFile"] = str(help_file)
         self.report["hostRecorderTimeLimitAdvertised"] = bool(re.search(r"(?<![\w-])--time-limit(?![\w-])", accepted_start_help))
         self.report["hostRecorderSizeAdvertised"] = bool(re.search(r"(?<![\w-])--size(?![\w-])", accepted_start_help))
+        self.report["hostRecorderBitRateAdvertised"] = bool(re.search(r"(?<![\w-])--bit-rate(?![\w-])", accepted_start_help))
+        self.report["hostRecorderFpsAdvertised"] = bool(re.search(r"(?<![\w-])--fps(?![\w-])", accepted_start_help))
         self.report["hostRecorderStatusAdvertised"] = bool(re.search(r"(?m)^\s*status\b", accepted_help))
-        # Keep the current recorder resolution until the installed emulator's
-        # accepted size syntax and resulting source dimensions are established.
+        # Request a smaller capture only when this console accepts and advertises
+        # all options. Actual source dimensions are independently checked below.
         self.report["hostCaptureSizeOverrideApplied"] = False
         avd = self.adb_run(["emu", "avd", "name"], record=True)
         avd_lines = avd.stdout.decode("utf-8", errors="replace").replace("\r", "").splitlines()
@@ -361,6 +363,10 @@ class Capture:
         arguments = ["emu", "screenrecord", "start"]
         if self.report["hostRecorderTimeLimitAdvertised"]:
             arguments.extend(["--time-limit", str(self.args.max_duration)])
+        if all(self.report.get(key) is True for key in
+               ("hostRecorderSizeAdvertised", "hostRecorderBitRateAdvertised", "hostRecorderFpsAdvertised")):
+            arguments.extend(["--size", "432x960", "--bit-rate", "400000", "--fps", "15"])
+            self.report["hostCaptureRequestedOptions"] = {"videoSize": [432, 960], "bitRateBitsPerSecond": 400000, "framesPerSecond": 15}
         arguments.append(self.host_name)
         result = self.adb_run(arguments, record=True)
         if not console_ok(result):
@@ -661,6 +667,14 @@ class Capture:
             raise CaptureError("ffmpeg and ffprobe must already be available; the original recording was retained.")
         source = self.probe(self.raw_path)
         self.report["sourceProbe"] = source
+        requested = self.report.get("hostCaptureRequestedOptions")
+        if requested and self.report.get("recorder") == "emulator-host-webm":
+            video = next((stream for stream in source["streams"] if stream.get("codec_type") == "video"), {})
+            observed_size = [video.get("width"), video.get("height")]
+            self.report["hostCaptureObservedVideoSize"] = observed_size
+            self.report["hostCaptureSizeOverrideApplied"] = observed_size == requested["videoSize"]
+            if not self.report["hostCaptureSizeOverrideApplied"]:
+                raise CaptureError("Host recording dimensions do not match the accepted requested size; original recording retained.")
         source_timeline = self.video_timeline(self.raw_path)
         self.report["sourceVideoTimeline"] = source_timeline
         source_audio_stream = next((stream for stream in source["streams"] if stream.get("codec_type") == "audio"), None)

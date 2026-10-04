@@ -206,44 +206,250 @@ jobs:
           sudo chmod 0600 /dev/kvm
       - name: Prepare actual Android store screenshot capture
         run: |
+          cat > /tmp/kotoba-capture-transport.py <<'CAPTURE_TRANSPORT'
+          import hashlib, json, os, pathlib, re, shutil, subprocess, sys, time
+
+          ROOT = pathlib.Path('/tmp/kotoba042-qa/store-screenshots')
+          PACKAGE = 'com.studio501.kotoba.debug'
+          SERIAL = 'emulator-5554'
+          FILES = ['capture-manifest.json', 'failure-diagnostics/failure-state.json',
+                   'failure-diagnostics/failure-ui.jpg', '01-home.jpg',
+                   '02-vocabulary-search.jpg', '03-study-example.jpg', '04-handwriting.jpg']
+          UUID = re.compile(r'[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}')
+
+          def require_isolated_ci():
+              required = {'GITHUB_ACTIONS': 'true', 'CI': 'true', 'RUNNER_OS': 'Linux',
+                          'RUNNER_ENVIRONMENT': 'github-hosted', 'GITHUB_JOB': 'android',
+                          'GITHUB_REPOSITORY': '501-Studio/501-studio.github.io',
+                          'KOTOBA_CAPTURE_ISOLATED': 'true', 'KOTOBA_CAPTURE_SERIAL': SERIAL}
+              assert all(os.environ.get(key) == value for key, value in required.items()), 'Isolated CI guard failed'
+              assert os.environ.get('ANDROID_SERIAL', SERIAL) == SERIAL, 'Unexpected selected serial'
+              event = json.loads(pathlib.Path(os.environ['GITHUB_EVENT_PATH']).read_text())
+              assert event['repository']['private'] is False, 'Public repository required'
+              assert event['repository']['full_name'] == required['GITHUB_REPOSITORY'], 'Wrong repository event'
+
+          class Transport:
+              def __init__(self, root, initialize=False):
+                  self.root = root
+                  self.diagnostics = root / 'failure-diagnostics'
+                  self.diagnostics.mkdir(parents=True, exist_ok=True)
+                  self.path = self.diagnostics / 'transport-session.json'
+                  if initialize:
+                      assert not self.path.exists(), 'Refusing an existing capture session'
+                      self.state = {'serial': SERIAL, 'bootId': None, 'sequence': 0, 'reconnectUsed': False, 'commandsStarted': [],
+                                    'phase': 'setup', 'deadlines': {'setup': time.monotonic() + 300}}
+                      self.save()
+                  else:
+                      self.state = json.loads(self.path.read_text())
+                      assert self.state['serial'] == SERIAL, 'Capture serial changed'
+
+              def save(self):
+                  self.path.write_text(json.dumps(self.state, sort_keys=True) + '\n')
+
+              def phase(self, name):
+                  assert name in ['reads', 'cleanup'], 'Unexpected capture phase'
+                  if name not in self.state['deadlines']:
+                      assert (name == 'reads' and self.state['phase'] == 'setup') or name == 'cleanup', 'Phase order changed'
+                      self.state['deadlines'][name] = time.monotonic() + (60 if name == 'reads' else 45)
+                  assert self.state['phase'] != 'cleanup' or name == 'cleanup', 'Cleanup cannot reset read budget'
+                  self.state['phase'] = name
+                  self.save()
+
+              def run(self, label, args, seconds, local_deadline=None, unselected=False):
+                  self.state['sequence'] += 1
+                  self.save()
+                  prefix = self.diagnostics / ('transport-%04d-%s' % (self.state['sequence'], label))
+                  out, err = pathlib.Path(str(prefix) + '.stdout.raw'), pathlib.Path(str(prefix) + '.stderr.txt')
+                  deadline = self.state['deadlines'][self.state['phase']]
+                  if local_deadline is not None: deadline = min(deadline, local_deadline)
+                  remaining = deadline - time.monotonic()
+                  result = {'sequence': self.state['sequence'], 'phase': self.state['phase'], 'label': label,
+                            'serial': SERIAL, 'arguments': args, 'returnCode': None, 'timedOut': False, 'startError': None,
+                            'deadlineExhausted': remaining <= 0, 'stdoutFile': out.name, 'stderrFile': err.name}
+                  with out.open('wb') as stdout, err.open('wb') as stderr:
+                      if remaining > 0:
+                          command = ['adb'] + ([] if unselected else ['-s', SERIAL]) + args
+                          try:
+                              result['returnCode'] = subprocess.run(command, stdout=stdout, stderr=stderr,
+                                                                     timeout=min(seconds, remaining), check=False).returncode
+                          except subprocess.TimeoutExpired:
+                              result['timedOut'] = True
+                          except OSError as error:
+                              result['startError'] = str(error)
+                  result['stdoutBytes'], result['stderrBytes'] = out.stat().st_size, err.stat().st_size
+                  result['wrapperExit'] = (124 if result['timedOut'] or result['deadlineExhausted'] else
+                                           127 if result['startError'] else result['returnCode'])
+                  with err.open('rb') as stream: result['stderrExcerpt'] = stream.read(512).decode('utf-8', errors='replace')
+                  pathlib.Path(str(prefix) + '.json').write_text(json.dumps(result, sort_keys=True) + '\n')
+                  print('KOTOBA_SCREENSHOT_TRANSPORT_JSON=' + json.dumps(result, separators=(',', ':')), file=sys.stderr)
+                  assert out.stat().st_size <= 8 * 1024 * 1024, 'Bounded capture command output exceeded'
+                  return result, out
+
+              @staticmethod
+              def text(result):
+                  return result[1].read_text(errors='replace').strip()
+
+              def initialize_identity(self):
+                  devices = self.run('devices', ['devices'], 4, unselected=True)
+                  rows = [line.split() for line in self.text(devices).splitlines()[1:] if line.strip()]
+                  assert devices[0]['wrapperExit'] == 0 and rows == [[SERIAL, 'device']], 'Expected sole ready emulator'
+                  for label, prop, expected in [('qemu', 'ro.kernel.qemu', '1'), ('sdk', 'ro.build.version.sdk', '36')]:
+                      result = self.run(label, ['shell', 'getprop', prop], 4)
+                      assert result[0]['wrapperExit'] == 0 and self.text(result) == expected, 'Wrong disposable emulator identity'
+                  boot = self.run('initial-boot-id', ['shell', 'cat', '/proc/sys/kernel/random/boot_id'], 4)
+                  assert boot[0]['wrapperExit'] == 0 and UUID.fullmatch(self.text(boot)), 'Original guest boot ID unavailable'
+                  self.state['bootId'] = self.text(boot)
+                  self.save()
+
+              def ready(self):
+                  deadline = min(time.monotonic() + 12, self.state['deadlines'][self.state['phase']])
+                  for poll in range(4):
+                      state = self.run('get-state', ['get-state'], 4, deadline)
+                      if state[0]['wrapperExit'] == 0 and self.text(state) == 'device':
+                          boot = self.run('same-boot-id', ['shell', 'cat', '/proc/sys/kernel/random/boot_id'], 4, deadline)
+                          if boot[0]['wrapperExit'] == 0 and UUID.fullmatch(self.text(boot)):
+                              assert self.text(boot) == self.state['bootId'], 'Original guest changed; refusing recovery'
+                              return
+                      if not self.state['reconnectUsed'] and time.monotonic() < deadline:
+                          self.state['reconnectUsed'] = True
+                          self.save()
+                          self.run('reconnect', ['reconnect'], 4, deadline)
+                      if poll < 3 and time.monotonic() < deadline:
+                          time.sleep(max(0, min(1, deadline - time.monotonic())))
+                  raise RuntimeError('Same-guest ADB readiness unavailable within bounded budget')
+
+              def command(self, label, args):
+                  allowed = {'display-before': ['shell', 'wm', 'size'], 'density-before': ['shell', 'wm', 'density'],
+                             'display-capture': ['shell', 'wm', 'size'], 'display-restored': ['shell', 'wm', 'size'],
+                             'density-restored': ['shell', 'wm', 'density'], 'set-size': ['shell', 'wm', 'size', '1080x1920'],
+                             'force-stop': ['shell', 'am', 'force-stop', PACKAGE],
+                             'clear-before': ['shell', 'pm', 'clear', PACKAGE], 'clear-after': ['shell', 'pm', 'clear', PACKAGE],
+                             'install-debug': ['install', '-r', 'app/build/outputs/apk/debug/app-debug.apk'],
+                             'install-test': ['install', '-r', 'app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk'],
+                             'instrument': ['shell', 'am', 'instrument', '-w', '-e', 'class',
+                                            'com.studio501.kotoba.StoreScreenshotTest', '-e', 'captureStoreScreenshots', 'true',
+                                            PACKAGE + '.test/androidx.test.runner.AndroidJUnitRunner']}
+                  if label == 'restore-size':
+                      assert len(args) == 4 and args[:3] == ['shell', 'wm', 'size']
+                      assert args[3] == 'reset' or re.fullmatch(r'[1-9][0-9]{1,4}x[1-9][0-9]{1,4}', args[3])
+                  else:
+                      assert allowed.get(label) == args, 'Non-capture command refused'
+                  cleanup_labels = ['restore-size', 'display-restored', 'density-restored', 'force-stop', 'clear-after']
+                  assert self.state['phase'] == ('cleanup' if label in cleanup_labels else 'setup'), 'Wrong command phase'
+                  if label in ['instrument', 'install-debug', 'install-test', 'clear-before']:
+                      assert label not in self.state['commandsStarted'], 'Refusing capture setup or test replay'
+                      self.state['commandsStarted'].append(label)
+                      self.save()
+                  self.ready()
+                  seconds = 180 if label == 'instrument' else 45 if label.startswith('install-') else 8
+                  result, out = self.run(label, args, seconds)
+                  sys.stdout.buffer.write(out.read_bytes())
+                  return result['wrapperExit']
+
+              def read(self, name):
+                  assert self.state['phase'] == 'reads' and name in FILES, 'Non-capture file refused'
+                  destination = self.root / ('device-capture-manifest.json' if name == 'capture-manifest.json' else name)
+                  raw = destination.with_name(destination.name + '.export-raw')
+                  if name in FILES[3:]: raw = self.diagnostics / (name + '.export-raw')
+                  required = name == 'capture-manifest.json' or name in FILES[3:]
+                  for attempt in range(1, 4):
+                      try:
+                          self.ready()
+                      except RuntimeError:
+                          if required: raise
+                          raw.write_bytes(b'')
+                          evidence = {'file': name, 'attempt': attempt, 'required': False, 'accepted': False,
+                                      'reason': 'optional-readiness-unavailable', 'bytes': 0,
+                                      'transferSequence': self.state['sequence']}
+                          (self.diagnostics / ('optional-%04d.json' % self.state['sequence'])).write_text(json.dumps(evidence) + '\n')
+                          print('KOTOBA_SCREENSHOT_FILE_TRANSFER_JSON=' + json.dumps(evidence, separators=(',', ':')), file=sys.stderr)
+                          return 0
+                      result, out = self.run('read-' + pathlib.PurePosixPath(name).name.replace('.', '-') + '-%d' % attempt,
+                                             ['exec-out', 'run-as', PACKAGE, 'cat', 'files/store-screenshots/' + name], 10)
+                      data = out.read_bytes()
+                      valid, reason = False, 'adb-transfer-failed'
+                      if result['wrapperExit'] == 0:
+                          try:
+                              if name.endswith('.json'):
+                                  assert isinstance(json.loads(data), dict)
+                              else:
+                                  assert len(data) > 10000 and data[:2] == b'\xff\xd8' and data[-2:] == b'\xff\xd9'
+                              if name in FILES[3:]:
+                                  manifest = json.loads((self.root / 'device-capture-manifest.json').read_text())
+                                  screens = [row for row in manifest['screens'] if row['file'] == name]
+                                  assert len(screens) == 1 and len(data) == screens[0]['bytes']
+                                  assert hashlib.sha256(data).hexdigest() == screens[0]['sha256']
+                              valid, reason = True, 'validated-transfer'
+                          except (AssertionError, ValueError, KeyError, UnicodeError):
+                              reason = 'payload-invalid'
+                      evidence = {'file': name, 'attempt': attempt, 'required': required, 'transferSequence': result['sequence'],
+                                  'accepted': valid, 'reason': reason, 'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()}
+                      (self.diagnostics / ('transfer-%04d.json' % result['sequence'])).write_text(json.dumps(evidence) + '\n')
+                      print('KOTOBA_SCREENSHOT_FILE_TRANSFER_JSON=' + json.dumps(evidence, separators=(',', ':')), file=sys.stderr)
+                      if valid or (not required and result['wrapperExit'] == 0):
+                          shutil.copyfile(out, raw)
+                          return 0
+                  if not required:
+                      # Optional diagnostics may not have been produced. Failed bytes remain unaccepted evidence.
+                      shutil.copyfile(out, raw)
+                      return 0
+                  raise RuntimeError('Fixed existing capture file transfer failed: ' + name)
+
+          def main():
+              require_isolated_ci()
+              action, *args = sys.argv[1:]
+              transport = Transport(ROOT, initialize=action == 'init')
+              if action == 'init': transport.initialize_identity(); return 0
+              if action == 'phase': transport.phase(*args); return 0
+              if action == 'command': return transport.command(args[0], args[1:])
+              if action == 'read': return transport.read(*args)
+              raise AssertionError('Unexpected transport operation')
+
+          if __name__ == '__main__':
+              sys.exit(main())
+          CAPTURE_TRANSPORT
           cat > /tmp/kotoba-capture-store-screenshots.sh <<'CAPTURE_SCRIPT'
           #!/usr/bin/env bash
           set -euo pipefail
           CAPTURE_DIR=/tmp/kotoba042-qa/store-screenshots
           mkdir -p "$CAPTURE_DIR/failure-diagnostics"
-          adb shell wm size | tr -d '\r' > "$CAPTURE_DIR/display-before.txt"
-          adb shell wm density | tr -d '\r' > "$CAPTURE_DIR/density-before.txt"
+          python3 /tmp/kotoba-capture-transport.py init
+          capture_adb() { python3 /tmp/kotoba-capture-transport.py command "$@"; }
+          capture_adb display-before shell wm size | tr -d '\r' > "$CAPTURE_DIR/display-before.txt"
+          capture_adb density-before shell wm density | tr -d '\r' > "$CAPTURE_DIR/density-before.txt"
           ORIGINAL_SIZE_OVERRIDE=$(sed -n 's/^Override size: //p' "$CAPTURE_DIR/display-before.txt")
           cleanup_capture() {
             local FAILED=0
-            if [ -n "$ORIGINAL_SIZE_OVERRIDE" ]; then adb shell wm size "$ORIGINAL_SIZE_OVERRIDE" || FAILED=1; else adb shell wm size reset || FAILED=1; fi
-            adb shell wm size | tr -d '\r' > "$CAPTURE_DIR/display-restored.txt" || FAILED=1
-            adb shell wm density | tr -d '\r' > "$CAPTURE_DIR/density-restored.txt" || FAILED=1
+            python3 /tmp/kotoba-capture-transport.py phase cleanup || FAILED=1
+            if [ -n "$ORIGINAL_SIZE_OVERRIDE" ]; then capture_adb restore-size shell wm size "$ORIGINAL_SIZE_OVERRIDE" || FAILED=1; else capture_adb restore-size shell wm size reset || FAILED=1; fi
+            capture_adb display-restored shell wm size | tr -d '\r' > "$CAPTURE_DIR/display-restored.txt" || FAILED=1
+            capture_adb density-restored shell wm density | tr -d '\r' > "$CAPTURE_DIR/density-restored.txt" || FAILED=1
             cmp "$CAPTURE_DIR/display-before.txt" "$CAPTURE_DIR/display-restored.txt" || FAILED=1
             cmp "$CAPTURE_DIR/density-before.txt" "$CAPTURE_DIR/density-restored.txt" || FAILED=1
-            adb shell am force-stop com.studio501.kotoba.debug || FAILED=1
-            adb shell pm clear com.studio501.kotoba.debug | tr -d '\r' > "$CAPTURE_DIR/debug-data-cleanup.txt" || FAILED=1
+            capture_adb force-stop shell am force-stop com.studio501.kotoba.debug || FAILED=1
+            capture_adb clear-after shell pm clear com.studio501.kotoba.debug | tr -d '\r' > "$CAPTURE_DIR/debug-data-cleanup.txt" || FAILED=1
             grep -qx Success "$CAPTURE_DIR/debug-data-cleanup.txt" || FAILED=1
             return "$FAILED"
           }
           # Attempt every cleanup action even if restoration fails; never publish success after failed cleanup.
           trap 'CAPTURE_STATUS=$?; if ! cleanup_capture; then CAPTURE_STATUS=1; fi; if [ "$CAPTURE_STATUS" -ne 0 ]; then rm -f "$CAPTURE_DIR/capture-manifest.json"; for FILE in 01-home.jpg 02-vocabulary-search.jpg 03-study-example.jpg 04-handwriting.jpg; do if [ -f "$CAPTURE_DIR/$FILE" ]; then mv "$CAPTURE_DIR/$FILE" "$CAPTURE_DIR/failure-diagnostics/$FILE"; fi; done; fi; exit "$CAPTURE_STATUS"' EXIT
           # This is the render surface itself. Images are never resized or edited.
-          adb shell wm size 1080x1920
-          adb shell wm size | tr -d '\r' > "$CAPTURE_DIR/display-capture.txt"
-          adb install -r app/build/outputs/apk/debug/app-debug.apk
-          adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
-          adb shell pm clear com.studio501.kotoba.debug | tr -d '\r' | tee "$CAPTURE_DIR/debug-data-reset.txt" | grep -qx Success
+          capture_adb set-size shell wm size 1080x1920
+          capture_adb display-capture shell wm size | tr -d '\r' > "$CAPTURE_DIR/display-capture.txt"
+          capture_adb install-debug install -r app/build/outputs/apk/debug/app-debug.apk
+          capture_adb install-test install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+          capture_adb clear-before shell pm clear com.studio501.kotoba.debug | tr -d '\r' | tee "$CAPTURE_DIR/debug-data-reset.txt" | grep -qx Success
           set +e
-          adb shell am instrument -w -e class com.studio501.kotoba.StoreScreenshotTest -e captureStoreScreenshots true com.studio501.kotoba.debug.test/androidx.test.runner.AndroidJUnitRunner | tr -d '\r' | tee "$CAPTURE_DIR/instrumentation.txt"
+          capture_adb instrument shell am instrument -w -e class com.studio501.kotoba.StoreScreenshotTest -e captureStoreScreenshots true com.studio501.kotoba.debug.test/androidx.test.runner.AndroidJUnitRunner | tr -d '\r' | tee "$CAPTURE_DIR/instrumentation.txt"
           INSTRUMENT_EXIT=${PIPESTATUS[0]}
           set -e
+          python3 /tmp/kotoba-capture-transport.py phase reads
           # Export only fixed diagnostics first; no app database or preferences leave the emulator.
+          DIAGNOSTICS_STATUS=0
           for FILE in capture-manifest.json failure-diagnostics/failure-state.json failure-diagnostics/failure-ui.jpg; do
-            DESTINATION="$CAPTURE_DIR/$FILE"
-            if [ "$FILE" = capture-manifest.json ]; then DESTINATION="$CAPTURE_DIR/device-capture-manifest.json"; fi
-            adb exec-out run-as com.studio501.kotoba.debug cat "files/store-screenshots/$FILE" > "$DESTINATION.export-raw" || true
+            python3 /tmp/kotoba-capture-transport.py read "$FILE" || DIAGNOSTICS_STATUS=1
           done
+          test "$DIAGNOSTICS_STATUS" -eq 0
           python - "$CAPTURE_DIR" <<'CAPTURE_DIAGNOSTICS'
           import json, pathlib, sys
           root = pathlib.Path(sys.argv[1])
@@ -272,7 +478,7 @@ jobs:
           CAPTURE_READY
           # Successful image exports remain diagnostic raw bytes until all four pass header/dimension/hash validation.
           for FILE in 01-home.jpg 02-vocabulary-search.jpg 03-study-example.jpg 04-handwriting.jpg; do
-            adb exec-out run-as com.studio501.kotoba.debug cat "files/store-screenshots/$FILE" > "$CAPTURE_DIR/failure-diagnostics/$FILE.export-raw" || true
+            python3 /tmp/kotoba-capture-transport.py read "$FILE"
           done
           python - "$CAPTURE_DIR" <<'CAPTURE_VALIDATION'
           import hashlib, json, pathlib, struct, sys, time
@@ -328,12 +534,16 @@ jobs:
           CAPTURE_SCRIPT
       - name: Actual Android lifecycle instrumentation
         id: native_lifecycle
+        env:
+          KOTOBA_CAPTURE_ISOLATED: 'true'
+          KOTOBA_CAPTURE_SERIAL: emulator-5554
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 36
           target: google_apis
           arch: x86_64
           profile: pixel_6
+          emulator-port: 5554
           disable-animations: true
           working-directory: kotoba-android
           script: |
