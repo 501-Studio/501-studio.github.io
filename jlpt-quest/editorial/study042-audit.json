@@ -1,0 +1,41 @@
+{
+  "contentRevision": "042-editorial-1",
+  "reviewedOn": "2026-10-03",
+  "reviewer": "separate assistant review; not independent external native-speaker review",
+  "reviewMethod": "All 100 curated seeds were individually read: 200 easy/natural Japanese-Korean sentence pairs and 100 Japanese paraphrases; all 80 usage sentences in 20 questions and all 20 context questions were read. Compared seeded identities against the reviewed catalogue and generated seed content against normalized editorial source. Eight shortened gloss wordings retain valid representative senses.",
+  "counts": {
+    "curatedSeeds": 100,
+    "bilingualSentencePairs": 200,
+    "paraphrases": 100,
+    "usageItems": 20,
+    "usageSentences": 80,
+    "contextItems": 20
+  },
+  "sourceFiles": [
+    {
+      "path": "editorial/study040.tsv",
+      "sha256": "5a03ece60a3dab87037616988a61f6e4d18e48c9f9165217f01483b02032bfc2"
+    },
+    {
+      "path": "editorial/usage040.json",
+      "sha256": "bb4f1c9583394c108164391407aa4a5a46e59dad6bb561c3af761dc9975892b6"
+    },
+    {
+      "path": "data/context040.js",
+      "sha256": "0657cd3342375b0175414aadd278f714f7db7579dc1d404d9f7ff2786b19906b"
+    },
+    {
+      "path": "data/study040-seed.js",
+      "sha256": "0f5bad3f6e846e4c2cada6bcb48afb0bdaaec11b380a505a01841e6c532b1c61"
+    }
+  ],
+  "identityMismatches": 0,
+  "generatedContentMismatches": 0,
+  "semanticConflicts": 0,
+  "changes": [],
+  "unresolved": [],
+  "limitations": [
+    "No independent external native-speaker review asserted.",
+    "Mock questions are original practice material, not official JLPT questions."
+  ]
+}

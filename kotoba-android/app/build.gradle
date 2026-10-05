@@ -1,10 +1,30 @@
 plugins { id 'com.android.application' }
 def stringValue = { String value -> groovy.json.JsonOutput.toJson(value) }
 def envValue = { String name, String fallback -> System.getenv(name) ?: fallback }
-def prodRequested = gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') }
 def sampleApp = 'ca-app-pub-3940256099942544~3347511713'
-def appIdValue = envValue('ADMOB_APP_ID', sampleApp)
+def sampleBanner = 'ca-app-pub-3940256099942544/6300978111'
+def sampleInterstitial = 'ca-app-pub-3940256099942544/1033173712'
+def adConfigFile = rootProject.file('../jlpt-quest/release/admob-production.json')
+def adConfig = adConfigFile.exists() ? new groovy.json.JsonSlurper().parse(adConfigFile) : [:]
+def appIdValue = envValue('ADMOB_APP_ID', adConfig.appId ?: sampleApp)
+def bannerIdValue = envValue('ADMOB_BANNER_ID', adConfig.bannerId ?: 'ca-app-pub-3940256099942544/6300978111')
+def interstitialIdValue = envValue('ADMOB_INTERSTITIAL_ID', adConfig.interstitialId ?: 'ca-app-pub-3940256099942544/1033173712')
 def verifiedSales = envValue('KOTOBA_SELLING_ENABLED', 'false') == 'true'
+def oauthClientId = envValue('GOOGLE_OAUTH_CLIENT_ID', '')
+def integrityProject = envValue('PLAY_INTEGRITY_CLOUD_PROJECT_NUMBER', '0')
+if (!(integrityProject ==~ /[0-9]{1,18}/)) throw new GradleException('Invalid Play Integrity Cloud project number.')
+def playTestStage = envValue('KOTOBA_PLAY_TEST_STAGE', '')
+def uploadKeystore = System.getenv('KOTOBA_UPLOAD_KEYSTORE')
+def uploadStorePassword = System.getenv('KOTOBA_UPLOAD_STORE_PASSWORD')
+def uploadKeyAlias = System.getenv('KOTOBA_UPLOAD_KEY_ALIAS')
+def uploadKeyPassword = System.getenv('KOTOBA_UPLOAD_KEY_PASSWORD')
+def uploadSigningReady = [uploadKeystore, uploadStorePassword, uploadKeyAlias, uploadKeyPassword].every { it } && rootProject.file(uploadKeystore).isFile()
+def versionCodeValue = envValue('KOTOBA_VERSION_CODE', '15')
+if (!(versionCodeValue ==~ /[0-9]{1,10}/) || versionCodeValue.toLong() < 15 || versionCodeValue.toLong() > 2100000000) throw new GradleException('Invalid upload version code; use a fresh code of at least 15.')
+def requireCommerce = {
+    if (!verifiedSales || !System.getenv('KOTOBA_VERIFICATION_URL')?.startsWith('https://') || !System.getenv('KOTOBA_ENTITLEMENT_PUBLIC_KEY')) throw new GradleException('Verified billing backend is not configured.')
+    if (!oauthClientId.endsWith('.apps.googleusercontent.com') || integrityProject.toLong() <= 0) throw new GradleException('Google purchase identity and Play Integrity project are not configured.')
+}
 
 android {
     namespace 'com.studio501.kotoba'
@@ -13,22 +33,63 @@ android {
         applicationId 'com.studio501.kotoba'
         minSdk 24
         targetSdk 36
-        versionCode 14
-        versionName '0.4.1'
+        versionCode versionCodeValue.toInteger()
+        versionName '0.4.2'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
-        manifestPlaceholders = [admobAppId: appIdValue]
+        manifestPlaceholders = [admobAppId: appIdValue, buildStage: 'production']
+        buildConfigField 'String', 'BUILD_STAGE', stringValue('production')
         buildConfigField 'boolean', 'ADS_ENABLED', envValue('KOTOBA_ADS_ENABLED','true')
         buildConfigField 'boolean', 'SELLING_ENABLED', verifiedSales.toString()
-        buildConfigField 'String', 'BANNER_AD_UNIT', stringValue(envValue('ADMOB_BANNER_ID','ca-app-pub-3940256099942544/6300978111'))
-        buildConfigField 'String', 'INTERSTITIAL_AD_UNIT', stringValue(envValue('ADMOB_INTERSTITIAL_ID','ca-app-pub-3940256099942544/1033173712'))
+        buildConfigField 'String', 'BANNER_AD_UNIT', stringValue(bannerIdValue)
+        buildConfigField 'String', 'INTERSTITIAL_AD_UNIT', stringValue(interstitialIdValue)
         buildConfigField 'String', 'VERIFICATION_URL', stringValue(envValue('KOTOBA_VERIFICATION_URL',''))
         buildConfigField 'String', 'ENTITLEMENT_PUBLIC_KEY', stringValue(envValue('KOTOBA_ENTITLEMENT_PUBLIC_KEY',''))
+        buildConfigField 'String', 'GOOGLE_OAUTH_CLIENT_ID', stringValue(oauthClientId)
+        buildConfigField 'long', 'PLAY_INTEGRITY_CLOUD_PROJECT_NUMBER', integrityProject+'L'
     }
     buildFeatures { buildConfig true }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    signingConfigs {
+        upload {
+            if (uploadSigningReady) {
+                storeFile rootProject.file(uploadKeystore)
+                storePassword uploadStorePassword
+                keyAlias uploadKeyAlias
+                keyPassword uploadKeyPassword
+            }
+        }
+    }
     buildTypes {
-        debug { applicationIdSuffix '.debug'; versionNameSuffix '-internal' }
-        release { minifyEnabled true; shrinkResources true; proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro' }
+        debug {
+            applicationIdSuffix '.debug'; versionNameSuffix '-internal'
+            manifestPlaceholders = [admobAppId: sampleApp, buildStage: 'internal_debug']
+            buildConfigField 'String', 'BUILD_STAGE', stringValue('internal_debug')
+            buildConfigField 'String', 'BANNER_AD_UNIT', stringValue(sampleBanner)
+            buildConfigField 'String', 'INTERSTITIAL_AD_UNIT', stringValue(sampleInterstitial)
+        }
+        release {
+            minifyEnabled true; shrinkResources true
+            signingConfig signingConfigs.upload
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        playTest {
+            initWith release
+            debuggable false
+            matchingFallbacks = ['release']
+            versionNameSuffix '-play-test'
+            manifestPlaceholders = [admobAppId: sampleApp, buildStage: 'play_test_'+(playTestStage ?: 'unset')]
+            buildConfigField 'String', 'BUILD_STAGE', stringValue('play_test_'+(playTestStage ?: 'unset'))
+            buildConfigField 'boolean', 'ADS_ENABLED', 'true'
+            buildConfigField 'String', 'BANNER_AD_UNIT', stringValue(sampleBanner)
+            buildConfigField 'String', 'INTERSTITIAL_AD_UNIT', stringValue(sampleInterstitial)
+            if (playTestStage != 'sandbox') {
+                buildConfigField 'boolean', 'SELLING_ENABLED', 'false'
+                buildConfigField 'String', 'VERIFICATION_URL', stringValue('')
+                buildConfigField 'String', 'ENTITLEMENT_PUBLIC_KEY', stringValue('')
+                buildConfigField 'String', 'GOOGLE_OAUTH_CLIENT_ID', stringValue('')
+                buildConfigField 'long', 'PLAY_INTEGRITY_CLOUD_PROJECT_NUMBER', '0L'
+            }
+        }
     }
     lint { abortOnError true }
 }
@@ -38,19 +99,32 @@ dependencies {
     implementation 'com.android.billingclient:billing:9.1.0'
     implementation 'com.google.android.gms:play-services-ads:25.4.0'
     implementation 'com.google.android.ump:user-messaging-platform:4.0.0'
+    implementation 'androidx.credentials:credentials:1.6.0'
+    implementation 'androidx.credentials:credentials-play-services-auth:1.6.0'
+    implementation 'com.google.android.libraries.identity.googleid:googleid:1.2.1'
+    implementation 'com.google.android.play:integrity:1.6.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test:core:1.6.1'
     androidTestImplementation 'androidx.test:runner:1.6.2'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
 }
 tasks.configureEach { task ->
+    if (task.name == 'prePlayTestBuild') task.doFirst {
+        if (!(playTestStage in ['bootstrap', 'sandbox'])) throw new GradleException('Select KOTOBA_PLAY_TEST_STAGE=bootstrap or sandbox explicitly.')
+        if (!uploadSigningReady) throw new GradleException('Upload signing is not configured; keep the private keystore and passwords outside Git.')
+        if (playTestStage == 'sandbox') requireCommerce()
+    }
     if (task.name == 'preReleaseBuild') task.doFirst {
-        if (appIdValue == sampleApp || !System.getenv('ADMOB_BANNER_ID') || !System.getenv('ADMOB_INTERSTITIAL_ID')) throw new GradleException('Production AdMob identifiers are not configured.')
-        if (!verifiedSales || !System.getenv('KOTOBA_VERIFICATION_URL')?.startsWith('https://') || !System.getenv('KOTOBA_ENTITLEMENT_PUBLIC_KEY')) throw new GradleException('Verified billing backend is not configured.')
+        if (!uploadSigningReady) throw new GradleException('Production upload signing is not configured.')
+        if ([appIdValue, bannerIdValue, interstitialIdValue].any { it.contains('3940256099942544') }) throw new GradleException('Production AdMob identifiers are not configured.')
+        if (adConfig.accountReviewStatus != 'approved') throw new GradleException('AdMob account/app review is not confirmed.')
+        requireCommerce()
         def approvalFile = rootProject.file('../release-approval.json')
         if(!approvalFile.exists()) throw new GradleException('Production QA approval has not been recorded.')
         def approval = new groovy.json.JsonSlurper().parse(approvalFile)
-        ['physicalDeviceInk','physicalDeviceAudio','offlineRestore','accessibility','contentEditorialReview','privacyAndDataSafety','contentRating','storeListing','signedBundle','playAppSigning','closedTesting','legalDocsPublished','billingSandbox','consentAndAdFree','rtdnAndRefunds'].each { key ->
+        if (!(approval instanceof Map) || approval.billingEventMode != 'poll') throw new GradleException('Billing event mode must be poll for the no-charge production release.')
+        // Operator approvals remain separate from executable test evidence and do not enable sales by themselves.
+        ['physicalDeviceInk','physicalDeviceAudio','offlineRestore','accessibility','contentEditorialReview','privacyAndDataSafety','contentRating','storeListing','signedBundle','playAppSigning','closedTesting','legalDocsPublished','billingSandbox','consentAndAdFree','billingEventsAndRefunds','accountDeletion'].each { key ->
             if(approval[key] != true) throw new GradleException('Release gate missing: '+key)
         }
     }

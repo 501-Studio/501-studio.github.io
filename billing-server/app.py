@@ -1,72 +1,283 @@
-"""Deploy behind HTTPS + API gateway rate limits. No tokens in logs or client-side secrets.
-Not deployed or approved for production until Play credentials, RTDN and abuse tests pass.
-"""
-import json,os,re,time
+"""HTTPS-only, authenticated billing verifier. Configured code is not deployment approval."""
+import hashlib
+import os
+import re
+import secrets
+import time
 from pathlib import Path
-from urllib.parse import quote
-from flask import Flask,request,jsonify
-import google.auth
-from google.auth.transport.requests import AuthorizedSession
-from entitlements import SUB,LIFE,decision,claims,sign
+from flask import Flask, request, jsonify, make_response, render_template
+from werkzeug.middleware.proxy_fix import ProxyFix
+from entitlements import SUB, LIFE, claims, sign
+from persistence import Store
+from play_api import PlayClient
+from security import BillingError, bearer, google_identity, account_id, request_hash, check_integrity
+from service import BillingService, valid_token
+from deletion import COOKIE, MAX_AGE, web_origin, challenge, check_confirmation, check_fresh_identity
 
-app=Flask(__name__);app.config['MAX_CONTENT_LENGTH']=16384
-PACKAGE=os.environ.get('PLAY_PACKAGE','com.studio501.kotoba')
-KEY_PATH=os.environ.get('ENTITLEMENT_KEY_FILE','')
-# Require an explicit deploy switch; no credential grants happen on accidental startup.
-ENABLED=os.environ.get('RECEIPT_VERIFICATION_ENABLED')=='true'
-ROOT='https://androidpublisher.googleapis.com/androidpublisher/v3/applications/'
 
-def store_session():
-    credentials,_=google.auth.default(scopes=['https://www.googleapis.com/auth/androidpublisher'])
-    return AuthorizedSession(credentials)
+def configuration():
+    return {name: os.environ.get(name, '') for name in (
+        'RECEIPT_VERIFICATION_ENABLED', 'PLAY_PACKAGE', 'ENTITLEMENT_KEY_FILE', 'SQLITE_PATH',
+        'TOKEN_ENCRYPTION_KEY', 'ACCOUNT_HMAC_KEY', 'GOOGLE_OAUTH_CLIENT_ID', 'PLAY_SIGNING_CERT_SHA256',
+        'PUBSUB_AUDIENCE', 'PUBSUB_SERVICE_ACCOUNT_EMAIL', 'PUBSUB_SUBSCRIPTION',
+        'OPS_AUDIENCE', 'OPS_SERVICE_ACCOUNT_EMAIL', 'TRUST_PROXY_HOPS',
+        'ACCOUNT_DELETION_ENABLED', 'ACCOUNT_DELETION_WEB_ORIGIN')}
 
-def verify(product,token):
-    base=ROOT+quote(PACKAGE,safe='')+'/purchases/'
-    if product==SUB:
-        get_url=base+'subscriptionsv2/tokens/'+quote(token,safe='')
-        ack_url=base+'subscriptions/'+SUB+'/tokens/'+quote(token,safe='')+':acknowledge'
-    else:
-        get_url=base+'products/'+LIFE+'/tokens/'+quote(token,safe='')
-        ack_url=get_url+':acknowledge'
-    with store_session() as session:
-        response=session.get(get_url,timeout=12)
-        if response.status_code in (400,404,410):return {'active':False,'kind':'subscription' if product==SUB else 'lifetime','until':0,'ackNeeded':False}
-        response.raise_for_status()
-        result=decision(product,response.json(),int(time.time()))
-        if result['ackNeeded']:
-            # Idempotent retry safety: if acknowledgement failed, re-fetch before returning success.
-            ack=session.post(ack_url,json={},timeout=12)
-            if ack.status_code not in (200,204):
-                recheck=session.get(get_url,timeout=12);recheck.raise_for_status()
-                result=decision(product,recheck.json(),int(time.time()))
-                if result['ackNeeded']:raise RuntimeError('Acknowledgement not confirmed')
-        return result
 
-@app.after_request
-def headers(response):
-    response.headers['Cache-Control']='no-store'
-    response.headers['X-Content-Type-Options']='nosniff'
-    return response
+def configured(config):
+    required = ('ENTITLEMENT_KEY_FILE', 'SQLITE_PATH', 'TOKEN_ENCRYPTION_KEY', 'ACCOUNT_HMAC_KEY',
+                'GOOGLE_OAUTH_CLIENT_ID', 'PLAY_SIGNING_CERT_SHA256', 'PUBSUB_AUDIENCE',
+                'PUBSUB_SERVICE_ACCOUNT_EMAIL', 'PUBSUB_SUBSCRIPTION', 'OPS_AUDIENCE', 'OPS_SERVICE_ACCOUNT_EMAIL')
+    return (config.get('RECEIPT_VERIFICATION_ENABLED') == 'true' and all(config.get(k) for k in required)
+            and len(config['ACCOUNT_HMAC_KEY'].encode()) >= 32
+            and config['GOOGLE_OAUTH_CLIENT_ID'].endswith('.apps.googleusercontent.com')
+            and config['PUBSUB_AUDIENCE'].startswith('https://') and config['OPS_AUDIENCE'].startswith('https://')
+            and config['PUBSUB_AUDIENCE'] != config['OPS_AUDIENCE']
+            and config['PUBSUB_SERVICE_ACCOUNT_EMAIL'] != config['OPS_SERVICE_ACCOUNT_EMAIL']
+            and all(config[k].endswith('.iam.gserviceaccount.com') for k in ('PUBSUB_SERVICE_ACCOUNT_EMAIL','OPS_SERVICE_ACCOUNT_EMAIL'))
+            and Path(config['ENTITLEMENT_KEY_FILE']).is_absolute() and Path(config['ENTITLEMENT_KEY_FILE']).is_file()
+            and Path(config['SQLITE_PATH']).is_absolute()
+            and all(re.fullmatch(r'[A-Za-z0-9_-]{43}', c) for c in config['PLAY_SIGNING_CERT_SHA256'].split(',')))
 
-@app.get('/health')
-def health():return jsonify({'ready':ENABLED and bool(KEY_PATH),'service':'kotoba-verifier'})
 
-@app.post('/verify')
-def receipt():
-    if not ENABLED or not KEY_PATH:return jsonify(error='service_not_configured'),503
-    body=request.get_json(silent=True) or {}
-    package=body.get('packageName');product=body.get('productId');token=body.get('purchaseToken');installation=body.get('installationId')
-    if package!=PACKAGE or product not in (SUB,LIFE) or not isinstance(token,str) or not 8<=len(token)<=4096 or not isinstance(installation,str) or not re.fullmatch(r'[A-Za-z0-9-]{10,80}',installation):
-        return jsonify(error='invalid_request'),400
-    try:
-        result=verify(product,token)
-        payload=claims(PACKAGE,installation,product,result,int(time.time()))
-        return jsonify(lease=sign(payload,Path(KEY_PATH).read_bytes()))
-    except Exception:
-        # A network timeout is NOT proof that a legitimate purchase is invalid.
-        # Do not log the exception: HTTP exceptions may contain purchase tokens in URL.
-        return jsonify(error='verification_temporarily_unavailable'),503
+def create_app(config=None, *, service=None, verify_identity=google_identity):
+    server = Flask(__name__)
+    server.config['MAX_CONTENT_LENGTH'] = 49152
+    config = configuration() if config is None else dict(config)
+    package = config.get('PLAY_PACKAGE') or 'com.studio501.kotoba'
+    ready = configured(config)
+    deletion_origin = web_origin(config)
+    if config.get('TRUST_PROXY_HOPS') == '1':
+        # Enable only behind a trusted ingress whose raw backend is inaccessible externally.
+        server.wsgi_app = ProxyFix(server.wsgi_app, x_proto=1)
+    if ready and service is None:
+        try:
+            store = Store(config['SQLITE_PATH'], config['TOKEN_ENCRYPTION_KEY'])
+            with store.transaction() as db:
+                fingerprint = hashlib.sha256(config['ACCOUNT_HMAC_KEY'].encode()).hexdigest()
+                for key, value in [('play_package', package), ('account_key_fingerprint', fingerprint)]:
+                    old = store.metadata(db, key)
+                    if old and old != value:
+                        raise ValueError('persistent_identity_configuration_changed')
+                    store.set_metadata(db, key, value)
+            service = BillingService(store, PlayClient(package))
+        except Exception:
+            # Fail closed; never print exceptions that may expose credentials or purchase URLs.
+            ready = False
+    server.extensions['billing_service'] = service
 
-# Pub/Sub endpoint is intentionally not exposed here until authenticated push identity,
-# replay protection and durable token ownership/notification store are configured.
-# Release gate rtdnAndRefunds remains false. Client refresh alone is not a full RTDN solution.
+    @server.before_request
+    def secure_transport():
+        if request.path != '/health' and not request.is_secure:
+            raise BillingError('https_required')
+
+    @server.errorhandler(BillingError)
+    def expected_error(error):
+        return jsonify(error=error.code), error.status
+
+    @server.after_request
+    def headers(response):
+        response.headers['Cache-Control'] = 'no-store'
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        return response
+
+    def require_configuration():
+        if not ready or service is None:
+            raise BillingError('service_not_configured', 503)
+
+    def user_identity():
+        return verify_identity(bearer(request.headers.get('Authorization')), config['GOOGLE_OAUTH_CLIENT_ID'])
+
+    def authenticate_user():
+        info = user_identity()
+        owner = account_id(info['sub'], config['ACCOUNT_HMAC_KEY'])
+        service.assert_account(owner)
+        return owner
+
+    def authenticate_service(prefix):
+        return verify_identity(bearer(request.headers.get('Authorization')), config[prefix+'_AUDIENCE'],
+                               service_email=config[prefix+'_SERVICE_ACCOUNT_EMAIL'])
+
+    @server.get('/health')
+    def health():
+        try:
+            synchronized = ready and service is not None and service.synchronized()
+        except Exception:
+            synchronized = False
+        return jsonify(service='kotoba-verifier', configured=bool(ready), ready=bool(synchronized),
+                       live_google_credentials_verified=False)
+
+    @server.post('/account')
+    def account():
+        require_configuration()
+        try:
+            return jsonify(obfuscatedAccountId=authenticate_user())
+        except BillingError:
+            raise
+        except Exception:
+            raise BillingError('authentication_temporarily_unavailable', 503) from None
+
+    def require_deletion_configuration():
+        require_configuration()
+        if not deletion_origin:
+            raise BillingError('account_deletion_not_configured', 503)
+        if request.host_url.rstrip('/') != deletion_origin:
+            raise BillingError('invalid_deletion_origin', 403)
+
+    @server.get('/account/delete')
+    def deletion_page():
+        require_deletion_configuration()
+        if request.args:
+            raise BillingError('invalid_request')
+        nonce, cookie = challenge(config['ACCOUNT_HMAC_KEY'], package)
+        script_nonce = secrets.token_urlsafe(24)
+        response = make_response(render_template('account-delete.html',
+            client_id=config['GOOGLE_OAUTH_CLIENT_ID'], confirmation_nonce=nonce, script_nonce=script_nonce))
+        response.set_cookie(COOKIE, cookie, max_age=MAX_AGE, path='/account/',
+                            secure=True, httponly=True, samesite='Strict')
+        response.headers['Content-Security-Policy'] = (
+            "default-src 'none'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; "
+            f"script-src 'nonce-{script_nonce}' https://accounts.google.com/gsi/client; "
+            "style-src 'unsafe-inline' https://accounts.google.com/gsi/style; "
+            "connect-src 'self' https://accounts.google.com/gsi/; frame-src https://accounts.google.com/gsi/; "
+            "img-src data: https://accounts.google.com https://www.gstatic.com https://*.googleusercontent.com; form-action 'none'")
+        response.headers['Referrer-Policy'] = 'no-referrer'
+        response.headers['Cross-Origin-Opener-Policy'] = 'same-origin-allow-popups'
+        return response
+
+    @server.post('/account/deletion')
+    def delete_account():
+        require_deletion_configuration()
+        if (request.headers.get('Origin') != deletion_origin
+                or request.headers.get('Sec-Fetch-Site') == 'cross-site'):
+            raise BillingError('invalid_deletion_origin', 403)
+        body = request.get_json(silent=True)
+        if (request.args or not isinstance(body, dict) or set(body) != {'confirmDeletion', 'nonce'}
+                or body['confirmDeletion'] is not True):
+            raise BillingError('explicit_deletion_confirmation_required')
+        issued = check_confirmation(request.cookies.get(COOKIE), body['nonce'],
+                                    config['ACCOUNT_HMAC_KEY'], package)
+        try:
+            info = user_identity()
+            check_fresh_identity(info, body['nonce'], issued)
+            owner = account_id(info['sub'], config['ACCOUNT_HMAC_KEY'])
+            response = jsonify(service.delete_account(owner))
+            response.delete_cookie(COOKIE, path='/account/', secure=True, httponly=True, samesite='Strict')
+            return response
+        except BillingError:
+            raise
+        except Exception:
+            raise BillingError('deletion_temporarily_unavailable', 503) from None
+
+    @server.post('/verify')
+    def receipt():
+        require_configuration()
+        body = request.get_json(silent=True)
+        if not isinstance(body, dict):
+            raise BillingError('invalid_request')
+        product, token, installation = body.get('productId'), body.get('purchaseToken'), body.get('installationId')
+        if (body.get('packageName') != package or product not in (SUB, LIFE) or not valid_token(token)
+                or not isinstance(installation, str) or not re.fullmatch(r'[A-Za-z0-9-]{10,80}', installation)):
+            raise BillingError('invalid_request')
+        try:
+            owner = authenticate_user()
+            integrity = body.get('integrityToken')
+            if not isinstance(integrity, str) or not 16 <= len(integrity) <= 32768:
+                raise BillingError('app_integrity_required', 403)
+            expected_hash = request_hash(package, product, token, installation, owner)
+            payload = service.play.decode_integrity(integrity)
+            check_integrity(payload, package, expected_hash, config['PLAY_SIGNING_CERT_SHA256'].split(','))
+            if not service.synchronized():
+                raise BillingError('refund_reconciliation_required', 503)
+            def issuer(result):
+                lease = claims(package, installation, product, result, int(time.time()), account=owner)
+                return sign(lease, Path(config['ENTITLEMENT_KEY_FILE']).read_bytes())
+            return jsonify(lease=service.issue_lease(product, token, owner, issuer))
+        except BillingError:
+            raise
+        except Exception:
+            # A network timeout or database failure is not evidence of an invalid purchase.
+            raise BillingError('verification_temporarily_unavailable', 503) from None
+
+    @server.post('/rtdn')
+    def rtdn():
+        require_configuration()
+        try:
+            authenticate_service('PUBSUB')
+            status = service.notification(request.get_json(silent=True), package, config['PUBSUB_SUBSCRIPTION'])
+            return jsonify(status=status)
+        except BillingError:
+            raise
+        except Exception:
+            # Non-2xx causes Pub/Sub retry. Dedupe commits only with completed processing.
+            raise BillingError('notification_temporarily_unavailable', 503) from None
+
+    @server.post('/tasks/reconcile')
+    def reconcile():
+        require_configuration()
+        try:
+            authenticate_service('OPS')
+            return jsonify(processed=service.reconcile_voids())
+        except BillingError:
+            raise
+        except Exception:
+            raise BillingError('reconciliation_temporarily_unavailable', 503) from None
+
+    @server.get('/tasks/status')
+    def status():
+        require_configuration()
+        try:
+            authenticate_service('OPS')
+            with service.store.transaction() as db:
+                reviews = db.execute('''SELECT COUNT(*) FROM notifications n
+                  LEFT JOIN refund_review_records r USING(subscription,message_id)
+                  WHERE n.subscription=? AND n.status='operator_refund_review_required' AND r.message_id IS NULL''',
+                  (config['PUBSUB_SUBSCRIPTION'],)).fetchone()[0]
+                synchronized_at = service.store.metadata(db, 'voided_sync_at')
+            return jsonify(refundReviewsNeedingOperator=reviews, voidedSyncAt=synchronized_at)
+        except BillingError:
+            raise
+        except Exception:
+            raise BillingError('status_temporarily_unavailable', 503) from None
+
+    @server.get('/tasks/refund-reviews')
+    def refund_reviews():
+        require_configuration()
+        try:
+            authenticate_service('OPS')
+            raw_limit = request.args.get('limit', '50')
+            if not re.fullmatch(r'[0-9]{1,3}', raw_limit):
+                raise BillingError('invalid_review_query')
+            return jsonify(service.refund_reviews(config['PUBSUB_SUBSCRIPTION'],
+                request.args.get('state', 'open'), request.args.get('after', ''), int(raw_limit)))
+        except BillingError:
+            raise
+        except Exception:
+            raise BillingError('review_temporarily_unavailable', 503) from None
+
+    @server.get('/tasks/refund-reviews/<message_id>')
+    def refund_review(message_id):
+        require_configuration()
+        try:
+            authenticate_service('OPS')
+            return jsonify(service.refund_review(config['PUBSUB_SUBSCRIPTION'], message_id))
+        except BillingError:
+            raise
+        except Exception:
+            raise BillingError('review_temporarily_unavailable', 503) from None
+
+    @server.post('/tasks/refund-reviews/<message_id>/record')
+    def record_refund_review(message_id):
+        require_configuration()
+        try:
+            identity = authenticate_service('OPS')
+            return jsonify(service.record_refund_review(config['PUBSUB_SUBSCRIPTION'], message_id,
+                           request.get_json(silent=True), identity['email']))
+        except BillingError:
+            raise
+        except Exception:
+            raise BillingError('review_temporarily_unavailable', 503) from None
+    return server
+
+
+app = create_app()

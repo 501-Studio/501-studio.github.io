@@ -1,0 +1,12 @@
+# Signing credentials and local production evidence are never source files.
+*.jks
+*.keystore
+*.p12
+*.pem
+.env
+.env.*
+release-approval.json
+kotoba-android/local.properties
+kotoba-android/.gradle/
+kotoba-android/**/build/
+work/

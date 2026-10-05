@@ -1,0 +1,48 @@
+{
+  "decisionDate": "2026-10-03",
+  "userConstraint": "no-server-or-storage-charges",
+  "monthlyInfrastructureBudgetUsd": 0,
+  "paidRenderProposal": "withdrawn-not-deployed",
+  "candidate": {
+    "provider": "Cloudflare",
+    "accountPlanRequired": "Workers Free",
+    "runtime": "Workers with SQLite-backed Durable Objects",
+    "publicHostname": "workers.dev",
+    "paidPlanUpgradeAllowed": false,
+    "paidAddOnsAllowed": false,
+    "customDomainPurchaseAllowed": false,
+    "onFreeQuotaExceeded": "reject-or-retry-no-paid-fallback",
+    "runtimePortRequired": false,
+    "billingEventMode": "poll",
+    "hourlyReconciliationRequired": true,
+    "maximumRefundSyncAgeSeconds": 7200,
+    "optionalRefundReviewDiscovery": "unavailable-without-rtdn",
+    "implementationPath": "billing-worker",
+    "implementationState": "69-local-workerd-tests-passed-not-deployed",
+    "actualFreeAccountVerified": false,
+    "liveQuotaAndLoadVerified": false,
+    "resourcesCreated": false,
+    "deployedUrl": null,
+    "integrationVerified": false
+  },
+  "preserve": [
+    "google-verified-account-and-play-integrity",
+    "immutable-purchase-ownership",
+    "encrypted-purchase-tokens",
+    "installation-bound-RS256-entitlement-lease",
+    "refund-and-superseded-token-denials",
+    "authenticated-account-deletion-without-recreation",
+    "durable-notification-deduplication",
+    "real-billing-sandbox-and-physical-device-release-checks"
+  ],
+  "googleCloud": {
+    "billingAccountLinkAllowed": false,
+    "paidResourcesAllowed": false,
+    "pubSubZeroChargeAvailabilityVerified": false,
+    "pubSubRequiresBillingAccount": true,
+    "pubSubActivationAllowed": false,
+    "publisherAndIntegrityWithoutBillingVerified": false,
+    "note": "Pub/Sub requires billing and must not be activated. Use explicit polling with verified operations instead; ordinary budget alerts are not a spending cap."
+  },
+  "note": "This is an operator decision record, not an implemented deployment or runtime billing guard. Verify the actual Cloudflare account is Free before resource creation."
+}

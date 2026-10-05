@@ -24,3 +24,60 @@ html[data-motion=off] *,html[data-motion=off] *:before,html[data-motion=off] *:a
 .hero-label{color:#806ca9}.hero-copy p{color:#817098}.hero-meta{color:#7e6b91}.goal-ring small{color:#8f7ea7}.review-nudge p{color:#7b8192}.ink-bottom-note{color:#7e778e}.footer-hint{color:#81798e}.session-label{color:#8a79a2}.session-label>span:nth-child(2){color:#8b8498}.audio-status{color:#887d9b}.sheet>p{color:#777083}.setting-row small{color:#86808f}
 @media(max-width:700px){.hero-copy p{font-size:12px}.hero-label{font-size:11px}.hero-meta{font-size:10px}.review-nudge h3{font-size:14px}.review-nudge p{font-size:11px}.practice-tile p{font-size:11px}.heading p{font-size:13px}.question-sub{font-size:12px}.ink-prompt p{font-size:12px}.segmented>button{font-size:12px}.list-row p{font-size:12px}.lesson-eyebrow{font-size:11px}.session-label{font-size:11px}.ink-toolbar>button{font-size:11px}.footer-hint{font-size:11px}.bottom-nav a{font-size:11px}.feedback-copy p{font-size:11px}.sheet>p{font-size:13px}.review-totals{font-size:11px}.search input{font-size:12px}}
 @media(max-width:359px){.hero-copy p{font-size:11px}.hero-meta{font-size:9px}.practice-tile p{font-size:10px}.ink-toolbar>button{font-size:10px}.session-label{font-size:10px}}
+
+/* Make the first study action visible, and keep controls usable on narrow phones. */
+.home-dashboard .study-start{background:linear-gradient(120deg,#f0edff,#fff);border:1px solid #e3dcff;padding:25px;margin-bottom:18px}
+.study-start-copy h2{margin:10px 0 7px;font-size:24px;overflow-wrap:anywhere}
+.study-start-copy>p{font-size:14px;color:var(--secondary);line-height:1.8}
+.study-start-steps{display:flex;flex-wrap:wrap;gap:8px 20px;padding:0;list-style:none;margin:17px 0 22px;counter-reset:study-step;color:#625785;font-size:12px}
+.study-start-steps li{display:flex;align-items:center;gap:6px;counter-increment:study-step}
+.study-start-steps li:before{content:counter(study-step);display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#e8e1ff;color:var(--purple-dark);font-weight:700}
+.study-chapters{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;margin-top:7px;font-size:13px;color:var(--purple-dark)}
+.study-chapters .icon{width:16px;height:16px}
+.home-dashboard .home-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr));margin:0 0 20px;gap:12px}
+.home-dashboard .shortcut{padding:18px;min-width:0;gap:11px}
+.home-dashboard .shortcut>div{min-width:0}
+.home-dashboard .shortcut p{overflow-wrap:anywhere;line-height:1.6}
+.home-dashboard .shortcut>.icon{display:none}
+.home-dashboard .levels-panel{margin:20px 0}
+.page .level-tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.page .level-tabs button{min-width:0;min-height:44px;padding:8px 4px;color:#576176}
+.page .level-tabs button[aria-pressed=true]{background:var(--purple-dark);color:white;box-shadow:0 2px 6px #5947ce20}
+.page .filter-chips{flex-wrap:wrap;gap:8px}
+.page .filter-chips button{min-height:44px;padding:9px 13px;font-size:12px;color:#576176}
+.page .filter-chips button[aria-pressed=true]{background:#e5ddff;color:#4938a5;box-shadow:0 0 0 1px #b7a7ef inset;font-weight:700}
+.page .word-search:focus-within{outline:3px solid #8a78ee;outline-offset:3px}
+.page .word-search .btn.icon-btn{padding:0;min-height:44px;width:44px;height:44px;flex:0 0 44px;border-radius:12px}
+.page .word-search button[hidden]{display:none}
+.page .word-results-status{margin:0 3px 10px;color:#59647a;font-size:13px}
+.page .wordbook-actions .btn,.page .word-row .icon-btn{min-height:44px}
+.page .word-row .icon-btn{min-width:44px}
+.workspace .appbar .icon-btn,.workspace .appbar .reading-toggle{min-height:44px;min-width:44px}
+.sidebar .brand{font-size:21px;letter-spacing:-.7px;padding:0 5px;gap:8px}
+.page .word-list .word-detail{text-align:left;padding:0}
+.page .word-list .word-detail>p{overflow-wrap:anywhere;overflow:hidden}
+@media(max-width:700px){
+ .home-dashboard .study-start{padding:21px}
+ .study-start-copy h2{font-size:21px}
+ .study-start-copy>p{font-size:13px}
+ .study-start-steps{gap:8px 13px;margin:15px 0 18px}
+ .home-dashboard .shortcut{align-items:flex-start;flex-direction:column;padding:16px}
+ .home-dashboard .shortcut .soft-icon{width:38px;height:38px;border-radius:12px}
+ .home-dashboard .shortcut b{font-size:15px}
+ .home-dashboard .shortcut p{font-size:12px}
+ .page .level-tabs{gap:6px}
+ .page .filter-chips button{font-size:12px}
+ .workspace .appbar{padding-left:18px;padding-right:18px}
+ .workspace .appbar-tools{gap:5px}
+ .workspace .mobile-brand{font-size:18px;letter-spacing:-.7px;gap:6px;white-space:nowrap}
+ .workspace .appbar .reading-toggle{padding:6px 8px}
+ .bottom-nav a{min-height:44px;color:#687389}
+ .bottom-nav a.active{color:#5947ce}
+ .page .word-button{gap:10px}
+ .page .word-row .japanese{min-width:0;max-width:43%;overflow-wrap:anywhere}
+ .page .word-list .word-detail>p{font-size:13px}
+ .page .word-list .word-detail>small{font-size:11px}
+ .page .review-summary>div{min-width:0}
+ .page .review-summary h2{font-size:20px;overflow-wrap:anywhere}
+}
+.page .level-tabs.kana-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}

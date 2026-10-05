@@ -36,7 +36,7 @@ export async function handleCommerceAction(action,toast){
   if(status.premium||status.pending)return;
   const item=mergeProducts(status.products).find(p=>p.plan===plan);if(!item?.available){toast('상품 정보를 다시 확인해 주세요.');return;}
   const response=await callNative('commerceBuy',{plan},180000);
-  toast(response.pending?'결제가 완료되면 자동으로 적용돼요.':response.premium?'광고 없이 학습할 수 있어요.':'구매 상태를 확인하고 있어요.');
+  toast(response.pending?'결제 완료 후 앱을 다시 열고 구매 복원에서 확인해 주세요.':response.premium?'광고 없이 학습할 수 있어요.':'구매 상태를 확인하고 있어요.');
   await refreshCommerce();return;
  }
  const type={'restore-purchases':'commerceRestore','manage-subscription':'commerceManage','privacy-options':'adPrivacyOptions'}[action];

@@ -1,0 +1,16 @@
+{
+  "appName": "JLPT 단어장 - 코토바",
+  "packageName": "com.studio501.kotoba",
+  "appId": "ca-app-pub-1681642990054558~4049608913",
+  "bannerId": "ca-app-pub-1681642990054558/9027526869",
+  "interstitialId": "ca-app-pub-1681642990054558/9330604184",
+  "publisherId": "pub-1681642990054558",
+  "activationStatus": "completed",
+  "accountReviewStatus": "pending",
+  "appReviewStatus": "review-required",
+  "storeLinkStatus": "not-yet-listed",
+  "registeredAt": "2026-10-03",
+  "note": "AdMob activation completed under the existing publisher; one Android app and two ad units provisioned. Account review is pending, app readiness shows review required, and the app is not store linked. Debug builds use Google sample IDs. Approval, store linking, app-ads.txt verification and device consent tests remain required.",
+  "appAdsTxtSnippet": "google.com, pub-1681642990054558, DIRECT, f08c47fec0942fa0",
+  "appAdsTxtStatus": "prepared-not-published-or-verified"
+}

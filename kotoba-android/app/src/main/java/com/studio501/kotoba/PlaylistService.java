@@ -14,6 +14,7 @@ import org.json.*;
 public final class PlaylistService extends Service {
     private static final String CHANNEL="kotoba-listening";
     private static final int NOTICE=410;
+    static final String STOP_CUSTOM_ACTION="com.studio501.kotoba.action.STOP_LISTENING";
     private static PlaylistService active;
     private static JSONObject lastStatus=new JSONObject();
     private final Handler handler=new Handler(Looper.getMainLooper());
@@ -55,6 +56,7 @@ public final class PlaylistService extends Service {
             @Override public void onPlay(){command("play");}@Override public void onPause(){command("pause");}
             @Override public void onSkipToNext(){command("next");}@Override public void onSkipToPrevious(){command("prev");}
             @Override public void onStop(){command("stop");}
+            @Override public void onCustomAction(String action,Bundle extras){if(STOP_CUSTOM_ACTION.equals(action))command("stop");}
         });media.setActive(true);
         IntentFilter filter=new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
         if(Build.VERSION.SDK_INT>=33)registerReceiver(noisy,filter,Context.RECEIVER_NOT_EXPORTED);else registerReceiver(noisy,filter);
@@ -138,6 +140,12 @@ public final class PlaylistService extends Service {
           .setStyle(new Notification.MediaStyle().setMediaSession(media.getSessionToken()).setShowActionsInCompactView(0,1,2)).build();
     }
     private void foreground(){if(Build.VERSION.SDK_INT>=29)startForeground(NOTICE,notification(),ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);else startForeground(NOTICE,notification());}
-    private void refresh(){if(dead||media==null)return;lastStatus=snapshot();media.setMetadata(new MediaMetadata.Builder().putString(MediaMetadata.METADATA_KEY_TITLE,lastStatus.optString("word","코토바")).putString(MediaMetadata.METADATA_KEY_ARTIST,"코토바 연속 듣기").build());media.setPlaybackState(new PlaybackState.Builder().setActions(PlaybackState.ACTION_PLAY|PlaybackState.ACTION_PAUSE|PlaybackState.ACTION_SKIP_TO_NEXT|PlaybackState.ACTION_SKIP_TO_PREVIOUS|PlaybackState.ACTION_STOP).setState(playing?PlaybackState.STATE_PLAYING:PlaybackState.STATE_PAUSED,PlaybackState.PLAYBACK_POSITION_UNKNOWN,playing?1:0).build());if(Build.VERSION.SDK_INT<33||checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)==android.content.pm.PackageManager.PERMISSION_GRANTED)((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).notify(NOTICE,notification());}
+    private void refresh(){if(dead||media==null)return;lastStatus=snapshot();media.setMetadata(new MediaMetadata.Builder().putString(MediaMetadata.METADATA_KEY_TITLE,lastStatus.optString("word","코토바")).putString(MediaMetadata.METADATA_KEY_ARTIST,"코토바 연속 듣기").build());
+        // Android 13+ derives its fourth/fifth media buttons from custom actions, not ACTION_STOP.
+        media.setPlaybackState(new PlaybackState.Builder().setActions(PlaybackState.ACTION_PLAY|PlaybackState.ACTION_PAUSE|PlaybackState.ACTION_SKIP_TO_NEXT|PlaybackState.ACTION_SKIP_TO_PREVIOUS|PlaybackState.ACTION_STOP)
+          .addCustomAction(STOP_CUSTOM_ACTION,"정지",R.drawable.ic_playlist_stop)
+          .setState(playing?PlaybackState.STATE_PLAYING:PlaybackState.STATE_PAUSED,PlaybackState.PLAYBACK_POSITION_UNKNOWN,playing?1:0).build());
+        // MediaSession notifications are exempt from POST_NOTIFICATIONS; keep posted actions in sync.
+        ((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).notify(NOTICE,notification());}
     @Override public void onDestroy(){playing=false;lastStatus=snapshot();dead=true;interrupt();handler.removeCallbacksAndMessages(null);if(tts!=null)tts.shutdown();if(wake!=null&&wake.isHeld())wake.release();if(audio!=null){if(Build.VERSION.SDK_INT>=26&&focus!=null)audio.abandonAudioFocusRequest(focus);else audio.abandonAudioFocus(focusListener);}try{unregisterReceiver(noisy);}catch(Exception ignored){}if(media!=null)media.release();if(active==this)active=null;super.onDestroy();}
 }

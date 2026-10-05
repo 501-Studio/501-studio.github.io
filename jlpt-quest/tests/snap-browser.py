@@ -52,9 +52,10 @@ with sync_playwright() as P:
     page.on('request',lambda r:external.append(r.url) if not r.url.startswith(BASE) else None)
     try:
         page.goto(BASE);wait_app(page)
-        check('page identity',page.title()=='코토바 · 한자 회독 수업')
+        check('JLPT app identity','JLPT' in page.title() and '코토바' in page.title())
         check('home shows five JLPT levels',page.locator('.level-progress').count()==5)
-        check('home shows chapter, round and 30-word range','第1章' in page.locator('.chapter-book.featured').inner_text() and '1회독' in page.locator('.chapter-book.featured').inner_text() and 'No.1~30' in page.locator('.chapter-book.featured').inner_text())
+        home_study=page.locator('.study-start')
+        check('home shows chapter, round and actual word count','제1장' in home_study.inner_text() and '1회독' in home_study.inner_text() and '30단어' in home_study.inner_text() and home_study.locator('[data-action="start-course"][data-id="N5-chapter-1"]').count()==1)
         for width,height in [(320,740),(390,780),(768,900),(1440,900)]:
             page.set_viewport_size({'width':width,'height':height});page.wait_for_timeout(80)
             check('home no horizontal overflow '+str(width),page.evaluate('document.documentElement.scrollWidth<=innerWidth+1'))
@@ -119,7 +120,7 @@ with sync_playwright() as P:
             if not path.is_relative_to(ROOT) or not path.is_file(): return route.fulfill(status=404,body='Not found')
             types={'.js':'text/javascript','.json':'application/json','.css':'text/css','.html':'text/html','.svg':'image/svg+xml','.png':'image/png','.webmanifest':'application/manifest+json'}
             route.fulfill(status=200,body=path.read_bytes(),content_type=types.get(path.suffix,'text/plain'))
-        cold.route('**/*',local_asset);cp=cold.new_page();cp.goto(BASE);cp.wait_for_selector('.chapter-book.featured')
+        cold.route('**/*',local_asset);cp=cold.new_page();cp.goto(BASE);cp.wait_for_selector('.study-start [data-action="start-course"]')
         check('fresh offline context boots from bundled assets',cp.evaluate('navigator.onLine') is False)
         seed(cp,'trace');cp.wait_for_selector('#ink-canvas');draw(cp,BANK['山'][0],.1,.08)
         check('offline relaxed stroke snap works',wait_strokes(cp,1)==1)
