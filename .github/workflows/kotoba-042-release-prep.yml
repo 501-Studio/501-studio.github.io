@@ -572,7 +572,7 @@ jobs:
           python3 - <<'ANDROID_SUMMARY'
           import json, os, pathlib, xml.etree.ElementTree as ET
           totals = {'tests': 0, 'failures': 0, 'errors': 0, 'skipped': 0}
-          files = []
+          files, cases = [], []
           for pattern in ['kotoba-android/app/build/test-results/**/*.xml', 'kotoba-android/app/build/outputs/androidTest-results/**/*.xml']:
               for path in sorted(pathlib.Path('.').glob(pattern)):
                   tree = ET.parse(path).getroot()
@@ -580,12 +580,18 @@ jobs:
                   for suite in suites:
                       for key in totals:
                           totals[key] += int(suite.get(key, '0'))
+                  for case in tree.iter('testcase'):
+                      status = ('error' if case.find('error') is not None else
+                                'failed' if case.find('failure') is not None else
+                                'skipped' if case.find('skipped') is not None else 'passed')
+                      cases.append({'xmlFile': str(path), 'className': case.get('classname'),
+                                    'testName': case.get('name'), 'status': status})
                   files.append(str(path))
           path = pathlib.Path('/tmp/kotoba042-qa/store-screenshots/capture-manifest.json')
           capture = json.loads(path.read_text(encoding='utf-8')) if path.exists() else None
           result = {'schemaVersion': 1, 'stepOutcomes': {key: os.environ.get(key, 'unknown') for key in
                     ['BUILD_OUTCOME', 'IDENTITY_OUTCOME', 'PLAY_TEST_OUTCOME', 'NATIVE_LIFECYCLE_OUTCOME']},
-                    'junitTotals': totals, 'junitXmlFileCount': len(files),
+                    'junitTotals': totals, 'junitXmlFileCount': len(files), 'junitCases': cases,
                     'captureStatus': capture.get('status') if isinstance(capture, dict) else None,
                     'captureValidation': capture.get('artifactValidation') if isinstance(capture, dict) else None,
                     'captureScreens': [{key: row.get(key) for key in ['file', 'width', 'height', 'bytes', 'sha256']}

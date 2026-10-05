@@ -33,6 +33,7 @@ async function playText(text,rate,onStart=()=>{}){
  if(isNative()){
   nativeSpeaking=true;
   try{await callNative('speechSpeak',{text,rate},95000);if(mine!==generation)throw cancelled();return true;}
+  catch(error){if(mine!==generation)throw cancelled();throw error;}
   finally{if(mine===generation)nativeSpeaking=false;}
  }
  const {synth,voice}=await japaneseVoice(mine);

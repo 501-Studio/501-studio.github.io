@@ -33,7 +33,7 @@ public final class PlaylistLifecycleTest {
         Context c=InstrumentationRegistry.getInstrumentation().getTargetContext();
         ActivityManager manager=(ActivityManager)c.getSystemService(Context.ACTIVITY_SERVICE);
         for(ActivityManager.RunningServiceInfo info:manager.getRunningServices(100))
-            if(info.service.getClassName().equals(PlaylistService.class.getName()))return info.foreground;
+            if(c.getPackageName().equals(info.service.getPackageName())&&info.service.getClassName().equals(PlaylistService.class.getName()))return info.foreground;
         return false;
     }
     private StatusBarNotification ownNotice(Context context){
@@ -51,6 +51,33 @@ public final class PlaylistLifecycleTest {
         for(ActivityManager.RunningServiceInfo info:manager.getRunningServices(100))if(context.getPackageName().equals(info.service.getPackageName())
                 &&PlaylistService.class.getName().equals(info.service.getClassName()))return true;
         return false;
+    }
+    private String fixtureEvidence(Context context){
+        return " status="+snapshot()+" foreground="+serviceRunning()+" serviceExists="+ownServiceExists(context)+" ownNotice="+(ownNotice(context)!=null);
+    }
+    private void awaitFixtureStarted(Context context){
+        long deadline=SystemClock.elapsedRealtime()+8000;
+        while((snapshot().optInt("total")!=1||!serviceRunning()||ownNotice(context)==null)&&SystemClock.elapsedRealtime()<deadline)SystemClock.sleep(100);
+        String evidence=fixtureEvidence(context);
+        assertEquals("Started fixture must contain one entry"+evidence,1,snapshot().optInt("total"));
+        assertTrue("Playback notification/service must be foreground"+evidence,serviceRunning());
+        assertNotNull("Started fixture must post its own notification"+evidence,ownNotice(context));
+    }
+    private void awaitFixtureAbsent(Context context){
+        long deadline=SystemClock.elapsedRealtime()+5000;
+        while((ownServiceExists(context)||ownNotice(context)!=null)&&SystemClock.elapsedRealtime()<deadline)SystemClock.sleep(100);
+        String evidence=fixtureEvidence(context);
+        assertFalse("Fixture service must be absent"+evidence,ownServiceExists(context));
+        assertNull("Fixture notification must be absent"+evidence,ownNotice(context));
+    }
+    private void cleanupFixture(Context context,Throwable primaryFailure)throws Exception{
+        try{
+            InstrumentationRegistry.getInstrumentation().runOnMainSync(()->PlaylistService.control("stop"));
+            context.stopService(new Intent(context,PlaylistService.class));
+            awaitFixtureAbsent(context);
+        }catch(Exception|AssertionError cleanupFailure){
+            if(primaryFailure!=null)primaryFailure.addSuppressed(cleanupFailure);else throw cleanupFailure;
+        }
     }
     private MediaController ownController(Context context,StatusBarNotification notice){
         assertNotNull("Own playlist notification missing",notice);
@@ -85,27 +112,27 @@ public final class PlaylistLifecycleTest {
         }
     }
     @Test public void serviceCanPauseInBackgroundAndStopWithoutWritingLearningRecords()throws Exception{
+        Context context=InstrumentationRegistry.getInstrumentation().getTargetContext();
         JSONObject entry=new JSONObject().put("wordId","N5-playlisttest").put("word","山").put("reading","やま").put("meaning","산").put("example","山へ行きます。");
         JSONObject payload=new JSONObject().put("entries",new JSONArray().put(entry)).put("includeMeaning",false).put("repeat",true);
         AtomicReference<Exception> startError=new AtomicReference<>();
+        cleanupFixture(context,null);
+        Throwable primaryFailure=null;
         try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)){
             SystemClock.sleep(1200);
             scenario.onActivity(a->{try{PlaylistService.start(a,payload);}catch(Exception e){startError.set(e);}});
             assertNull("Foreground launch failed",startError.get());
-            long deadline=SystemClock.elapsedRealtime()+8000;
-            while(snapshot().optInt("total")!=1&&SystemClock.elapsedRealtime()<deadline)SystemClock.sleep(100);
-            assertEquals(1,snapshot().optInt("total"));
-            assertTrue("Playback notification/service must be foreground",serviceRunning());
+            awaitFixtureStarted(context);
             scenario.onActivity(a->PlaylistService.control("pause"));
             scenario.moveToState(Lifecycle.State.CREATED);SystemClock.sleep(350);
             assertEquals(1,snapshot().optInt("total"));assertFalse(snapshot().optBoolean("playing"));
-            assertTrue("Paused service should survive activity backgrounding",serviceRunning());
+            assertTrue("Paused service should survive activity backgrounding"+fixtureEvidence(context),serviceRunning());
             scenario.moveToState(Lifecycle.State.RESUMED);
             scenario.onActivity(a->PlaylistService.control("stop"));
-            deadline=SystemClock.elapsedRealtime()+5000;
-            while(serviceRunning()&&SystemClock.elapsedRealtime()<deadline)SystemClock.sleep(100);
-            assertFalse("Stop must remove the foreground service",serviceRunning());
-        }finally{InstrumentationRegistry.getInstrumentation().runOnMainSync(()->PlaylistService.control("stop"));}
+            awaitFixtureAbsent(context);
+            assertFalse("Stop must remove the foreground service"+fixtureEvidence(context),serviceRunning());
+        }catch(Exception|AssertionError failure){primaryFailure=failure;throw failure;}
+        finally{cleanupFixture(context,primaryFailure);}
     }
     /** Framework session contract only; actual SystemUI touch/visibility is verified by the opt-in UI probe. */
     @Test public void customStopFromOwnMediaControllerRemovesServiceAndNotification()throws Exception{
@@ -113,15 +140,15 @@ public final class PlaylistLifecycleTest {
         JSONObject entry=new JSONObject().put("wordId","N5-customstoptest").put("word","山").put("reading","やま").put("meaning","산").put("example","山へ行きます。");
         JSONObject payload=new JSONObject().put("entries",new JSONArray().put(entry)).put("includeMeaning",false).put("repeat",true);
         AtomicReference<Exception> startError=new AtomicReference<>();
+        cleanupFixture(context,null);
+        Throwable primaryFailure=null;
         try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)){
             scenario.onActivity(activity->{try{PlaylistService.start(activity,payload);}catch(Exception error){startError.set(error);}});
             assertNull("Foreground launch failed",startError.get());
-            long deadline=SystemClock.elapsedRealtime()+8000;
-            while((snapshot().optInt("total")!=1||ownNotice(context)==null)&&SystemClock.elapsedRealtime()<deadline)SystemClock.sleep(100);
-            assertEquals(1,snapshot().optInt("total"));assertTrue(serviceRunning());
+            awaitFixtureStarted(context);
             MediaController controller=ownController(context,ownNotice(context));assertStopContract(context,controller);
             controller.getTransportControls().pause();
-            deadline=SystemClock.elapsedRealtime()+5000;
+            long deadline=SystemClock.elapsedRealtime()+5000;
             while((controller.getPlaybackState()==null||controller.getPlaybackState().getState()!=PlaybackState.STATE_PAUSED)&&SystemClock.elapsedRealtime()<deadline)SystemClock.sleep(100);
             assertEquals(PlaybackState.STATE_PAUSED,controller.getPlaybackState().getState());assertStopContract(context,controller);
             controller.getTransportControls().sendCustomAction(PlaylistService.STOP_CUSTOM_ACTION+".unknown",null);
@@ -131,9 +158,10 @@ public final class PlaylistLifecycleTest {
             while((ownServiceExists(context)||ownNotice(context)!=null)&&SystemClock.elapsedRealtime()<deadline)SystemClock.sleep(100);
             assertFalse("Custom Stop must remove service",ownServiceExists(context));assertNull("Custom Stop must remove notification",ownNotice(context));
             assertFalse("Custom Stop must leave playback stopped",snapshot().optBoolean("playing"));
-        }finally{
+        }catch(Exception|AssertionError failure){primaryFailure=failure;throw failure;}
+        finally{
             // Cleanup only: this cannot satisfy assertions for the custom action.
-            context.stopService(new Intent(context,PlaylistService.class));
+            cleanupFixture(context,primaryFailure);
         }
     }
 }
