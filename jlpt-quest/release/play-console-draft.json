@@ -1,7 +1,7 @@
 {
   "status": "SOURCE_DRAFT_ACCOUNT_STATE_PARTIALLY_VERIFIED",
   "sourceVersion": "0.4.2",
-  "reviewedOn": "2026-10-03",
+  "reviewedOn": "2026-10-05",
   "accountEmail": "501.dingerlab@gmail.com",
   "developerDisplayName": "Studio 501",
   "legalOperatorName": "백하성",
@@ -100,17 +100,19 @@
     "appAdsTxtPublisherId": "pub-1681642990054558",
     "youthConsentAndIdentifierHandling": "must-verify-final-release-configuration",
     "activationStatus": "completed",
-    "accountReviewStatus": "pending",
+    "accountReviewStatus": "approved",
+    "accountReviewObservedOn": "2026-10-05",
     "appReviewStatus": "review-required",
     "storeLinkStatus": "not-yet-listed",
     "appAdsTxtStatus": "prepared-not-published-or-verified"
   },
   "ownerRequired": {
-    "targetAudienceAges": "user-confirmed-13-and-older-console-state-unverified",
+    "targetAudienceAges": "user-confirmed-13-and-older-console-draft-saved",
     "iarcQuestionnaireCertification": null,
-    "publicPrivacyUrl": null,
-    "publicTermsUrl": null,
-    "policyEffectiveDate": null,
+    "publicPrivacyUrl": "https://kotoba-play-review-501.pages.dev/privacy.html",
+    "publicTermsUrl": "https://kotoba-play-review-501.pages.dev/terms.html",
+    "publicDataDeletionUrl": "https://kotoba-play-review-501.pages.dev/data-deletion.html",
+    "policyEffectiveDate": "2026-10-05",
     "accountVerification": null,
     "paymentsProfile": null,
     "merchantTaxInformation": null,
@@ -122,6 +124,13 @@
     },
     "playAppSigning": null,
     "testerRequirementAndCompletion": null
+  },
+  "publicPolicyHosting": {
+    "provider": "Cloudflare Pages",
+    "baseUrl": "https://kotoba-play-review-501.pages.dev",
+    "status": "verified-public-static",
+    "verifiedOn": "2026-10-05",
+    "functionsOrWorkerCodeIncluded": false
   },
   "releaseAuthorization": {
     "userRequestedRelease": true,
@@ -150,7 +159,7 @@
     "sharing": "Ads SDK handling must match actual version, consent, age and release configuration; verify applicable service-provider exceptions.",
     "encryptedInTransit": "SDK TLS and configured HTTPS verification endpoint; verify actual release",
     "accountCreation": true,
-    "deleteAccountWebUrl": "REQUIRED: publish data-deletion.html; Google SSO purchase identity is treated as an app account",
+    "deleteAccountWebUrl": "https://kotoba-play-review-501.pages.dev/data-deletion.html",
     "billingBackendDeployed": false,
     "billingBackendImplementation": "billing-worker",
     "billingEventMode": "poll",
@@ -168,6 +177,11 @@
     "billingEventsAndRefundsOperationallyVerified": false,
     "legacyRtdnDeliveryOperationallyVerified": false,
     "authenticatedAccountDeletionImplemented": true,
-    "accountDeletionOperationallyVerified": false
+    "accountDeletionOperationallyVerified": false,
+    "privacyPolicyConsoleState": "saved-draft-awaiting-review",
+    "appAccessConsoleState": "saved-no-restricted-access-for-current-v17-only",
+    "appAccessScopeVersionCode": 17,
+    "appAccessRequiresReassessmentWhenSalesOrSignInEnabled": true,
+    "targetAudienceConsoleState": "saved-13-15-16-17-18plus-draft-awaiting-review"
   }
 }

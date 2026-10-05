@@ -3,8 +3,8 @@
   "developerDisplayName": "Studio 501",
   "supportEmail": "501.dingerlab@gmail.com",
   "privacyContactEmail": "501.dingerlab@gmail.com",
-  "publicPrivacyUrl": null,
-  "publicTermsUrl": null,
+  "publicPrivacyUrl": "https://kotoba-play-review-501.pages.dev/privacy.html",
+  "publicTermsUrl": "https://kotoba-play-review-501.pages.dev/terms.html",
   "targetAudience": "13세 이상 (13–15, 16–17, 18세 이상)",
   "distributionCountries": [
     "KR"
@@ -12,6 +12,15 @@
   "applicationId": "com.studio501.kotoba",
   "storeDeveloperNameMustMatchPrivacyPolicy": true,
   "ownerConfirmedOn": "2026-10-03",
-  "publicationStatus": "DRAFT_PENDING_VERIFIED_PUBLIC_POLICY",
-  "publicDataDeletionUrl": null
+  "reviewedOn": "2026-10-05",
+  "policyEffectiveDate": "2026-10-05",
+  "publicationStatus": "PUBLIC_FOR_INTERNAL_TEST_AND_PLAY_REVIEW",
+  "publicDataDeletionUrl": "https://kotoba-play-review-501.pages.dev/data-deletion.html",
+  "publicPolicyHosting": {
+    "provider": "Cloudflare Pages",
+    "baseUrl": "https://kotoba-play-review-501.pages.dev",
+    "status": "verified-public-static",
+    "verifiedOn": "2026-10-05",
+    "functionsOrWorkerCodeIncluded": false
+  }
 }
