@@ -1,0 +1,22 @@
+{
+  "name": "501 Lab",
+  "website": "https://501lab.com",
+  "founded": "2026-01",
+  "location": "Seoul, Republic of Korea",
+  "stage": "Early-stage startup",
+  "funding": "Not yet raised",
+  "email": "contact@501lab.com",
+  "github": "https://github.com/501-Studio",
+  "products": [
+    {
+      "name": "Project DURA",
+      "url": "https://501lab.com/products/dura.html",
+      "status": "Research and development"
+    },
+    {
+      "name": "Project MIND",
+      "url": "https://501lab.com/products/mind.html",
+      "status": "Product development"
+    }
+  ]
+}
