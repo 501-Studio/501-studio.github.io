@@ -4,53 +4,145 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Company — 501 Lab</title>
-  <meta name="description" content="501 Lab is an early-stage technology startup founded in Seoul in January 2026, focused on biomedical R&D, scientific workflows, and software products." />
+  <meta name="description" content="501 Lab is a Seoul-based early-stage technology startup founded in January 2026." />
   <meta name="robots" content="index,follow" />
   <link rel="canonical" href="https://501lab.com/about.html" />
-  <style>
-    body{margin:0;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f6f8fb;color:#0f172a;line-height:1.65}
-    *{box-sizing:border-box} a{color:inherit} .wrap{width:min(900px,calc(100% - 40px));margin:0 auto}
-    header{padding:28px 0;border-bottom:1px solid #e2e8f0}.brand{text-decoration:none;font-weight:800}
-    main{padding:78px 0}.eyebrow{font-size:12px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;color:#0f766e}
-    h1{font-size:48px;letter-spacing:-2px;line-height:1.05;margin:12px 0 22px}.lead{font-size:20px;color:#5b6473;max-width:760px}
-    .card{margin-top:42px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:28px}
-    .row{display:flex;justify-content:space-between;gap:24px;padding:14px 0;border-top:1px solid #e2e8f0}
-    .row:first-child{border-top:0}.row span{color:#7b8492}.row strong{text-align:right}
-    h2{margin-top:48px;font-size:26px}.copy{color:#5b6473}
-    .links{display:flex;gap:18px;flex-wrap:wrap;margin-top:18px}.links a{color:#0f766e;font-weight:700}
-    footer{padding:28px 0 40px;border-top:1px solid #e2e8f0;color:#8b95a4;font-size:12px}
-    @media(max-width:640px){h1{font-size:38px}.row{flex-direction:column;gap:4px}.row strong{text-align:left}}
-  </style>
+  <link rel="stylesheet" href="assets/site.css" />
 </head>
 <body>
-  <header><div class="wrap"><a class="brand" href="/">501 Lab</a></div></header>
+  <header class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="index.html"><span class="brand-mark">501</span>501 Lab</a>
+      <nav class="nav-links">
+        <a href="index.html#products">Products</a>
+        <a href="index.html#milestones">Milestones</a>
+        <a href="https://github.com/501-Studio" target="_blank" rel="noopener">GitHub</a>
+        <a class="nav-cta" href="mailto:contact@501lab.com">Contact</a>
+      </nav>
+    </div>
+  </header>
+
   <main>
-    <div class="wrap">
-      <div class="eyebrow">Company</div>
-      <h1>501 Lab</h1>
-      <p class="lead">501 Lab is an early-stage technology startup founded in Seoul, Republic of Korea, in January 2026. We develop biomedical materials, scientific R&D workflows, and focused software products.</p>
-
-      <div class="card">
-        <div class="row"><span>Company</span><strong>501 Lab</strong></div>
-        <div class="row"><span>Founded</span><strong>January 2026</strong></div>
-        <div class="row"><span>Location</span><strong>Seoul, Republic of Korea</strong></div>
-        <div class="row"><span>Stage</span><strong>Early-stage startup</strong></div>
-        <div class="row"><span>External funding</span><strong>Not yet raised</strong></div>
-        <div class="row"><span>Focus</span><strong>Biomedical R&D · Software · AI-assisted workflows</strong></div>
-        <div class="row"><span>Website</span><strong>501lab.com</strong></div>
-        <div class="row"><span>Company email</span><strong>contact@501lab.com</strong></div>
+    <section class="page-hero">
+      <div class="container">
+        <div class="breadcrumb"><a href="index.html">501 Lab</a> / Company</div>
+        <div class="kicker">Company profile</div>
+        <h1>Applied research with a product mindset.</h1>
+        <p class="lead">501 Lab is an early-stage technology startup founded in Seoul, Republic of Korea, in January 2026. We develop biomedical materials and focused digital products, with software and AI-assisted workflows supporting the R&D process.</p>
       </div>
+    </section>
 
-      <h2>What we are building</h2>
-      <p class="copy">Our work combines applied materials research with software development. We use Claude and Claude Code in research and development workflows including literature synthesis, experimental planning, scientific data interpretation, technical documentation, prototyping, debugging, and product iteration.</p>
+    <section>
+      <div class="container company-grid">
+        <article class="company-card">
+          <h3>Organization details</h3>
+          <div class="info-row"><span>Company</span><strong>501 Lab</strong></div>
+          <div class="info-row"><span>Founded</span><strong>January 2026</strong></div>
+          <div class="info-row"><span>Location</span><strong>Seoul, Republic of Korea</strong></div>
+          <div class="info-row"><span>Stage</span><strong>Early-stage startup</strong></div>
+          <div class="info-row"><span>External funding</span><strong>Not yet raised</strong></div>
+          <div class="info-row"><span>Active programs</span><strong>2 product programs</strong></div>
+          <div class="info-row"><span>Company email</span><strong>contact@501lab.com</strong></div>
+          <div class="info-row"><span>Public development</span><strong>GitHub / 501-Studio</strong></div>
+        </article>
 
-      <h2>Public links</h2>
-      <div class="links">
-        <a href="https://github.com/501-Studio" target="_blank" rel="noopener">GitHub / 501-Studio ↗</a>
-        <a href="mailto:contact@501lab.com">contact@501lab.com ↗</a>
+        <article class="company-card">
+          <h3>Current focus</h3>
+          <p><strong>Project DURA</strong> is an early-stage biomedical R&D program for a next-generation dural substitute concept. The program has progressed through problem definition, specialist feedback, and design architecture, with engineering validation planned next.</p>
+          <p><strong>Project MIND</strong> is a digital mental wellbeing product under development, focused on low-friction mood check-ins, routine continuity, and safety-aware support pathways.</p>
+          <p>501 Lab also maintains public software work through the 501-Studio GitHub account.</p>
+          <div class="actions">
+            <a class="btn btn-secondary" href="products/dura.html">Project DURA</a>
+            <a class="btn btn-secondary" href="products/mind.html">Project MIND</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="band">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <div class="label">Development model</div>
+            <h2>Research, document, test, iterate.</h2>
+          </div>
+          <p class="section-copy">We treat scientific R&D and software development as different disciplines, while using the same principle: define the problem clearly, expose assumptions, and gather evidence before making stronger claims.</p>
+        </div>
+        <div class="principles">
+          <article class="principle">
+            <div class="num">01</div>
+            <h3>Scientific grounding</h3>
+            <p>Literature and domain constraints are used to define hypotheses and development requirements.</p>
+          </article>
+          <article class="principle">
+            <div class="num">02</div>
+            <h3>Expert and user input</h3>
+            <p>Relevant professional feedback and product-use constraints are incorporated before validation expands.</p>
+          </article>
+          <article class="principle">
+            <div class="num">03</div>
+            <h3>AI-assisted execution</h3>
+            <p>Claude and Claude Code support literature synthesis, documentation, software prototyping, debugging, and iteration.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <div class="label">Company timeline</div>
+            <h2>2026 development timeline.</h2>
+          </div>
+          <p class="section-copy">Only public, supportable milestones are shown here. Research-stage work is identified as research-stage work.</p>
+        </div>
+
+        <div class="milestones">
+          <article class="milestone">
+            <div class="date">January 2026</div>
+            <h3>Founded in Seoul</h3>
+            <p>501 Lab established as an independent early-stage technology startup.</p>
+          </article>
+          <article class="milestone">
+            <div class="date">2026</div>
+            <h3>Biomedical program structured</h3>
+            <p>Project DURA advanced from problem definition to specialist-informed design architecture and validation planning.</p>
+          </article>
+          <article class="milestone">
+            <div class="date">2026</div>
+            <h3>Digital product pipeline expanded</h3>
+            <p>Software development continued through 501-Studio and Project MIND entered product development.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="contact-box">
+          <div>
+            <div class="label">Contact</div>
+            <h2>Talk to 501 Lab.</h2>
+            <p>For research, technical, product, or program-verification inquiries, contact us through our company domain.</p>
+          </div>
+          <a class="btn btn-primary" href="mailto:contact@501lab.com">contact@501lab.com</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <span>© 2026 501 Lab · Seoul, Republic of Korea</span>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="products/dura.html">Project DURA</a>
+        <a href="products/mind.html">Project MIND</a>
+        <a href="https://github.com/501-Studio" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:contact@501lab.com">Email</a>
       </div>
     </div>
-  </main>
-  <footer><div class="wrap">© 2026 501 Lab · Seoul, Republic of Korea</div></footer>
+  </footer>
 </body>
 </html>
