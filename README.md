@@ -3,6 +3,9 @@
 **501 Lab** is an early-stage technology startup founded in **Seoul, Republic of Korea, in January 2026**.
 
 Website: https://501lab.com  
+Registered business name (상호): 501랩  
+Representative (대표자): 문경훈  
+Business registration number (사업자등록번호): 617-38-09254  
 Company email: contact@501lab.com  
 Funding stage: Not yet raised  
 Public development account: https://github.com/501-Studio
@@ -31,7 +34,15 @@ Project MIND is being developed as a wellbeing product. It is not presented as a
 
 ## Claude in our workflow
 
-501 Lab uses Claude and Claude Code for parts of its research and product-development workflow, including literature synthesis, experimental planning, technical documentation, scientific data interpretation, prototyping, debugging, and software iteration.
+Claude and Claude Code support research documentation and software iteration. Planned Claude API work is product-specific:
+
+- **Project DURA:** Document ingestion, cited extraction of materials and testing results, evidence-table generation, then first-pass experiment checklists for human review.
+- **Project MIND:** Optional, user-approved generation of short non-diagnostic check-in content, routine prompts, and reflection drafts with safety constraints.
+- **Operations:** Draft research briefs, experiment reports, requirements updates, and software release notes from structured records.
+
+Detailed planned integration: https://501lab.com/ai-workflows.html
+
+The public Project MIND browser prototype works locally and does not currently call the Claude API.
 
 This repository contains the public 501 Lab website. Product source repositories may remain private while they are under development.
 
