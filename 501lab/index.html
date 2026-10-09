@@ -4,75 +4,257 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>501 Lab — Coming Soon</title>
-  <meta name="description" content="501 Lab is currently preparing its new website." />
+  <meta name="description" content="501 Lab is building new biomaterial and digital products." />
+
   <style>
-    * { box-sizing: border-box; }
-    html, body { height: 100%; margin: 0; }
+    :root {
+      --bg: #f5f7fa;
+      --ink: #0b1220;
+      --muted: #667085;
+      --line: rgba(15, 23, 42, 0.09);
+      --accent: #0f766e;
+      --accent-soft: rgba(15, 118, 110, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+    }
+
     body {
-      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f7f9fc;
-      color: #111827;
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(15, 118, 110, 0.05), transparent 26%),
+        radial-gradient(circle at 85% 80%, rgba(59, 130, 246, 0.04), transparent 28%),
+        var(--bg);
+      color: var(--ink);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.35;
+      background-image:
+        linear-gradient(var(--line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,.7), transparent 78%);
+    }
+
+    .shell {
+      min-height: 100vh;
+      width: min(1180px, calc(100% - 48px));
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+
+    header {
+      height: 84px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      font-size: 16px;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
       display: grid;
       place-items: center;
-      padding: 24px;
+      background: var(--ink);
+      color: #fff;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.10);
     }
-    main {
-      width: min(720px, 100%);
-      text-align: center;
-    }
-    .mark {
+
+    .status {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      width: 56px;
-      height: 56px;
-      border-radius: 14px;
-      background: #111827;
-      color: #fff;
-      font-weight: 700;
-      font-size: 18px;
-      margin-bottom: 28px;
-      letter-spacing: -0.5px;
+      gap: 9px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(8px);
+      color: #475467;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
     }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 5px var(--accent-soft);
+    }
+
+    main {
+      flex: 1;
+      display: grid;
+      align-items: center;
+      padding: 72px 0 96px;
+    }
+
+    .hero {
+      max-width: 920px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 28px;
+      height: 1px;
+      background: var(--accent);
+      opacity: .6;
+    }
+
     h1 {
       margin: 0;
-      font-size: clamp(44px, 8vw, 78px);
-      line-height: 1;
-      letter-spacing: -0.055em;
+      max-width: 900px;
+      font-size: clamp(58px, 9vw, 112px);
+      line-height: 0.93;
+      letter-spacing: -0.065em;
+      font-weight: 650;
     }
-    p {
-      margin: 24px auto 0;
-      max-width: 520px;
-      color: #6b7280;
-      font-size: 18px;
+
+    .sub {
+      margin-top: 34px;
+      max-width: 620px;
+      font-size: clamp(17px, 2vw, 21px);
       line-height: 1.7;
+      color: var(--muted);
     }
-    .status {
-      display: inline-block;
-      margin-top: 32px;
-      padding: 8px 13px;
-      border: 1px solid #d1d5db;
+
+    .meta {
+      margin-top: 42px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .chip {
+      padding: 9px 13px;
       border-radius: 999px;
-      background: #fff;
-      color: #4b5563;
-      font-size: 13px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.65);
+      color: #475467;
+      font-size: 12px;
       font-weight: 600;
-      letter-spacing: .02em;
+      backdrop-filter: blur(8px);
     }
+
     footer {
-      margin-top: 56px;
-      color: #9ca3af;
-      font-size: 13px;
+      padding: 24px 0 28px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      color: #98a2b3;
+      font-size: 12px;
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        width: min(100% - 30px, 1180px);
+      }
+
+      header {
+        height: 72px;
+      }
+
+      main {
+        padding: 64px 0 72px;
+      }
+
+      h1 {
+        font-size: clamp(54px, 17vw, 78px);
+      }
+
+      .sub {
+        font-size: 17px;
+      }
+
+      footer {
+        flex-direction: column;
+      }
     }
   </style>
 </head>
+
 <body>
-  <main>
-    <div class="mark">501</div>
-    <h1>501 Lab</h1>
-    <p>We’re preparing something new.<br />Our website will be available soon.</p>
-    <div class="status">COMING SOON</div>
-    <footer>© 2026 501 Lab.</footer>
-  </main>
+  <div class="shell">
+    <header>
+      <div class="brand">
+        <div class="brand-mark">501</div>
+        <span>501 Lab</span>
+      </div>
+
+      <div class="status">
+        <span class="status-dot"></span>
+        In development
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="eyebrow">Biomaterials · Digital Products</div>
+
+        <h1>
+          Building what<br />
+          comes next.
+        </h1>
+
+        <p class="sub">
+          501 Lab is an independent technology studio working across biomaterials,
+          healthcare, and digital products. Our new website is currently in development.
+        </p>
+
+        <div class="meta">
+          <span class="chip">Research</span>
+          <span class="chip">Healthcare</span>
+          <span class="chip">Software</span>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>© 2026 501 Lab</span>
+      <span>Seoul, Republic of Korea</span>
+    </footer>
+  </div>
 </body>
 </html>
