@@ -1,5 +1,7 @@
 // Keep validation failures separate from network/session failures.
 const COPY = {
+  STORAGE_UNREACHABLE: '저장소에 접속할 수 없습니다. 인터넷 연결과 Supabase 프로젝트의 일시중지 여부를 확인하세요. 일시중지 상태라면 기존 프로젝트를 재개한 뒤 다시 시도하세요. 연결키 재발급이나 새 보드 생성은 필요하지 않습니다. 저장을 시도했다면 최신 내용을 불러와 결과를 확인하세요.',
+  STORAGE_TIMEOUT: '저장소 응답을 기다리다 시간이 초과되었습니다. 기존 연결키를 유지하고 잠시 후 다시 시도하세요. 저장을 시도했다면 최신 내용을 불러와 결과를 먼저 확인하세요.',
   CHRONICLE_VERSION: "모험 데이터 버전을 확인해 주세요. 새로고침 후 다시 시도하세요.",
   CHRONICLE_ORDER: "이야기는 앞 장부터 진행합니다. 최신 기록을 불러와 주세요.",
   CHRONICLE_LOCKED: "이야기 해금에 필요한 누적 예상시간이 아직 부족합니다.",
@@ -44,7 +46,7 @@ export function isConnectionError(error) {
   const message = errorMessage(error);
   return error?.name === 'AbortError' || error?.status >= 500 ||
     [401, 403, 408, 429].includes(error?.status) ||
-    /UNAUTHORIZED|Failed to fetch|NetworkError|network request failed|aborted|timeout|HTTP 5\d\d/i.test(message);
+    /STORAGE_UNREACHABLE|STORAGE_TIMEOUT|UNAUTHORIZED|Failed to fetch|NetworkError|network request failed|aborted|timeout|HTTP 5\d\d/i.test(message);
 }
 export function readableError(error) {
   const message = errorMessage(error);

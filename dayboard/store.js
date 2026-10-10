@@ -6,14 +6,16 @@ export class Store {
  async rpc(name,args={}) {
   const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),18000);
   try {
-   const response=await fetch(`${SUPABASE}/rest/v1/rpc/${name}`,{method:'POST',headers:{apikey:PUBLIC_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_key:this.key,...args}),signal:controller.signal,cache:'no-store'});
+   let response;
+   try {response=await fetch(`${SUPABASE}/rest/v1/rpc/${name}`,{method:'POST',headers:{apikey:PUBLIC_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_key:this.key,...args}),signal:controller.signal,cache:'no-store'});}
+   catch(error){throw new Error(error?.name==='AbortError'?'STORAGE_TIMEOUT':'STORAGE_UNREACHABLE');}
    let data;
    try { data=await response.json(); } catch { throw rpcError(null,response.ok?502:response.status); }
    if(!response.ok)throw rpcError(data,response.status);
    return data;
   } finally {clearTimeout(timeout);}
  }
- async connect(key){this.key=key.trim();const snapshot=await this.rpc('dayboard_read');this.demo=false;this.snapshot=snapshot;localStorage.setItem('dayboard.key',this.key);this.lastRead=Date.now();this.error='';this.saveError='';this.onchange();}
+ async connect(key){const candidate=key.trim();const snapshot=await this.rpc('dayboard_read',{p_key:candidate});this.key=candidate;this.demo=false;this.snapshot=snapshot;localStorage.setItem('dayboard.key',this.key);this.lastRead=Date.now();this.error='';this.saveError='';this.onchange();}
  async refresh(){
   if(this.demo||!this.key||this.busy||document.hidden)return;
   try {
