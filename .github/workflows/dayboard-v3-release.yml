@@ -3,6 +3,9 @@ on:
   push:
     branches: [main, feat/dayboard-chronicle-v4, feat/dayboard-v3-adventure, fix/dayboard-parent-validation]
     paths: ['dayboard/**', 'infrastructure/**', 'tests/**', '.github/workflows/dayboard-v3-release.yml']
+  pull_request:
+    branches: [main]
+    paths: ['dayboard/**', 'tests/**', '.github/workflows/dayboard-v3-release.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -22,6 +25,7 @@ jobs:
         run: |
           for source in dayboard/*.js; do node --input-type=module --check < "$source"; done
           node tests/parent-integrity.mjs
+          node tests/storage-recovery.mjs
           node .github/dayboard-v2-domain.mjs
           node tests/chronicle-domain.mjs
           node tests/chronicle-flavor.mjs
