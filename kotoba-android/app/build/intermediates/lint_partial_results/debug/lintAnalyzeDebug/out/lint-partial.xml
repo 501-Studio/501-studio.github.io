@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.13.2" type="partial_results">
+    <map id="UnsafeImplicitIntentLaunch">
+            <map id="actionsSent">
+                    <map id="android.intent.action.VIEW (used to start an activity)">
+                        <location id="0"
+                            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/studio501/kotoba/MainActivity.java"
+                            line="101"
+                            column="86"
+                            startOffset="5865"
+                            endLine="101"
+                            endColumn="118"
+                            endOffset="5897"/>
+                        <location id="1"
+                            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/studio501/kotoba/PlayCommerce.java"
+                            line="171"
+                            column="61"
+                            startOffset="13210"
+                            endLine="171"
+                            endColumn="191"
+                            endOffset="13340"/>
+                    </map>
+            </map>
+    </map>
+    <map id="UnsafeIntentLaunch">
+            <map id="unprotected">
+                <entry
+                    name="com.studio501.kotoba.MainActivity"
+                    boolean="true"/>
+            </map>
+    </map>
+    <map id="UnusedResources">
+        <entry
+            name="model"
+            string="drawable[ic_launcher(U)],style[AppTheme(U)],xml[data_extraction_rules(U),backup_rules(U)];;;;"/>
+    </map>
+
+</incidents>

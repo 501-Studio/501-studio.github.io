@@ -1,0 +1,177 @@
+name: Kotoba 0.3.7 learning verification
+on:
+  push:
+    branches: [feat/kotoba-037-learning]
+    paths: [.github/workflows/kotoba-037.yml, release/reconstruct037.py, release/v037-core-*.b64, release/examples037.tsv, release/postpatch037.py]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: kotoba037-verification
+  cancel-in-progress: true
+defaults:
+  run:
+    shell: bash
+env:
+  KOTOBA_EVIDENCE_DIR: /tmp/kotoba037-qa
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Reconstruct checksummed authored source and original examples
+        run: |
+          python release/reconstruct037.py
+          if test -f release/postpatch037.py; then python release/postpatch037.py; fi
+          python jlpt-quest/scripts/bundle-strokes.py
+      - uses: actions/download-artifact@v4
+        with:
+          name: kotoba037-neural-audio
+          run-id: 36303442278
+          github-token: ${{ github.token }}
+          path: /tmp/neural037
+      - name: Install and verify newly synthesized offline audio
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json,shutil,hashlib
+          src=Path('/tmp/neural037');dst=Path('jlpt-quest/data');m=json.loads((src/'audio-manifest.json').read_text());c=json.loads((src/'audio-coverage.json').read_text())
+          shutil.rmtree(dst/'audio',ignore_errors=True);(dst/'audio').mkdir()
+          for record in c['records']:
+            f=src/record['file'];assert hashlib.sha256(f.read_bytes()).hexdigest()==record['sha256'];shutil.copyfile(f,dst/'audio'/f.name)
+          for name in ['audio-manifest.json','audio-coverage.json']:shutil.copyfile(src/name,dst/name)
+          assert len(m['clips'])==8613 and len(set(m['clips'].values()))==len(c['records'])
+          print('Installed new neural pronunciation:',len(m['clips']),'word/kana IDs,',len(c['records']),'clips')
+          PY
+      - name: Learning, stroke, kana and audio regression tests
+        working-directory: jlpt-quest
+        run: npm test 2>&1 | tee /tmp/kotoba037-qa/node-tests.txt
+      - name: Install backend and browser test dependencies
+        run: |
+          pip install -r billing-server/requirements.txt playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Server entitlement unit tests
+        working-directory: billing-server
+        run: python -m unittest discover -s tests -v 2>&1 | tee /tmp/kotoba037-qa/backend-tests.txt
+      - name: Actual Chromium UI, fast touch, rotation, kana, examples and offline audio
+        working-directory: jlpt-quest
+        run: |
+          python -m http.server 4173 --bind 127.0.0.1 > /tmp/kotoba037-qa/http.log 2>&1 &
+          SERVER=$!
+          trap 'kill $SERVER || true' EXIT
+          python tests/release036-browser.py
+          python tests/release037-browser.py
+      - name: Confirm production remains blocked without approvals
+        working-directory: jlpt-quest
+        run: |
+          set +e
+          npm run release:check > /tmp/kotoba037-qa/release-gate.txt 2>&1
+          STATUS=$?
+          set -e
+          cat /tmp/kotoba037-qa/release-gate.txt
+          test "$STATUS" -ne 0
+          grep -q 'RELEASE BLOCKED' /tmp/kotoba037-qa/release-gate.txt
+          if grep -q 'Offline audio' /tmp/kotoba037-qa/release-gate.txt; then exit 1; fi
+      - name: Bundle exact tested learning assets
+        working-directory: jlpt-quest
+        run: npm run android:sync
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: false
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+      - name: Build APK, AAB and test APK; run Android policy tests and lint
+        working-directory: kotoba-android
+        run: gradle --no-daemon assembleDebug bundleDebug assembleDebugAndroidTest testDebugUnitTest lintDebug 2>&1 | tee /tmp/kotoba037-qa/gradle-build.txt
+      - name: Enable KVM for Android emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Test actual Android portrait/landscape rotation and Activity recreation
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -timezone Asia/Seoul
+          script: |
+            adb logcat -c
+            gradle -p kotoba-android --no-daemon connectedDebugAndroidTest
+            adb exec-out screencap -p > /tmp/kotoba037-qa/android-device.png
+            adb logcat -d > /tmp/kotoba037-qa/android-logcat.txt
+      - name: Inspect built APK and package tested source
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json,zipfile,hashlib,shutil
+          root=Path('.');w=root/'jlpt-quest';out=Path('/tmp/kotoba037-build');out.mkdir(exist_ok=True)
+          apk=root/'kotoba-android/app/build/outputs/apk/debug/app-debug.apk';aab=root/'kotoba-android/app/build/outputs/bundle/debug/app-debug.aab'
+          checked=[]
+          with zipfile.ZipFile(apk) as z:
+            for n in z.namelist():
+              if n.startswith('assets/www/') and not n.endswith('/'):
+                source=w/n.removeprefix('assets/www/');assert source.is_file(),n
+                assert z.read(n)==source.read_bytes(),n
+                checked.append(n)
+          report={'version':'0.3.7-internal','versionCode':10,'apkBytes':apk.stat().st_size,'apkSha256':hashlib.sha256(apk.read_bytes()).hexdigest(),'aabBytes':aab.stat().st_size,'aabSha256':hashlib.sha256(aab.read_bytes()).hexdigest(),'byteIdenticalWebAssets':len(checked),'audioClips':len(list((w/'data/audio').glob('*.ogg'))),'neuralAudioRun':36303442278,'examples':json.loads((w/'data/examples.json').read_text())['coverage'],'productionReleased':False}
+          Path('/tmp/kotoba037-qa/package-check.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          shutil.copyfile(apk,out/'kotoba-v0.3.7-internal.apk');shutil.copyfile(aab,out/'kotoba-v0.3.7-internal.aab')
+          with zipfile.ZipFile(out/'kotoba-v0.3.7-source.zip','w',zipfile.ZIP_DEFLATED) as z:
+            for base in ['jlpt-quest','kotoba-android','billing-server','release']:
+              for p in Path(base).rglob('*'):
+                if not p.is_file() or any(x in p.parts for x in ['.git','.gradle','build','__pycache__','node_modules']):continue
+                if p.suffix in ['.b64','.pyc','.pem','.key','.jks','.keystore','.ttf','.otf','.woff','.woff2'] or p.name in ['local.properties','.env']:continue
+                if 'assets/www' in str(p):continue
+                z.write(p,Path('kotoba-0.3.7')/p)
+          print(json.dumps(report,ensure_ascii=False,indent=2))
+          PY
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs /tmp/kotoba037-build/kotoba-v0.3.7-internal.apk > /tmp/kotoba037-qa/apk-signature.txt
+      - name: Preserve readable verified source on feature branch only
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess,json
+          paths=json.loads(Path('/tmp/kotoba037-source-paths.json').read_text())+['jlpt-quest/data/strokes.json','jlpt-quest/data/stroke-coverage.json','jlpt-quest/data/audio-manifest.json','jlpt-quest/data/audio-coverage.json']
+          paths=[p for p in paths if Path(p).is_file()]
+          subprocess.run(['git','add','--']+paths,check=True)
+          PY
+          git config user.name '501-Studio'
+          git config user.email '501.dingerlab@gmail.com'
+          if ! git diff --cached --quiet; then
+            git commit -m 'feat(kotoba): preserve verified 0.3.7 rotation kana neural audio and review notification source [skip ci]'
+            git push origin HEAD:feat/kotoba-037-learning
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kotoba037-verified-build
+          path: /tmp/kotoba037-build/
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kotoba037-verification
+          path: |
+            /tmp/kotoba037-qa/
+            kotoba-android/app/build/reports/
+            kotoba-android/app/build/outputs/androidTest-results/
+            kotoba-android/app/build/test-results/
+          retention-days: 30

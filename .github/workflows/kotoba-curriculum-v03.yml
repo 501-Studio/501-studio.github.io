@@ -1,0 +1,48 @@
+name: Kotoba curriculum source verification
+on:
+  push:
+    branches: [feature/kotoba-curriculum-v03]
+    paths: [.github/workflows/kotoba-curriculum-v03.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-public-vocabulary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Download immutable public vocabulary and preserve source notice
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,pathlib,urllib.request
+          revision='c42fd9fa3777bfc1775446f7c418d549dfd6e4cf'
+          base=f'https://raw.githubusercontent.com/evanclan/OpenJLPT/{revision}/'
+          counts={'N5':662,'N4':632,'N3':1784,'N2':1793,'N1':3463}
+          output=pathlib.Path('kotoba-vocabulary-source');output.mkdir()
+          manifest={'source':'OpenJLPT','revision':revision,'license':'CC-BY-SA-4.0','levels':{}}
+          for level,expected in counts.items():
+              url=base+'data/json/vocab/'+level.lower()+'.json'
+              with urllib.request.urlopen(url,timeout=45) as response: raw=response.read(8_000_001)
+              assert len(raw)<=8_000_000, 'oversize data'
+              rows=json.loads(raw)
+              assert isinstance(rows,list) and len(rows)==expected, f'{level}: unexpected count'
+              assert all(isinstance(row,dict) and row.get('level')==level and isinstance(row.get('word'),str) and isinstance(row.get('meanings'),list) for row in rows), 'invalid vocabulary row'
+              (output/(level+'.json')).write_bytes(raw)
+              manifest['levels'][level]={'rows':len(rows),'sha256':hashlib.sha256(raw).hexdigest(),'url':url}
+          for name in ['NOTICE.md','LICENSE-DATA']:
+              try:
+                  with urllib.request.urlopen(base+name,timeout=45) as response: raw=response.read(500_000)
+                  (output/name).write_bytes(raw)
+              except Exception:
+                  if name=='NOTICE.md': raise
+          (output/'source-manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8')
+          print(json.dumps(manifest,ensure_ascii=False,indent=2))
+          print('Only raw vocabulary source is packaged. Example sentences are unreviewed. No claim of Korean localization or official JLPT coverage.')
+          PY
+      - name: Attach verified raw source data
+        uses: actions/upload-artifact@v4
+        with:
+          name: kotoba-n1-n5-vocabulary-source
+          path: kotoba-vocabulary-source/
+          if-no-files-found: error
+          retention-days: 7
