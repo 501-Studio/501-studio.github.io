@@ -1,0 +1,10 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {judgeRecognized,inkSanity,compareBitmaps,SIZE} from '../src/shape-grader.js';
+const stroke=[[[.1,.1],[.3,.3],[.5,.5]]];
+test('native top candidate must be exact target kanji',()=>{assert.equal(judgeRecognized(['山'],'山',stroke).correct,true);assert.equal(judgeRecognized(['川','山'],'山',stroke).correct,false);assert.equal(judgeRecognized(['やま'],'山',stroke).correct,false);assert.equal(judgeRecognized(['山川'],'山',stroke).correct,false);});
+test('recognition absent result is not a guessed correct answer',()=>{for(const value of [[],null,[null]])assert.equal(judgeRecognized(value,'山',stroke).status,'ambiguous');});
+test('blank and tap-only input never pass even with matching candidate',()=>{for(const value of [[],[[[.2,.2]]],[[[.2,.2],[.2,.2],[.2,.2]]]]){assert.equal(inkSanity(value),false);assert.equal(judgeRecognized(['山'],'山',value).correct,false);}});
+test('non-finite, huge, off-canvas or malformed points are rejected',()=>{for(const value of [[[[NaN,0],[.5,.5]]],[[[Infinity,0]]],[[[-1,0],[1,1]]],Array.from({length:61},()=>stroke[0]),[[[.1,.2],['x',.2]]]])assert.equal(inkSanity(value),false);});
+test('stroke sampling and alternative output spacing do not replace exact kanji',()=>{assert.equal(judgeRecognized([' 山 '],'山',stroke).correct,true);assert.equal(judgeRecognized(['未'],'末',stroke).correct,false);assert.equal(judgeRecognized(['日'],'目',stroke).correct,false);});
+test('bitmap comparator rejects a blank canvas',()=>{const empty=new Uint8Array(SIZE*SIZE),cross=Uint8Array.from(empty);for(let i=8;i<56;i++){cross[32*SIZE+i]=1;cross[i*SIZE+32]=1;}assert.equal(compareBitmaps(empty,cross),0);assert.ok(compareBitmaps(cross,cross)>.99);});
+test('bitmap comparator separates a single line from crossed strokes',()=>{const line=new Uint8Array(SIZE*SIZE),cross=new Uint8Array(SIZE*SIZE);for(let i=8;i<56;i++){line[32*SIZE+i]=1;cross[32*SIZE+i]=1;cross[i*SIZE+32]=1;}assert.ok(compareBitmaps(line,cross)<.73);});
