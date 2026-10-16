@@ -1,0 +1,109 @@
+name: Kotoba v0.3.5 full-offline Play readiness verification
+on:
+  push:
+    branches: [feature/kotoba-curriculum-v03]
+    paths: ['jlpt-quest/**', 'kotoba-android/**', '.github/workflows/kotoba-android-check.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: kotoba-v035-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      KOTOBA_EVIDENCE_DIR: /tmp/kotoba-v035-evidence
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install reproducible offline Japanese audio build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y open-jtalk open-jtalk-mecab-naist-jdic hts-voice-nitech-jp-atr503-m001 ffmpeg
+      - name: Build complete offline vocabulary, stroke and pronunciation assets
+        working-directory: jlpt-quest
+        run: npm run build
+      - name: Regression tests for chapters, offline audio, legal assets and relaxed strokes
+        working-directory: jlpt-quest
+        run: npm test
+      - name: Confirm unapproved production release is blocked
+        working-directory: jlpt-quest
+        run: |
+          if npm run release:check; then
+            echo "Release gate unexpectedly passed" >&2
+            exit 1
+          fi
+          echo "Release correctly blocked until editorial, legal, signing and Play approvals are complete."
+      - name: Sync APK-local assets
+        working-directory: jlpt-quest
+        env:
+          KOTOBA_ANDROID_DIR: ../kotoba-android
+        run: npm run android:sync
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: false
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+      - name: Compile internal APK and Android lint
+        working-directory: kotoba-android
+        run: gradle :app:assembleDebug :app:bundleDebug :app:lintDebug --no-daemon --stacktrace
+      - name: Install browser verification tools
+        run: |
+          python3 -m pip install playwright==1.57.0
+          python3 -m playwright install --with-deps chromium
+      - name: Verify rendered chapter scan, auto listening, 2x2 choices and cold offline assets
+        working-directory: jlpt-quest
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/kotoba-http.log 2>&1 &
+          python3 tests/snap-browser.py
+      - name: Save verified v0.3.5 source metadata and generated packs to feature branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -u -- jlpt-quest kotoba-android
+          git add jlpt-quest/data/strokes.json jlpt-quest/data/stroke-coverage.json jlpt-quest/data/licenses/ jlpt-quest/data/N1.json jlpt-quest/data/N2.json jlpt-quest/data/N3.json jlpt-quest/data/N4.json jlpt-quest/data/N5.json jlpt-quest/data/coverage.json jlpt-quest/data/korean-glosses.json jlpt-quest/data/korean-coverage.json
+          git diff --cached --quiet || git commit -m 'feat(kotoba): persist verified v0.3.5 full-offline metadata [skip ci]'
+          git push origin HEAD:feature/kotoba-curriculum-v03
+      - name: Package reproducible full source
+        run: |
+          python3 - <<'PY'
+          import zipfile,pathlib
+          with zipfile.ZipFile('/tmp/kotoba-0.3.5-source.zip','w',zipfile.ZIP_DEFLATED) as z:
+              for folder in ['jlpt-quest','kotoba-android']:
+                  for p in pathlib.Path(folder).rglob('*'):
+                      if not p.is_file() or any(x in p.parts for x in ['build','.gradle','node_modules','__pycache__']): continue
+                      if 'src/main/assets/' in str(p) or '/data/audio/' in str(p): continue
+                      z.write(p,'kotoba-0.3.5/'+str(p))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kotoba-0.3.5-full-offline
+          path: |
+            kotoba-android/app/build/outputs/apk/debug/app-debug.apk
+            kotoba-android/app/build/outputs/bundle/debug/app-debug.aab
+            /tmp/kotoba-0.3.5-source.zip
+          if-no-files-found: error
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kotoba-0.3.5-verification
+          path: |
+            /tmp/kotoba-v035-evidence/
+            kotoba-android/app/build/reports/
+            jlpt-quest/data/stroke-coverage.json
+            jlpt-quest/data/audio-coverage.json
+            jlpt-quest/data/korean-coverage.json
+            /tmp/kotoba-http.log
+          if-no-files-found: warn
+          retention-days: 30
