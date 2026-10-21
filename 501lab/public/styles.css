@@ -107,8 +107,11 @@ p,h1,h2,h3,figure,ol{margin:0}a{color:inherit;text-decoration:none}button{font:i
 .people-layout{display:grid;grid-template-columns:minmax(0,1fr) 144px minmax(0,1fr);gap:40px;align-items:center;width:100%;margin-top:48px;border-block:1px solid #aebcbd;padding-block:48px 44px}
 .person{min-width:0}
 .person:last-child{text-align:right}
-.person-discipline{display:inline-flex;align-items:center;gap:12px;text-transform:uppercase;font-size:12px;line-height:1.5;letter-spacing:.12em;font-weight:550;color:var(--teal)}
-.person-discipline::before{content:'';width:24px;height:1px;background:currentColor}
+.person-discipline{display:inline-flex;flex-direction:column;align-items:flex-start;gap:7px;max-width:100%;text-transform:uppercase;font-size:12px;line-height:1.5;letter-spacing:.08em;font-weight:550;color:var(--teal)}
+.person:last-child .person-discipline{align-items:flex-end}
+.person-founder{font-size:10px;letter-spacing:.12em;font-weight:450;color:var(--muted)}
+.person-role-title{display:flex;align-items:center;gap:12px}
+.person-role-title::before{content:'';width:24px;height:1px;background:currentColor;flex:none}
 .person h3{font-size:clamp(50px,5.7vw,84px);font-weight:350;line-height:1.15;letter-spacing:-.045em;margin-top:27px;white-space:nowrap}
 .person-field{font-size:18px;line-height:1.65;color:#435158;margin-top:23px;letter-spacing:-.01em}
 .people-intersection{color:var(--teal)}
@@ -133,8 +136,9 @@ p,h1,h2,h3,figure,ol{margin:0}a{color:inherit;text-decoration:none}button{font:i
  .people .section-lead{font-size:16px;line-height:1.8;margin-top:20px;padding:0}
  .people-layout{grid-template-columns:minmax(0,1fr);gap:0;margin-top:32px;padding-block:29px 31px}
  .person:last-child{text-align:right}
- .person-discipline{font-size:11px;gap:10px;letter-spacing:.1em}
- .person-discipline::before{width:20px}
+ .person-discipline{font-size:11px;gap:7px;letter-spacing:.06em}
+ .person-role-title{gap:10px}
+ .person-role-title::before{width:20px}
  .person h3{font-size:clamp(43px,12vw,64px);margin-top:19px;line-height:1.12}
  .person-field{font-size:16px;margin-top:15px}
  .people-intersection{width:102px;height:102px;justify-self:center;display:flex;align-items:center;justify-content:center;margin-block:14px}
