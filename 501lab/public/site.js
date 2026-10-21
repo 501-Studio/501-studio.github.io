@@ -18,7 +18,7 @@
   });
   const desktop = window.matchMedia('(min-width:761px)');
   desktop.addEventListener('change', event => { if (event.matches) setMenu(false); });
-  const sections = ['research','people','partnership'].map(id => ({
+  const sections = ['vision','research','people','partnership'].map(id => ({
     section: document.getElementById(id),
     link: navigation.querySelector(`a[href="#${id}"]`)
   }));

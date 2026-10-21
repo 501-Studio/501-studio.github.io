@@ -144,3 +144,71 @@ p,h1,h2,h3,figure,ol{margin:0}a{color:inherit;text-decoration:none}button{font:i
  .people-intersection{width:102px;height:102px;justify-self:center;display:flex;align-items:center;justify-content:center;margin-block:14px}
  .people-intersection svg{transform:rotate(90deg);width:102px;flex:none}
 }
+
+/* Contact: an editorial invitation with two collaboration paths. */
+.partnership .partnership-inner{padding-top:70px;padding-bottom:48px}
+.partnership .section-label{padding:0;color:#bdcbcd;font-size:14px}
+.contact-heading-row{display:flex;justify-content:space-between;align-items:flex-end;gap:64px;margin-top:29px}
+.partnership .contact-heading-row h2{margin:0;font-size:clamp(55px,6.1vw,88px);line-height:1.13;letter-spacing:-.045em;font-weight:400}
+.partnership .email-link{margin:0 0 9px;gap:24px;flex:none;font-size:clamp(24px,2.45vw,36px);line-height:1.45;letter-spacing:-.025em;font-weight:400}
+.partnership .email-address{border-bottom:1px solid transparent;padding-bottom:2px}
+.partnership .email-arrow{display:flex;align-items:center;justify-content:center;width:66px;height:66px;flex:none;border:1px solid #8ea4a8;border-radius:50%;transition:background .2s,color .2s,border-color .2s}
+.partnership .email-arrow .icon{width:27px;height:27px;stroke-width:1.3}
+.partnership .email-link:hover .email-address{border-color:currentColor}
+.partnership .email-link:hover .email-arrow{background:#f8f8f5;border-color:#f8f8f5;color:#15272d}
+.partnership-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7%;margin-top:57px;padding:0}
+.partnership-options article{padding:27px 0 12px;border-top:1px solid #637a80;min-width:0}
+.partnership-link{gap:30px;min-height:50px}
+.partnership-link h3{font-size:clamp(25px,2.3vw,34px);font-weight:430;line-height:1.4;letter-spacing:-.025em}
+.partnership-link .icon{width:25px;height:25px;color:#b2c9cc}
+.partnership-options article>p{margin-top:17px;max-width:460px;font-size:17px;line-height:1.85;color:#beced1;letter-spacing:-.01em}
+.footer-wrap .footer{border-top:1px solid #4b636a;justify-content:space-between;min-height:112px;padding-block:29px}
+@media(max-width:980px) and (min-width:761px){
+ .contact-heading-row{gap:35px}
+ .partnership .contact-heading-row h2{font-size:58px}
+ .partnership .email-link{font-size:24px;gap:16px}
+ .partnership .email-arrow{width:52px;height:52px}
+ .partnership-options{gap:6%;margin-top:46px}
+ .partnership-link h3{font-size:25px}
+ .partnership-options article>p{font-size:16px}
+}
+@media(max-width:760px){
+ .partnership .partnership-inner{padding-top:55px;padding-bottom:28px}
+ .partnership .section-label{font-size:13px}
+ .contact-heading-row{display:block;margin-top:24px}
+ .partnership .contact-heading-row h2{font-size:clamp(43px,11vw,65px);line-height:1.15}
+ .partnership .email-link{display:flex;justify-content:space-between;gap:16px;margin-top:30px;font-size:24px;max-width:430px;min-height:48px}
+ .partnership .email-arrow{width:48px;height:48px}
+ .partnership .email-arrow .icon{width:23px;height:23px}
+ .partnership-options{grid-template-columns:minmax(0,1fr);gap:0;margin-top:37px}
+ .partnership-options article{padding:22px 0 25px}
+ .partnership-link{min-height:40px;gap:20px}
+ .partnership-link h3{font-size:24px}
+ .partnership-link .icon{width:22px;height:22px}
+ .partnership-options article>p{font-size:15px;line-height:1.85;margin-top:10px;max-width:520px}
+ .footer-wrap .footer{min-height:100px;padding-block:28px}
+}
+@media(max-width:380px){.partnership .email-link{font-size:21px;gap:12px}.partnership .contact-heading-row h2{font-size:42px}.partnership .email-arrow{width:44px;height:44px}.partnership-link h3{font-size:22px}}
+
+/* Vision: patient and clinician needs guide the research direction. */
+.vision{padding-block:78px 82px;border-bottom:1px solid var(--line)}
+.vision>.section-label{padding:0;margin-bottom:32px;font-size:14px;letter-spacing:.025em}
+.vision-layout{display:grid;grid-template-columns:minmax(0,1.38fr) minmax(0,1fr);gap:8%;align-items:center}
+.vision h2{font-size:clamp(38px,4.25vw,64px);font-weight:430;line-height:1.32;letter-spacing:-.045em}
+.vision h2>span{display:block;white-space:nowrap}
+.vision .vision-accent{color:var(--teal)}
+.vision-copy{border-left:1px solid var(--line);padding-left:30px;max-width:465px}
+.vision-purpose{font-size:21px;line-height:1.85;letter-spacing:-.02em;font-weight:450;color:var(--ink)}
+.vision-description{font-size:17px;line-height:1.9;letter-spacing:-.015em;color:var(--muted);margin-top:20px}
+@media(max-width:1100px) and (min-width:981px){.vision-layout{gap:6%;grid-template-columns:1.4fr 1fr}.vision-purpose{font-size:19px}.vision-description{font-size:16px}.vision-copy{padding-left:24px}}
+@media(max-width:980px) and (min-width:761px){.vision{padding-block:72px}.vision-layout{grid-template-columns:1fr;gap:34px}.vision h2{font-size:46px}.vision-copy{max-width:630px}.vision-purpose{font-size:20px}.vision-description{font-size:17px;margin-top:16px}.vision-desktop-break{display:none}}
+@media(max-width:760px){
+ .vision{padding-block:61px 58px}
+ .vision>.section-label{font-size:13px;margin-bottom:24px}
+ .vision-layout{grid-template-columns:minmax(0,1fr);gap:28px}
+ .vision h2{font-size:clamp(26px,7.7vw,43px);line-height:1.4;letter-spacing:-.045em}
+ .vision-copy{max-width:560px;padding-left:18px}
+ .vision-purpose{font-size:17px;line-height:1.85;letter-spacing:-.025em}
+ .vision-description{font-size:15px;line-height:1.85;margin-top:15px}
+ .vision-desktop-break{display:none}
+}
