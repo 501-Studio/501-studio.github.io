@@ -1,4 +1,4 @@
-# 501 Lab website
+# 501 LAB website
 
 Public website for https://501lab.com/.
 
