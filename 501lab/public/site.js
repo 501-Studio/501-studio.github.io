@@ -55,4 +55,25 @@
   window.addEventListener('resize', scheduleActiveUpdate);
   window.addEventListener('load', scheduleActiveUpdate);
   updateActiveSection();
+  const researchSequence = document.querySelector('.research-sequence');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if (researchSequence && 'IntersectionObserver' in window && !reducedMotion.matches) {
+    const stages = researchSequence.querySelectorAll('li');
+    const stageObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          stageObserver.unobserve(entry.target);
+        }
+      });
+    }, {threshold: .12, rootMargin: '0px 0px -24px 0px'});
+    researchSequence.classList.add('has-motion');
+    stages.forEach(stage => stageObserver.observe(stage));
+    reducedMotion.addEventListener('change', event => {
+      if (event.matches) {
+        researchSequence.classList.remove('has-motion');
+        stageObserver.disconnect();
+      }
+    });
+  }
 })();
