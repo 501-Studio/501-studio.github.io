@@ -1,0 +1,14 @@
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+/styles.css
+  Cache-Control: no-cache
+/site.js
+  Cache-Control: no-cache
+/assets/*
+  Cache-Control: public, max-age=3600
